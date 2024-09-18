@@ -6,22 +6,29 @@ namespace cfEngine.Info;
 public abstract class InfoManager
 {
     private StreamSerializer? _serializer;
-    protected StreamSerializer? serializer => _serializer;
-    
-    private string _infoRoot = string.Empty;
-    protected string infoRoot => _infoRoot;
-    
-    public abstract string infoDirectory { get; }
-    
-    public void RegisterSerializer(StreamSerializer? s)
+
+    public StreamSerializer? Serializer
     {
-        _serializer = s;
+         protected get => _serializer;
+         set => _serializer = value;
+    }
+    
+    private DataObjectEncoder? _encoder;
+
+    public DataObjectEncoder? Encoder
+    {
+        protected get => _encoder;
+        set => _encoder = value;
     }
 
-    public void setInfoRoot(string infoRootPath)
+    private string _infoRoot = string.Empty;
+    public string InfoRoot
     {
-        _infoRoot = infoRootPath;
+        protected get => _infoRoot;
+        set => _infoRoot = value;
     }
+    
+    public abstract string InfoDirectory { get; }
 }
 
 public abstract class ExcelInfoManager<TKey, TInfo>: InfoManager where TKey : notnull
@@ -35,17 +42,17 @@ public abstract class ExcelInfoManager<TKey, TInfo>: InfoManager where TKey : no
 
     public void LoadFromExcel()
     {
-        if (string.IsNullOrEmpty(infoRoot))
+        if (string.IsNullOrEmpty(InfoRoot))
         {
-            throw new ArgumentNullException(nameof(infoRoot), "info root path is unset");
+            throw new ArgumentNullException(nameof(InfoRoot), "info root path is unset");
         }
 
-        if (string.IsNullOrEmpty(infoDirectory))
+        if (string.IsNullOrEmpty(InfoDirectory))
         {
-            throw new ArgumentNullException(nameof(infoDirectory), "info key is unset");
+            throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
         }
 
-        var infoDirectoryPath = Path.Combine(infoRoot, infoDirectory);
+        var infoDirectoryPath = Path.Combine(InfoRoot, InfoDirectory);
         var files = Directory.GetFiles(infoDirectoryPath, "*.xlsx");
 
         var excelData = new CofyXmlDocParser.DataContainer();
@@ -56,9 +63,15 @@ public abstract class ExcelInfoManager<TKey, TInfo>: InfoManager where TKey : no
         }
 
         _infoDict.EnsureCapacity(excelData.Count);
+
+        if (Encoder == null)
+        {
+            throw new ArgumentNullException(nameof(Encoder), "encoder unset");
+        }
+        
         foreach (var dataObject in excelData)
         {
-            var decoded = dataObject.DecodeAs<TInfo>(DataObjectExtension.SetDecodePropertyValue);
+            var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
             _infoDict.Add(keyFn(decoded), decoded);
         }
     }

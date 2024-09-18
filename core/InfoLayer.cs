@@ -24,11 +24,11 @@ public class InfoLayer
 
     public void RegisterInfo(InfoManager infoManager)
     {
-        var infoKey = infoManager.infoDirectory;
+        var infoKey = infoManager.InfoDirectory;
 
         if (string.IsNullOrEmpty(infoKey))
         {
-            throw new ArgumentNullException(nameof(infoManager.infoDirectory), $"{nameof(infoManager)} infoDict key is invalid.");
+            throw new ArgumentNullException(nameof(infoManager.InfoDirectory), $"{nameof(infoManager)} infoDict key is invalid.");
         }
 
         if (!infoMap.TryAdd(infoManager.GetType(), infoManager))
@@ -36,8 +36,8 @@ public class InfoLayer
             throw new ArgumentException(nameof(infoManager), $"Info key {infoKey} already exist");
         }
 
-        infoManager.RegisterSerializer(_serializer);
-        infoManager.setInfoRoot(infoRootPath);
+        infoManager.Serializer = _serializer;
+        infoManager.InfoRoot = infoRootPath;
     }
 
     public bool TryGetInfo<TInfo>(out TInfo? infoManager) where TInfo : InfoManager
