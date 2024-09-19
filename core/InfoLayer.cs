@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using cfEngine.Info;
 using cfEngine.IO;
 using cfEngine.Serialize;
+using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core.Layer
 {
@@ -36,6 +37,7 @@ namespace cfEngine.Core.Layer
 
             infoManager.Serializer = _serializer;
             infoManager.Storage = _storage;
+            infoManager.Encoder = new DataObjectEncoder();
         }
 
         public bool TryGetInfo<TInfo>(out TInfo infoManager) where TInfo : InfoManager

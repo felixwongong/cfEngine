@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using UnityEngine;
 
 namespace cfEngine.IO
 {
@@ -22,6 +23,7 @@ namespace cfEngine.IO
 
         public abstract string[] GetFiles(string regex);
         public abstract byte[] LoadBytes(string fileName);
+        public abstract void Save(string fileName, Stream streamIn);
         public abstract bool IsStorageExist();
     }
 
@@ -29,7 +31,6 @@ namespace cfEngine.IO
     {
         public FileStorage(string storagePath): base(storagePath)
         {
-            Validate();
         }
         
         public override string[] GetFiles(string searchPattern)
@@ -62,6 +63,20 @@ namespace cfEngine.IO
             }
 
             return fileBytes;       
+        }
+
+        public override void Save(string fileName, Stream streamIn)
+        {
+            if (!Directory.Exists(StoragePath))
+            {
+                Directory.CreateDirectory(StoragePath);
+                Debug.Log($"Directory created for storage: {StoragePath}");
+            }
+
+            var filePath = Path.Combine(StoragePath, fileName); 
+            
+            using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+            streamIn.CopyTo(fileStream);
         }
 
         public override bool IsStorageExist()

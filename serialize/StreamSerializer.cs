@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace cfEngine.Serialize
@@ -13,20 +14,24 @@ namespace cfEngine.Serialize
         {
         }
 
-        public abstract void Serialize(object obj, Stream stream, ISerializeParam param = null);
+        public abstract Stream Serialize(object obj, ISerializeParam param = null);
         public abstract object Deserialize(Stream stream, IDeserializeParam param = null);
         public abstract T DeserializeAs<T>(Stream stream, IDeserializeParam param = null);
     }
 
     public class JsonStreamSerializer : StreamSerializer
     {
-        public override void Serialize(object obj, Stream stream, ISerializeParam param = null)
+        public override Stream Serialize(object obj, ISerializeParam param = null)
         {
+            var memoryStream = new MemoryStream();
             var serializer = JsonSerializer.Create();
-            using var streamWriter = new StreamWriter(stream);
-            using var jsonWriter = new JsonTextWriter(streamWriter);
-
+            var streamWriter = new StreamWriter(memoryStream, Encoding.Default, 1024, true);
+            var jsonWriter = new JsonTextWriter(streamWriter);
             serializer.Serialize(jsonWriter, obj);
+
+            var d = JsonConvert.SerializeObject(obj);
+
+            return memoryStream;
         }
 
         public override object Deserialize(Stream stream, IDeserializeParam param = null)

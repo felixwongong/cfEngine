@@ -33,11 +33,14 @@ namespace cfEngine.Info
         }
 
         public abstract string InfoDirectory { get; }
+
+        public abstract void LoadFromExcel();
+        public abstract void SerializeIntoStorage();
     }
 
     public abstract class ExcelInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
     {
-        private readonly Dictionary<TKey, TInfo> _infoDict = new();
+        protected readonly Dictionary<TKey, TInfo> _infoDict = new();
         public IReadOnlyDictionary<TKey, TInfo> infoDict => _infoDict;
 
         protected abstract Func<TInfo, TKey> keyFn { get; }
@@ -46,7 +49,7 @@ namespace cfEngine.Info
         {
         }
 
-        public void LoadFromExcel()
+        public override void LoadFromExcel()
         {
             if (string.IsNullOrEmpty(InfoDirectory))
             {
@@ -73,6 +76,14 @@ namespace cfEngine.Info
             {
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
                 _infoDict.Add(keyFn(decoded), decoded);
+            }
+        }
+
+        public override void SerializeIntoStorage()
+        {
+            using (var memoryStream = Serializer.Serialize(infoDict))
+            {
+                Storage.Save(InfoDirectory, memoryStream);
             }
         }
     }
