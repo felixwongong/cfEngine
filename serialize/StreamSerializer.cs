@@ -23,15 +23,16 @@ namespace cfEngine.Serialize
     {
         public override Stream Serialize(object obj, ISerializeParam param = null)
         {
-            var memoryStream = new MemoryStream();
-            var serializer = JsonSerializer.Create();
-            var streamWriter = new StreamWriter(memoryStream, Encoding.Default, 1024, true);
-            var jsonWriter = new JsonTextWriter(streamWriter);
+            var stream = new MemoryStream();
+            var serializer = new JsonSerializer();
+            using var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
+            using var jsonWriter = new JsonTextWriter(streamWriter);
             serializer.Serialize(jsonWriter, obj);
-
-            var d = JsonConvert.SerializeObject(obj);
-
-            return memoryStream;
+            
+            jsonWriter.Flush();
+            stream.Position = 0;
+            
+            return stream;
         }
 
         public override object Deserialize(Stream stream, IDeserializeParam param = null)
