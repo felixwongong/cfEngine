@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using cfEngine.IO;
 using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
 
@@ -24,12 +24,12 @@ namespace cfEngine.Info
             set => _encoder = value;
         }
 
-        private string _infoRoot = string.Empty;
+        private Storage _storage;
 
-        public string InfoRoot
+        public Storage Storage
         {
-            protected get => _infoRoot;
-            set => _infoRoot = value;
+            protected get => _storage;
+            set => _storage = value;
         }
 
         public abstract string InfoDirectory { get; }
@@ -48,23 +48,17 @@ namespace cfEngine.Info
 
         public void LoadFromExcel()
         {
-            if (string.IsNullOrEmpty(InfoRoot))
-            {
-                throw new ArgumentNullException(nameof(InfoRoot), "info root path is unset");
-            }
-
             if (string.IsNullOrEmpty(InfoDirectory))
             {
                 throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
             }
 
-            var infoDirectoryPath = Path.Combine(InfoRoot, InfoDirectory);
-            var files = Directory.GetFiles(infoDirectoryPath, "*.xlsx");
+            var files = Storage.GetFiles("*.xlsx");
 
             var excelData = new CofyXmlDocParser.DataContainer();
             foreach (var file in files)
             {
-                var fileExcelData = CofyXmlDocParser.ParseExcel(file);
+                var fileExcelData = CofyXmlDocParser.ParseExcel(Storage.LoadBytes(file));
                 excelData.AddRange(fileExcelData);
             }
 

@@ -1,26 +1,21 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.Info;
+using cfEngine.IO;
 using cfEngine.Serialize;
 
 namespace cfEngine.Core.Layer
 {
     public class InfoLayer
     {
-        private readonly string infoRootPath;
+        private readonly Storage _storage;
         private readonly StreamSerializer _serializer;
 
-        private Dictionary<Type, InfoManager> infoMap = new();
+        private readonly Dictionary<Type, InfoManager> _infoMap = new();
 
-        public InfoLayer(string infoRootPath, StreamSerializer serializer)
+        public InfoLayer(Storage storage, StreamSerializer serializer)
         {
-            this.infoRootPath = infoRootPath;
-
-            if (_serializer != null)
-            {
-                throw new InvalidOperationException("StreamSerializer already exist");
-            }
-
+            _storage = storage;
             _serializer = serializer;
         }
 
@@ -34,18 +29,18 @@ namespace cfEngine.Core.Layer
                     $"{nameof(infoManager)} infoDict key is invalid.");
             }
 
-            if (!infoMap.TryAdd(infoManager.GetType(), infoManager))
+            if (!_infoMap.TryAdd(infoManager.GetType(), infoManager))
             {
                 throw new ArgumentException(nameof(infoManager), $"Info key {infoKey} already exist");
             }
 
             infoManager.Serializer = _serializer;
-            infoManager.InfoRoot = infoRootPath;
+            infoManager.Storage = _storage;
         }
 
         public bool TryGetInfo<TInfo>(out TInfo infoManager) where TInfo : InfoManager
         {
-            if (infoMap.TryGetValue(typeof(TInfo), out var info) && info is TInfo tInfo)
+            if (_infoMap.TryGetValue(typeof(TInfo), out var info) && info is TInfo tInfo)
             {
                 infoManager = tInfo;
                 return true;
@@ -57,7 +52,7 @@ namespace cfEngine.Core.Layer
 
         public TInfo GetInfo<TInfo>() where TInfo : InfoManager
         {
-            return infoMap[typeof(TInfo)] as TInfo;
+            return _infoMap[typeof(TInfo)] as TInfo;
         }
     }
 }
