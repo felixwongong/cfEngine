@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using cfEngine.IO;
 using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
+using Unity.VisualScripting;
 
 namespace cfEngine.Info
 {
@@ -34,7 +36,8 @@ namespace cfEngine.Info
 
         public abstract string InfoDirectory { get; }
 
-        public abstract void LoadFromExcel();
+        public abstract void DirectlyLoadFromExcel();
+        public abstract void LoadSerialized();
         public abstract void SerializeIntoStorage();
     }
 
@@ -49,7 +52,7 @@ namespace cfEngine.Info
         {
         }
 
-        public override void LoadFromExcel()
+        public override void DirectlyLoadFromExcel()
         {
             if (string.IsNullOrEmpty(InfoDirectory))
             {
@@ -77,6 +80,26 @@ namespace cfEngine.Info
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
                 _infoDict.Add(keyFn(decoded), decoded);
             }
+        }
+
+        public override void LoadSerialized()
+        {
+            if (string.IsNullOrEmpty(InfoDirectory))
+            {
+                throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
+            }
+
+            var files = Storage.GetFiles(string.Empty, InfoDirectory);
+            if (files.Length <= 0)
+            {
+                throw new ArgumentException($"serialized file ({InfoDirectory}) not found in Info Directory",
+                    nameof(InfoDirectory));
+            }
+
+            var fileBytes = Storage.LoadBytes(string.Empty, InfoDirectory);
+            using var memoryStream = new MemoryStream(fileBytes);
+            var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(memoryStream);
+            _infoDict.AddRange(deserialized);
         }
 
         public override void SerializeIntoStorage()

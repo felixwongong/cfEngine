@@ -13,6 +13,7 @@ namespace cfEngine.Core.Layer
         private readonly StreamSerializer _serializer;
 
         private readonly Dictionary<Type, InfoManager> _infoMap = new();
+        public IReadOnlyDictionary<Type, InfoManager> InfoMap => _infoMap;
 
         public InfoLayer(Storage storage, StreamSerializer serializer)
         {

@@ -53,7 +53,7 @@ namespace cfEngine.IO
             }
 
             byte[] fileBytes;
-            using var filestream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var filestream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
             fileBytes = new byte[filestream.Length];
             var byteLoaded = filestream.Read(fileBytes, 0, (int)filestream.Length);
             if (byteLoaded > filestream.Length)
