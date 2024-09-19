@@ -21,9 +21,9 @@ namespace cfEngine.IO
             }
         }
 
-        public abstract string[] GetFiles(string regex);
-        public abstract byte[] LoadBytes(string fileName);
-        public abstract void Save(string fileName, Stream streamIn);
+        public abstract string[] GetFiles(string subDirectory, string regex);
+        public abstract byte[] LoadBytes(string subDirectory, string fileName);
+        public abstract void Save(string relativePath, Stream streamIn);
         public abstract bool IsStorageExist();
     }
 
@@ -33,19 +33,19 @@ namespace cfEngine.IO
         {
         }
         
-        public override string[] GetFiles(string searchPattern)
+        public override string[] GetFiles(string subDirectory, string searchPattern)
         {
-            return Directory.GetFiles(StoragePath, searchPattern);
+            return Directory.GetFiles(Path.Combine(StoragePath, subDirectory), searchPattern);
         }
 
-        public override byte[] LoadBytes(string fileName)
+        public override byte[] LoadBytes(string subDirectory, string fileName)
         {
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException(nameof(fileName), "filename is empty");
             }
 
-            var absPath = Path.Combine(StoragePath, fileName);
+            var absPath = Path.Combine(StoragePath, subDirectory, fileName);
 
             if (!File.Exists(absPath))
             {

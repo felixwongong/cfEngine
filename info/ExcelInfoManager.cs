@@ -56,12 +56,12 @@ namespace cfEngine.Info
                 throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
             }
 
-            var files = Storage.GetFiles("*.xlsx");
+            var files = Storage.GetFiles(InfoDirectory, "*.xlsx");
 
             var excelData = new CofyXmlDocParser.DataContainer();
             foreach (var file in files)
             {
-                var fileExcelData = CofyXmlDocParser.ParseExcel(Storage.LoadBytes(file));
+                var fileExcelData = CofyXmlDocParser.ParseExcel(Storage.LoadBytes(InfoDirectory, file));
                 excelData.AddRange(fileExcelData);
             }
 
@@ -81,10 +81,8 @@ namespace cfEngine.Info
 
         public override void SerializeIntoStorage()
         {
-            using (var memoryStream = Serializer.Serialize(infoDict))
-            {
-                Storage.Save(InfoDirectory, memoryStream);
-            }
+            using var memoryStream = Serializer.Serialize(infoDict);
+            Storage.Save(InfoDirectory, memoryStream);
         }
     }
 }
