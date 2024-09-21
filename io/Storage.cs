@@ -23,6 +23,7 @@ namespace cfEngine.IO
 
         public abstract string[] GetFiles(string subDirectory, string regex);
         public abstract byte[] LoadBytes(string subDirectory, string fileName);
+        public abstract Stream StreamLoad(string subDirectory, string fileName);
         public abstract void Save(string relativePath, Stream streamIn);
         public abstract bool IsStorageExist();
 
@@ -44,6 +45,21 @@ namespace cfEngine.IO
 
         public override byte[] LoadBytes(string subDirectory, string fileName)
         {
+            using var fileStream = StreamLoad(subDirectory, fileName);
+            
+            var fileBytes = new byte[fileStream.Length];
+            var byteLoaded = fileStream.Read(fileBytes, 0, (int)fileStream.Length);
+            if (byteLoaded > fileStream.Length)
+            {
+                throw new InvalidOperationException(
+                    $"Detect fileStream read size ({fileStream.Length} differ from byte load ({byteLoaded}))");
+            }
+
+            return fileBytes;       
+        }
+
+        public override Stream StreamLoad(string subDirectory, string fileName)
+        {
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException(nameof(fileName), "filename is empty");
@@ -56,17 +72,7 @@ namespace cfEngine.IO
                 throw new ArgumentNullException(nameof(fileName), "file does not exist");
             }
 
-            byte[] fileBytes;
-            using var filestream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-            fileBytes = new byte[filestream.Length];
-            var byteLoaded = filestream.Read(fileBytes, 0, (int)filestream.Length);
-            if (byteLoaded > filestream.Length)
-            {
-                throw new InvalidOperationException(
-                    $"Detect filestream read size ({filestream.Length} differ from byte load ({byteLoaded}))");
-            }
-
-            return fileBytes;       
+            return new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
         }
 
         public override void Save(string fileName, Stream streamIn)

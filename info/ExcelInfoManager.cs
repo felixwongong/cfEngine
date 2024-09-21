@@ -105,9 +105,8 @@ namespace cfEngine.Info
                     nameof(InfoDirectory));
             }
 
-            var fileBytes = Storage.LoadBytes(string.Empty, InfoDirectory);
-            using var memoryStream = new MemoryStream(fileBytes);
-            var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(memoryStream);
+            using var fileStream = Storage.StreamLoad(string.Empty, InfoDirectory);
+            var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(fileStream);
             _valueMap.AddRange(deserialized);
         }
 
