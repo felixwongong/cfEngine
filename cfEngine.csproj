@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CofyExcelParser\CofyExcelParser.csproj" />
+      <ProjectReference Include="..\module\CofyExcelParser\CofyExcelParser.csproj" />
     </ItemGroup>
 
     <ItemGroup>
