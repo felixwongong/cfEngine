@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using cfEngine.IO;
 using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
@@ -55,7 +54,7 @@ namespace cfEngine.Info
         protected readonly Dictionary<TKey, TInfo> _valueMap = new();
         public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
 
-        protected abstract Func<TInfo, TKey> keyFn { get; }
+        protected abstract Func<TInfo, TKey> KeyFn { get; }
 
         protected ExcelInfoManager() : base()
         {
@@ -77,17 +76,17 @@ namespace cfEngine.Info
                 excelData.AddRange(fileExcelData);
             }
 
-            _valueMap.EnsureCapacity(excelData.Count);
-
             if (Encoder == null)
             {
                 throw new ArgumentNullException(nameof(Encoder), "encoder unset");
             }
+            
+            _valueMap.EnsureCapacity(excelData.Count);
 
             foreach (var dataObject in excelData)
             {
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
-                _valueMap.Add(keyFn(decoded), decoded);
+                _valueMap.Add(KeyFn(decoded), decoded);
             }
         }
 
