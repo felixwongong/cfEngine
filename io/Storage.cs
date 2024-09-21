@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace cfEngine.IO
 {
-    public abstract class Storage
+    public abstract class Storage: IDisposable
     {
         public readonly string StoragePath;
         
@@ -25,6 +25,10 @@ namespace cfEngine.IO
         public abstract byte[] LoadBytes(string subDirectory, string fileName);
         public abstract void Save(string relativePath, Stream streamIn);
         public abstract bool IsStorageExist();
+
+        public virtual void Dispose()
+        {
+        }
     }
 
     public class FileStorage: Storage

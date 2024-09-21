@@ -21,6 +21,9 @@ namespace cfEngine.Serialize
 
     public class JsonStreamSerializer : StreamSerializer
     {
+        private static JsonStreamSerializer _instance;
+        public static JsonStreamSerializer Instance => _instance ??= new JsonStreamSerializer();
+        
         public override Stream Serialize(object obj, ISerializeParam param = null)
         {
             var stream = new MemoryStream();

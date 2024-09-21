@@ -7,7 +7,7 @@ using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core.Layer
 {
-    public class InfoLayer
+    public class InfoLayer: IDisposable
     {
         private readonly Storage _storage;
         private readonly StreamSerializer _serializer;
@@ -56,6 +56,12 @@ namespace cfEngine.Core.Layer
         public TInfo GetInfo<TInfo>() where TInfo : InfoManager
         {
             return _infoMap[typeof(TInfo)] as TInfo;
+        }
+
+        public void Dispose()
+        {
+            _storage.Dispose();
+            _infoMap.Clear();
         }
     }
 }

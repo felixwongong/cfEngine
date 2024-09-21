@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 namespace cfEngine.Info
 {
-    public abstract class InfoManager
+    public abstract class InfoManager: IDisposable
     {
         private StreamSerializer _serializer;
 
@@ -39,6 +39,14 @@ namespace cfEngine.Info
         public abstract void DirectlyLoadFromExcel();
         public abstract void LoadSerialized();
         public abstract void SerializeIntoStorage();
+
+        public virtual void Dispose()
+        {
+            _serializer = null;
+            _encoder = null;
+            _storage?.Dispose();
+            _storage = null;
+        }
     }
 
     public abstract class ExcelInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
@@ -106,6 +114,12 @@ namespace cfEngine.Info
         {
             using var memoryStream = Serializer.Serialize(ValueMap);
             Storage.Save(InfoDirectory, memoryStream);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            _valueMap.Clear();
         }
     }
 }
