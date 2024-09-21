@@ -43,8 +43,8 @@ namespace cfEngine.Info
 
     public abstract class ExcelInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
     {
-        protected readonly Dictionary<TKey, TInfo> _infoDict = new();
-        public IReadOnlyDictionary<TKey, TInfo> infoDict => _infoDict;
+        protected readonly Dictionary<TKey, TInfo> _valueMap = new();
+        public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
 
         protected abstract Func<TInfo, TKey> keyFn { get; }
 
@@ -68,7 +68,7 @@ namespace cfEngine.Info
                 excelData.AddRange(fileExcelData);
             }
 
-            _infoDict.EnsureCapacity(excelData.Count);
+            _valueMap.EnsureCapacity(excelData.Count);
 
             if (Encoder == null)
             {
@@ -78,7 +78,7 @@ namespace cfEngine.Info
             foreach (var dataObject in excelData)
             {
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
-                _infoDict.Add(keyFn(decoded), decoded);
+                _valueMap.Add(keyFn(decoded), decoded);
             }
         }
 
@@ -99,12 +99,12 @@ namespace cfEngine.Info
             var fileBytes = Storage.LoadBytes(string.Empty, InfoDirectory);
             using var memoryStream = new MemoryStream(fileBytes);
             var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(memoryStream);
-            _infoDict.AddRange(deserialized);
+            _valueMap.AddRange(deserialized);
         }
 
         public override void SerializeIntoStorage()
         {
-            using var memoryStream = Serializer.Serialize(infoDict);
+            using var memoryStream = Serializer.Serialize(ValueMap);
             Storage.Save(InfoDirectory, memoryStream);
         }
     }

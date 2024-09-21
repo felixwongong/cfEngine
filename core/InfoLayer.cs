@@ -28,7 +28,7 @@ namespace cfEngine.Core.Layer
             if (string.IsNullOrEmpty(infoKey))
             {
                 throw new ArgumentNullException(nameof(infoManager.InfoDirectory),
-                    $"{nameof(infoManager)} infoDict key is invalid.");
+                    $"{nameof(infoManager)} ValueMap key is invalid.");
             }
 
             if (!_infoMap.TryAdd(infoManager.GetType(), infoManager))
