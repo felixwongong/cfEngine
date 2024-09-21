@@ -43,6 +43,7 @@ namespace cfEngine.Info
         public virtual void Dispose()
         {
             _serializer = null;
+            _encoder?.Dispose();
             _encoder = null;
             _storage?.Dispose();
             _storage = null;

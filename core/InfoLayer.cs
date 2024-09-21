@@ -61,6 +61,10 @@ namespace cfEngine.Core.Layer
         public void Dispose()
         {
             _storage.Dispose();
+            foreach (var infoManager in _infoMap.Values)
+            {
+                infoManager.Dispose();
+            }
             _infoMap.Clear();
         }
     }
