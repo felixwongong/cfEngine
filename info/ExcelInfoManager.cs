@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.IO;
+using cfEngine.Logging;
 using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
-using Unity.VisualScripting;
 
 namespace cfEngine.Info
 {
@@ -106,7 +106,12 @@ namespace cfEngine.Info
 
             using var fileStream = Storage.StreamLoad(string.Empty, InfoDirectory);
             var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(fileStream);
-            _valueMap.AddRange(deserialized);
+            foreach (var kvp in deserialized)
+            {
+                _valueMap.Add(kvp.Key, kvp.Value);
+            }
+            
+            Log.LogDebug($"{InfoDirectory} loaded from serialized, value count: {_valueMap.Count}");
         }
 
         public override void SerializeIntoStorage()
