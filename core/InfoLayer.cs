@@ -10,12 +10,12 @@ namespace cfEngine.Core.Layer
     public class InfoLayer: IDisposable
     {
         private readonly Storage _storage;
-        private readonly StreamSerializer _serializer;
+        private readonly Serializer _serializer;
 
         private readonly Dictionary<Type, InfoManager> _infoMap = new();
         public IReadOnlyDictionary<Type, InfoManager> InfoMap => _infoMap;
 
-        public InfoLayer(Storage storage, StreamSerializer serializer)
+        public InfoLayer(Storage storage, Serializer serializer)
         {
             _storage = storage;
             _serializer = serializer;

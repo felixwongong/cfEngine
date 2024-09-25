@@ -9,9 +9,9 @@ namespace cfEngine.Info
 {
     public abstract class InfoManager: IDisposable
     {
-        private StreamSerializer _serializer;
+        private Serializer _serializer;
 
-        public StreamSerializer Serializer
+        public Serializer Serializer
         {
             protected get => _serializer;
             set => _serializer = value;
@@ -104,8 +104,8 @@ namespace cfEngine.Info
                     nameof(InfoDirectory));
             }
 
-            using var fileStream = Storage.StreamLoad(string.Empty, InfoDirectory);
-            var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(fileStream);
+            var byteLoaded = Storage.LoadBytes(string.Empty, InfoDirectory);
+            var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(byteLoaded);
             foreach (var kvp in deserialized)
             {
                 _valueMap.Add(kvp.Key, kvp.Value);
@@ -116,8 +116,8 @@ namespace cfEngine.Info
 
         public override void SerializeIntoStorage()
         {
-            using var memoryStream = Serializer.Serialize(ValueMap);
-            Storage.Save(InfoDirectory, memoryStream);
+            var serialized = Serializer.Serialize(ValueMap);
+            Storage.Save(InfoDirectory, serialized);
         }
 
         public override void Dispose()
