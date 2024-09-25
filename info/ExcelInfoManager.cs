@@ -106,6 +106,7 @@ namespace cfEngine.Info
 
             var byteLoaded = Storage.LoadBytes(string.Empty, InfoDirectory);
             var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(byteLoaded);
+            _valueMap.EnsureCapacity(deserialized.Count);
             foreach (var kvp in deserialized)
             {
                 _valueMap.Add(kvp.Key, kvp.Value);

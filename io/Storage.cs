@@ -49,7 +49,7 @@ namespace cfEngine.IO
         {
             var absPath = GetFilePath(subDirectory, fileName);
 
-            var fileStream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite,
+            using var fileStream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite,
                 1024, false);
 
             var fileBytes = new byte[fileStream.Length];
@@ -72,13 +72,15 @@ namespace cfEngine.IO
 
             var fileBytes = new byte[fileStream.Length];
             
-            var byteLoaded = await fileStream.ReadAsync(fileBytes);
+            var byteLoaded = await fileStream.ReadAsync(fileBytes).ConfigureAwait(false);
             
             if (byteLoaded > fileStream.Length)
             {
                 throw new InvalidOperationException(
                     $"Detect fileStream read size ({fileStream.Length} differ from byte load ({byteLoaded}))");
             }
+            
+            fileStream.Close();
 
             return fileBytes;       
         }
