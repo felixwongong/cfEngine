@@ -65,7 +65,7 @@ namespace cfEngine.Asset
 
         protected abstract Task<object> _LoadAsync(string path, CancellationToken token);
         
-        public Task<T> LoadAsync<T>(string path, CancellationToken token)
+        public Task<T> LoadAsync<T>(string path, CancellationToken token) where T : class
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
