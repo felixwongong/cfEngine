@@ -53,7 +53,7 @@ namespace cfEngine.Core.Layer
             return false;
         }
 
-        public TInfo GetInfo<TInfo>() where TInfo : InfoManager
+        public TInfo Get<TInfo>() where TInfo : InfoManager
         {
             return _infoMap[typeof(TInfo)] as TInfo;
         }
