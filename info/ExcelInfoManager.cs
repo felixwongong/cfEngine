@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
@@ -53,6 +54,9 @@ namespace cfEngine.Info
     {
         protected readonly Dictionary<TKey, TInfo> _valueMap = new();
         public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
+
+        private List<TInfo> _allValues;
+        public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
 
         protected abstract Func<TInfo, TKey> KeyFn { get; }
 

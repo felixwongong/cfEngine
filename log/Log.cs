@@ -55,6 +55,7 @@ namespace cfEngine.Logging
             if (_logLevel.hasFlag(LogType.Exception))
             {
                 _logger.LogException(ex, message);
+                throw ex;
             }
         }
 
