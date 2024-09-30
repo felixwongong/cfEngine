@@ -6,12 +6,12 @@ using cfEngine.Logging;
 
 namespace cfEngine.Asset
 {
-    public abstract class AssetManager
+    public abstract class AssetManager<TBaseObject> where TBaseObject: class
     {
         private Dictionary<string, Task> _assetLoadingTasks = new();
-        private Dictionary<string, WeakReference<object>> _assetMap = new();
+        private Dictionary<string, WeakReference<TBaseObject>> _assetMap = new();
 
-        public object Load(string path)
+        public TBaseObject Load(string path)
         {
             if (TryGetAsset(path, out var obj))
             {
@@ -19,13 +19,13 @@ namespace cfEngine.Asset
             }
             
             obj = _Load(path);
-            _assetMap[path] = new WeakReference<object>(obj);
+            _assetMap[path] = new WeakReference<TBaseObject>(obj);
             return obj;
         }
 
-        protected abstract object _Load(string path);
+        protected abstract TBaseObject _Load(string path);
         
-        public T Load<T>(string path) where T : class
+        public T Load<T>(string path) where T: TBaseObject 
         {
             if (TryGetAsset(path, out var obj) && obj is T t)
             {
@@ -33,17 +33,17 @@ namespace cfEngine.Asset
             }
             
             t = _Load<T>(path);
-            _assetMap[path] = new WeakReference<object>(t);
+            _assetMap[path] = new WeakReference<TBaseObject>(t);
             return t;
         }
 
-        protected abstract T _Load<T>(string path) where T : class;
+        protected abstract T _Load<T>(string path) where T : TBaseObject;
 
-        public Task<object> LoadAsync(string path, CancellationToken token)
+        public Task<TBaseObject> LoadAsync(string path, CancellationToken token)
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
-                if (t is not Task<object> cachedObjectTask)
+                if (t is not Task<TBaseObject> cachedObjectTask)
                 {
                     Log.LogWarning($"Detect async loading different task result type but with same path {path}");
                 } 
@@ -56,16 +56,16 @@ namespace cfEngine.Asset
             var objectTask = _LoadAsync(path, token).ContinueWith(t =>
                 {
                     var result = t.Result;
-                    _assetMap[path] = new WeakReference<object>(result);
+                    _assetMap[path] = new WeakReference<TBaseObject>(result);
                     return result;
                 }, token);
             _assetLoadingTasks[path] = objectTask;
             return objectTask;
         }
 
-        protected abstract Task<object> _LoadAsync(string path, CancellationToken token);
+        protected abstract Task<TBaseObject> _LoadAsync(string path, CancellationToken token);
         
-        public Task<T> LoadAsync<T>(string path, CancellationToken token) where T : class
+        public Task<T> LoadAsync<T>(string path, CancellationToken token) where T: TBaseObject
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
@@ -82,16 +82,16 @@ namespace cfEngine.Asset
             var objectTask = _LoadAsync<T>(path, token).ContinueWith(t =>
                 {
                     var result = t.Result;
-                    _assetMap[path] = new WeakReference<object>(result);
+                    _assetMap[path] = new WeakReference<TBaseObject>(result);
                     return result;
                 }, token);
             _assetLoadingTasks[path] = objectTask;
             return objectTask;
         }
 
-        protected abstract Task<T> _LoadAsync<T>(string path, CancellationToken token) where T : class;
+        protected abstract Task<T> _LoadAsync<T>(string path, CancellationToken token) where T : TBaseObject;
         
-        public bool TryGetAsset(string path, out object asset)
+        public bool TryGetAsset(string path, out TBaseObject asset)
         {
             asset = null;
             return _assetMap.TryGetValue(path, out var wr) && wr.TryGetTarget(out asset);
