@@ -65,7 +65,7 @@ namespace cfEngine.Asset
 
         protected abstract Task<TBaseObject> _LoadAsync(string path, CancellationToken token);
         
-        public Task<T> LoadAsync<T>(string path, CancellationToken token) where T: TBaseObject
+        public async Task<T> LoadAsync<T>(string path, CancellationToken token) where T: TBaseObject
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
@@ -75,18 +75,17 @@ namespace cfEngine.Asset
                 } 
                 else if(!cachedObjectTask.IsFaulted && !cachedObjectTask.IsCanceled)
                 {
-                    return cachedObjectTask;
+                    return await cachedObjectTask;
                 }
             }
-
-            var objectTask = _LoadAsync<T>(path, token).ContinueWith(t =>
-                {
-                    var result = t.Result;
-                    _assetMap[path] = new WeakReference<TBaseObject>(result);
-                    return result;
-                }, token);
+            
+            var objectTask = _LoadAsync<T>(path, token);
             _assetLoadingTasks[path] = objectTask;
-            return objectTask;
+            
+            var result = await objectTask;
+            
+            _assetMap[path] = new WeakReference<TBaseObject>(result);
+            return result;
         }
 
         protected abstract Task<T> _LoadAsync<T>(string path, CancellationToken token) where T : TBaseObject;
