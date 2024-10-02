@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace cfEngine.Pooling
 {
-    public class ObjectPool<T> where T: class, new()
+    public class ObjectPool<T> where T: class
     {
         private readonly Func<T> _createMethod;
-        private readonly Action<T> _disposeAction;
+        private readonly Action<T> _releaseAction;
 
         private Queue<T> _queue = new();
 
-        protected ObjectPool(Func<T> createMethod, Action<T> disposeAction)
+        public ObjectPool(Func<T> createMethod, Action<T> releaseAction)
         {
             this._createMethod = createMethod;
-            this._disposeAction = disposeAction;
+            this._releaseAction = releaseAction;
         }
 
         public T Get()
@@ -28,7 +28,7 @@ namespace cfEngine.Pooling
 
         public void Release(T obj)
         {
-            _disposeAction(obj);
+            _releaseAction(obj);
             _queue.Enqueue(obj);
         }
     }
