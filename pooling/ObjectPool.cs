@@ -21,7 +21,7 @@ namespace cfEngine.Pooling
             this._releaseAction = releaseAction;
         }
 
-        public T Get()
+        public virtual T Get()
         {
             if (!Queue.TryDequeue(out var result))
             {
@@ -31,7 +31,7 @@ namespace cfEngine.Pooling
             return result;
         }
 
-        public void Release(T obj)
+        public virtual void Release(T obj)
         {
             _releaseAction(obj);
             Queue.Enqueue(obj);

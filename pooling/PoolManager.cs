@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
+using JetBrains.Annotations;
 
 namespace cfEngine.Pooling
 {
@@ -41,6 +42,15 @@ namespace cfEngine.Pooling
             }
 
             _poolMap[key] = pool;
+        }
+
+        public T GetOrCreatPool<T>(string key, [NotNull] Func<T> createFunc) where T: class, IObjectPool
+        {
+            if (TryGetPool<T>(key, out var pool)) return pool;
+
+            pool = createFunc();
+            AddPool(key, pool);
+            return pool;
         }
 
         public void Dispose()
