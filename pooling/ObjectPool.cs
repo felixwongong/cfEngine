@@ -3,12 +3,17 @@ using System.Collections.Generic;
 
 namespace cfEngine.Pooling
 {
-    public class ObjectPool<T> where T: class
+    public interface IObjectPool: IDisposable
+    {
+        
+    }
+    
+    public class ObjectPool<T>: IObjectPool where T: class
     {
         private readonly Func<T> _createMethod;
         private readonly Action<T> _releaseAction;
 
-        private Queue<T> _queue = new();
+        protected readonly Queue<T> Queue = new();
 
         public ObjectPool(Func<T> createMethod, Action<T> releaseAction)
         {
@@ -18,7 +23,7 @@ namespace cfEngine.Pooling
 
         public T Get()
         {
-            if (!_queue.TryDequeue(out var result))
+            if (!Queue.TryDequeue(out var result))
             {
                 return _createMethod();
             }
@@ -29,7 +34,12 @@ namespace cfEngine.Pooling
         public void Release(T obj)
         {
             _releaseAction(obj);
-            _queue.Enqueue(obj);
+            Queue.Enqueue(obj);
+        }
+
+        public virtual void Dispose()
+        {
+            Queue.Clear();
         }
     }
 }
