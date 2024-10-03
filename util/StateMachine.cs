@@ -8,9 +8,9 @@ namespace cfEngine.Util
     {
     }
 
-    public class StateMachine<TStateId> where TStateId : Enum
+    public class StateMachine<TStateId>
     {
-        public struct StateChangeRecord<TStateId> where TStateId : Enum
+        public struct StateChangeRecord<TStateId>
         {
             public State<TStateId> LastState;
             public State<TStateId> NewState;
