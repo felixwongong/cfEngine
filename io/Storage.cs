@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace cfEngine.IO
 
         public abstract string[] GetFiles(string subDirectory, string regex);
         public abstract byte[] LoadBytes(string subDirectory, string fileName);
-        public abstract Task<byte[]> LoadBytesAsync(string subDirectory, string fileName);
+        public abstract Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken token);
         public abstract Stream CreateStream(string subDirectory, string fileName, bool useAsync);
         public abstract void Save(string relativePath, byte[] data);
         public abstract bool IsStorageExist();
@@ -63,7 +64,7 @@ namespace cfEngine.IO
             return fileBytes;       
         }
 
-        public override async Task<byte[]> LoadBytesAsync(string subDirectory, string fileName)
+        public override async Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken cancellationToken)
         {
             var absPath = GetFilePath(subDirectory, fileName);
 
@@ -72,7 +73,7 @@ namespace cfEngine.IO
 
             var fileBytes = new byte[fileStream.Length];
             
-            var byteLoaded = await fileStream.ReadAsync(fileBytes).ConfigureAwait(false);
+            var byteLoaded = await fileStream.ReadAsync(fileBytes, cancellationToken).ConfigureAwait(false);
             
             if (byteLoaded > fileStream.Length)
             {

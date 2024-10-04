@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
@@ -38,6 +40,7 @@ namespace cfEngine.Info
 
         public abstract void DirectlyLoadFromExcel();
         public abstract void LoadSerialized();
+        public abstract Task LoadSerializedAsync(CancellationToken cancellationToken);
         public abstract void SerializeIntoStorage();
 
         public virtual void Dispose()
@@ -117,6 +120,31 @@ namespace cfEngine.Info
             }
             
             Log.LogDebug($"{InfoDirectory} loaded from serialized, value count: {_valueMap.Count}");
+        }
+
+        public override async Task LoadSerializedAsync(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(InfoDirectory))
+            {
+                throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
+            }
+
+            var files = Storage.GetFiles(string.Empty, InfoDirectory);
+            if (files.Length <= 0)
+            {
+                throw new ArgumentException($"serialized file ({InfoDirectory}) not found in Info Directory",
+                    nameof(InfoDirectory));
+            }
+
+            var byteLoaded = await Storage.LoadBytesAsync(string.Empty, InfoDirectory, cancellationToken).ConfigureAwait(false);
+            var deserialized = await Serializer.DeserializeAsAsync<Dictionary<TKey, TInfo>>(byteLoaded, cancellationToken)
+                .ConfigureAwait(false);
+            
+            _valueMap.EnsureCapacity(deserialized.Count);
+            foreach (var kvp in deserialized)
+            {
+                _valueMap.Add(kvp.Key, kvp.Value);
+            }
         }
 
         public override void SerializeIntoStorage()
