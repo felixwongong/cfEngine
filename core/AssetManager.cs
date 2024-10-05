@@ -6,7 +6,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Asset
 {
-    public abstract class AssetManager<TBaseObject> where TBaseObject: class
+    public abstract class AssetManager<TBaseObject>: IDisposable where TBaseObject: class
     {
         private Dictionary<string, Task> _assetLoadingTasks = new();
         private Dictionary<string, WeakReference<TBaseObject>> _assetMap = new();
@@ -94,6 +94,26 @@ namespace cfEngine.Asset
         {
             asset = null;
             return _assetMap.TryGetValue(path, out var wr) && wr.TryGetTarget(out asset);
+        }
+
+        public void Dispose()
+        {
+            foreach (var task in _assetLoadingTasks.Values)
+            {
+                task.Dispose();
+            }
+            
+            _assetLoadingTasks.Clear();
+            
+            foreach (var wr in _assetMap.Values)
+            {
+                if (wr.TryGetTarget(out var t) && t is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            
+            _assetMap.Clear();
         }
     }
 }

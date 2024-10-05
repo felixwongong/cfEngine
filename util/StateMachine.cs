@@ -9,7 +9,7 @@ namespace cfEngine.Util
     {
     }
 
-    public class StateMachine<TStateId>
+    public class StateMachine<TStateId>: IDisposable
     {
         public struct StateChangeRecord<TStateId>
         {
@@ -85,6 +85,18 @@ namespace cfEngine.Util
             }
 
             return (T)state;
+        }
+
+        public void Dispose()
+        {
+            _lastState = null;
+            _currentState = null;
+            foreach (var state in _stateDictionary.Values)
+            {
+                state.Dispose();
+            }
+            
+            _stateDictionary.Clear();
         }
     }
 }
