@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using cfEngine.Logging;
 
 namespace cfEngine.Util
 {
@@ -43,23 +44,31 @@ namespace cfEngine.Util
 
         public void GoToState(TStateId id, in StateParam param = null)
         {
-            if (!_stateDictionary.TryGetValue(id, out var currentState))
-                throw new KeyNotFoundException($"State {id} not registered");
-
-            onBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>()
-                { LastState = _currentState, NewState = currentState });
-
-            if (_currentState != null)
+            try
             {
-                _currentState.OnEndContext();
-                _lastState = _currentState;
+                if (!_stateDictionary.TryGetValue(id, out var currentState))
+                    throw new KeyNotFoundException($"State {id} not registered");
+
+                onBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>()
+                    { LastState = _currentState, NewState = currentState });
+
+                if (_currentState != null)
+                {
+                    _currentState.OnEndContext();
+                    _lastState = _currentState;
+                }
+
+                _currentState = currentState;
+                _currentState.StartContext(this, param);
+
+                onAfterStateChange?.Invoke(new StateChangeRecord<TStateId>()
+                    { LastState = _lastState, NewState = _currentState });
+
             }
-
-            _currentState = currentState;
-            _currentState.StartContext(this, param);
-
-            onAfterStateChange?.Invoke(new StateChangeRecord<TStateId>()
-                { LastState = _lastState, NewState = _currentState });
+            catch (Exception ex)
+            {
+                Log.LogException(ex);
+            }
         }
 
         public void GoToStateNoRepeat(TStateId id, in StateParam param = null)

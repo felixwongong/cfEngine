@@ -5,12 +5,12 @@ namespace cfEngine.Logging
     [Flags]
     public enum LogType
     {
-        Debug = 1 << 0,
-        Assert = 1 << 1,
-        Info = 1 << 2,
-        Warning = 1 << 3,
-        Exception = 1 << 5,
-        Error = 1 << 5,
+        Debug = 1 << 5,
+        Assert = 1 << 4,
+        Info = 1 << 3,
+        Warning = 1 << 2,
+        Exception = 1 << 1,
+        Error = 1 << 0,
     }
 
     public enum LogLevel
@@ -18,7 +18,7 @@ namespace cfEngine.Logging
         Error = LogType.Error | LogType.Exception,
         Warn = LogType.Warning | Error,
         Info = LogType.Info | Warn,
-        Verbose = LogType.Info,
+        Verbose = Info,
         Debug = LogType.Assert | LogType.Debug | Verbose,
     }
     
