@@ -7,15 +7,15 @@ using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core.Layer
 {
-    public class InfoLayer<TStorage, TSerializer>: IDisposable where TStorage: Storage where TSerializer: Serializer
+    public class InfoLayer: IDisposable
     {
-        private readonly TStorage _storage;
-        private readonly TSerializer _serializer;
+        private readonly Storage _storage;
+        private readonly Serializer _serializer;
 
         private readonly Dictionary<Type, InfoManager> _infoMap = new();
         public IReadOnlyDictionary<Type, InfoManager> InfoMap => _infoMap;
 
-        public InfoLayer(TStorage storage, TSerializer serializer)
+        public InfoLayer(Storage storage, Serializer serializer)
         {
             _storage = storage;
             _serializer = serializer;
