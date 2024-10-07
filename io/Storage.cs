@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
+using cfEngine.Logging;
 
 namespace cfEngine.IO
 {
@@ -98,7 +98,7 @@ namespace cfEngine.IO
             if (!Directory.Exists(StoragePath))
             {
                 Directory.CreateDirectory(StoragePath);
-                Debug.Log($"Directory created for storage: {StoragePath}");
+                Log.LogInfo($"Directory created for storage: {StoragePath}");
             }
 
             var filePath = Path.Combine(StoragePath, fileName); 
