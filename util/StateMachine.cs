@@ -11,7 +11,7 @@ namespace cfEngine.Util
 
     public class StateMachine<TStateId>: IDisposable
     {
-        public struct StateChangeRecord<TStateId>
+        public struct StateChangeRecord
         {
             public State<TStateId> LastState;
             public State<TStateId> NewState;
@@ -24,8 +24,8 @@ namespace cfEngine.Util
 
         private readonly Dictionary<TStateId, State<TStateId>> _stateDictionary = new();
 
-        public event Action<StateChangeRecord<TStateId>> onBeforeStateChange;
-        public event Action<StateChangeRecord<TStateId>> onAfterStateChange;
+        public event Action<StateChangeRecord> onBeforeStateChange;
+        public event Action<StateChangeRecord> onAfterStateChange;
 
         public StateMachine()
         {
@@ -49,7 +49,7 @@ namespace cfEngine.Util
                 if (!_stateDictionary.TryGetValue(id, out var currentState))
                     throw new KeyNotFoundException($"State {id} not registered");
 
-                onBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>()
+                onBeforeStateChange?.Invoke(new StateChangeRecord()
                     { LastState = _currentState, NewState = currentState });
 
                 if (_currentState != null)
@@ -61,7 +61,7 @@ namespace cfEngine.Util
                 _currentState = currentState;
                 _currentState.StartContext(this, param);
 
-                onAfterStateChange?.Invoke(new StateChangeRecord<TStateId>()
+                onAfterStateChange?.Invoke(new StateChangeRecord()
                     { LastState = _lastState, NewState = _currentState });
 
             }
