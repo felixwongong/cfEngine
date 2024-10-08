@@ -17,7 +17,7 @@ namespace cfEngine.Meta.Statistic
         }
     }
 
-    public class StatisticController
+    public class StatisticController: IDisposable
     {
         private Dictionary<string, Statistic> _statisticMap = new();
         public Dictionary<string, Statistic> StatisticMap => _statisticMap;
@@ -39,6 +39,11 @@ namespace cfEngine.Meta.Statistic
         public StatisticObjective CreateObjective(string regex, double start, double target)
         {
             return new StatisticObjective(regex, start, target, this);
+        }
+
+        public void Dispose()
+        {
+            _statisticMap.Clear();
         }
     }
 }
