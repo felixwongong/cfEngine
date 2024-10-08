@@ -1,13 +1,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace cfEngine.Meta.Statistic
 {
     public class StatisticObjective: IDisposable
     {
         private readonly StatisticController _statisticController;
-        public readonly string Regex;
+        public readonly string RegexKey;
         public readonly double Start;
         public readonly double Target;
         private double _value;
@@ -17,16 +18,16 @@ namespace cfEngine.Meta.Statistic
 
         private HashSet<WeakReference<Statistic>> _statisticsRegistered = new();
 
-        public StatisticObjective(string regex, double start, double target, StatisticController statisticController) :
-            this(regex, start, target)
+        public StatisticObjective(string regexKey, double start, double target, StatisticController statisticController) :
+            this(regexKey, start, target)
         {
             _statisticController = statisticController;
             _statisticController.OnNewStatisticRecorded += OnNewStatisticRecorded;
         }
         
-        private StatisticObjective(string regex, double start, double target)
+        private StatisticObjective(string regexKey, double start, double target)
         {
-            this.Regex = regex;
+            this.RegexKey = regexKey;
             this.Target = target;
             this.Start = start;
             this._value = 0;
@@ -34,6 +35,9 @@ namespace cfEngine.Meta.Statistic
 
         private void OnNewStatisticRecorded(string statisticKey)
         {
+            if (!Regex.IsMatch(RegexKey, statisticKey))
+                return;
+                
             var statistic = _statisticController.StatisticMap[statisticKey];
             var wr = new WeakReference<Statistic>(statistic);
             if (_statisticsRegistered.Contains(wr))
