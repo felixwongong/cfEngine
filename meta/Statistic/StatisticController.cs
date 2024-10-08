@@ -26,17 +26,14 @@ namespace cfEngine.Meta.Statistic
 
         public void Record(string statisticKey)
         {
-            if (_statisticMap.TryGetValue(statisticKey, out var statistic))
-            {
-                statistic.RecordOnce();
-            }
-            else
+            if (!_statisticMap.TryGetValue(statisticKey, out var statistic))
             {
                 statistic = new Statistic();
                 _statisticMap[statisticKey] = statistic;
-
                 OnNewStatisticRecorded?.Invoke(statisticKey);
             }
+            
+            statistic.RecordOnce();
         }
 
         public StatisticObjective CreateObjective(string regex, double start, double target)
