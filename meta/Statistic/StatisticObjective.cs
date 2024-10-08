@@ -35,7 +35,7 @@ namespace cfEngine.Meta.Statistic
 
         private void OnNewStatisticRecorded(string statisticKey)
         {
-            if (!Regex.IsMatch(RegexKey, statisticKey))
+            if (!Regex.IsMatch(statisticKey, RegexKey))
                 return;
                 
             var statistic = _statisticController.StatisticMap[statisticKey];
