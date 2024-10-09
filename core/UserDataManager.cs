@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using cfEngine.IO;
+using cfEngine.Logging;
 using cfEngine.Serialize;
 
 namespace cfEngine.Core
@@ -17,14 +21,17 @@ namespace cfEngine.Core
     
     public class UserDataManager
     {
-        private readonly Storage _datastore;
+        private readonly Storage _storage;
         private readonly Serializer _serializer;
 
         private readonly List<IRuntimeSavable> _savables = new();
 
-        public UserDataManager(Storage datastore, Serializer serializer)
+        private const string dataFileName = "data";
+        private const string backupFileName = dataFileName + ".backup";
+
+        public UserDataManager(Storage storage, Serializer serializer)
         {
-            _datastore = datastore;
+            _storage = storage;
             _serializer = serializer;
         }
 
@@ -33,13 +40,31 @@ namespace cfEngine.Core
             _savables.Add(savable);
         }
 
-        public void Save()
+        public async Task SaveAsync(CancellationToken token = default)
         {
             Dictionary<string, object> dataMap = new();
-            
-            foreach (var savable in _savables)
+
+            try
             {
-                savable.Save(dataMap);
+                foreach (var savable in _savables)
+                {
+                    savable.Save(dataMap);
+                }
+
+                if (_storage.IsFileExist(dataFileName))
+                {
+                    _storage.CopyFile(dataFileName, backupFileName);
+                }
+
+                var data = await _serializer.SerializeAsync(dataMap);
+                await _storage.SaveAsync(dataFileName, data, token);
+
+                _storage.DeleteFile(backupFileName);
+            }
+            catch (Exception ex)
+            {
+                Log.LogException(ex, "Exception occurs saving, Saving cancelled.");
+                return;
             }
         }
     }

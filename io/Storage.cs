@@ -24,10 +24,14 @@ namespace cfEngine.IO
         }
 
         public abstract string[] GetFiles(string subDirectory, string regex);
+        public abstract bool IsFileExist(string relativePath);
+        public abstract void CopyFile(string from, string to, bool overwrite = false);
+        public abstract void DeleteFile(string relativePath);
         public abstract byte[] LoadBytes(string subDirectory, string fileName);
-        public abstract Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken token);
+        public abstract Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken token = default);
         public abstract Stream CreateStream(string subDirectory, string fileName, bool useAsync);
         public abstract void Save(string relativePath, byte[] data);
+        public abstract Task SaveAsync(string relativePath, byte[] data, CancellationToken token = default);
         public abstract bool IsStorageExist();
 
         public virtual void Dispose()
@@ -44,6 +48,21 @@ namespace cfEngine.IO
         public override string[] GetFiles(string subDirectory, string searchPattern)
         {
             return Directory.GetFiles(Path.Combine(StoragePath, subDirectory), searchPattern);
+        }
+
+        public override bool IsFileExist(string relativePath)
+        {
+            return File.Exists(Path.Combine(StoragePath, relativePath));
+        }
+
+        public override void CopyFile(string from, string to, bool overwrite = false)
+        {
+            File.Copy(from, to, overwrite);
+        }
+
+        public override void DeleteFile(string relativePath)
+        {
+            File.Delete(relativePath);
         }
 
         public override byte[] LoadBytes(string subDirectory, string fileName)
@@ -102,9 +121,19 @@ namespace cfEngine.IO
             }
 
             var filePath = Path.Combine(StoragePath, fileName); 
+            File.WriteAllBytes(filePath, data);    
+        }
+
+        public override Task SaveAsync(string fileName, byte[] data, CancellationToken token = default)
+        {
+            if (!Directory.Exists(StoragePath))
+            {
+                Directory.CreateDirectory(StoragePath);
+                Log.LogInfo($"Directory created for storage: {StoragePath}");
+            }
             
-            using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
-            fileStream.Write(data);
+            var filePath = Path.Combine(StoragePath, fileName);
+            return File.WriteAllBytesAsync(filePath, data, token);
         }
 
         public override bool IsStorageExist()

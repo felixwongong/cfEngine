@@ -7,8 +7,7 @@ using Newtonsoft.Json;
 
 namespace cfEngine.Serialize
 {
-    public class JsonSerializer : Serializer
-
+    public class JsonSerializer: Serializer
     {
         private static JsonSerializer _instance;
         public static JsonSerializer Instance => _instance ??= new JsonSerializer();
@@ -26,6 +25,25 @@ namespace cfEngine.Serialize
 
             var loadedByte = new byte[stream.Length];
             var byteLoadedCount = stream.Read(loadedByte);
+            if (byteLoadedCount < loadedByte.Length) throw new Exception("Byte load from stream less than input");
+
+            return loadedByte;
+        }
+
+        public override async Task<byte[]> SerializeAsync(object obj, ISerializeParam param = null)
+        {
+            var stream = new MemoryStream();
+            var serializer = new Newtonsoft.Json.JsonSerializer();
+            await using var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
+            using var jsonWriter = new JsonTextWriter(streamWriter);
+            serializer.Serialize(jsonWriter, obj);
+
+            await jsonWriter.FlushAsync();
+            stream.Position = 0;
+
+            var loadedByte = new byte[stream.Length];
+            var byteLoadedCount = await stream.ReadAsync(loadedByte);
+            
             if (byteLoadedCount < loadedByte.Length) throw new Exception("Byte load from stream less than input");
 
             return loadedByte;
