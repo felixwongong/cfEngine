@@ -57,12 +57,12 @@ namespace cfEngine.IO
 
         public override void CopyFile(string from, string to, bool overwrite = false)
         {
-            File.Copy(from, to, overwrite);
+            File.Copy(Path.Combine(StoragePath, from), Path.Combine(StoragePath, to), overwrite);
         }
 
         public override void DeleteFile(string relativePath)
         {
-            File.Delete(relativePath);
+            File.Delete(Path.Combine(StoragePath, relativePath));
         }
 
         public override byte[] LoadBytes(string subDirectory, string fileName)
