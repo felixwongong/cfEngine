@@ -31,11 +31,6 @@ namespace cfEngine.Serialize
             return loadedByte;
         }
 
-        public override Task<byte[]> SerializeAsync(object obj, ISerializeParam param = null)
-        {
-            
-        }
-
         public override object Deserialize(byte[] byteLoaded, IDeserializeParam param = null)
         {
             using var memoryStream = new MemoryStream(byteLoaded);
