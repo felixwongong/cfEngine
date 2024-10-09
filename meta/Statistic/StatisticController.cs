@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using cfEngine.Core;
 
 namespace cfEngine.Meta.Statistic
 {
@@ -17,13 +18,28 @@ namespace cfEngine.Meta.Statistic
         }
     }
 
-    public class StatisticController: IDisposable
+    public class StatisticController: IDisposable, IRuntimeSavable
     {
         private Dictionary<string, Statistic> _statisticMap = new();
         public Dictionary<string, Statistic> StatisticMap => _statisticMap;
 
-        public event Action<string> OnNewStatisticRecorded; 
+        public event Action<string> OnNewStatisticRecorded;
 
+        public StatisticController(UserDataManager userData)
+        {
+            userData.Register(this);
+        }
+        
+        public void Initialize(IReadOnlyDictionary<string, object> dataMap)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Save(Dictionary<string, object> dataMap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public void Record(string statisticKey)
         {
             if (!_statisticMap.TryGetValue(statisticKey, out var statistic))
