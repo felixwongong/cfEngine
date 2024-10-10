@@ -34,12 +34,12 @@ namespace cfEngine.Util
         public void RegisterState([NotNull] State<TStateId> state)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
-            if (_stateDictionary.ContainsKey(state.id))
+            if (_stateDictionary.ContainsKey(state.Id))
             {
                 throw new Exception($"State {state.GetType()} already registered");
             }
 
-            _stateDictionary[state.id] = state;
+            _stateDictionary[state.Id] = state;
         }
 
         public void GoToState(TStateId id, in StateParam param = null)
@@ -73,7 +73,7 @@ namespace cfEngine.Util
 
         public void GoToStateNoRepeat(TStateId id, in StateParam param = null)
         {
-            if (_currentState.id.Equals(id))
+            if (_currentState.Id.Equals(id))
                 GoToState(id, param);
         }
 
