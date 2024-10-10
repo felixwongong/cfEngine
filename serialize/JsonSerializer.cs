@@ -30,7 +30,7 @@ namespace cfEngine.Serialize
             return loadedByte;
         }
 
-        public override async Task<byte[]> SerializeAsync(object obj, ISerializeParam param = null)
+        public override async Task<byte[]> SerializeAsync(object obj, ISerializeParam param = null, CancellationToken token = default)
         {
             var stream = new MemoryStream();
             var serializer = new Newtonsoft.Json.JsonSerializer();
@@ -38,11 +38,11 @@ namespace cfEngine.Serialize
             using var jsonWriter = new JsonTextWriter(streamWriter);
             serializer.Serialize(jsonWriter, obj);
 
-            await jsonWriter.FlushAsync();
+            await jsonWriter.FlushAsync(token);
             stream.Position = 0;
 
             var loadedByte = new byte[stream.Length];
-            var byteLoadedCount = await stream.ReadAsync(loadedByte);
+            var byteLoadedCount = await stream.ReadAsync(loadedByte, token);
             
             if (byteLoadedCount < loadedByte.Length) throw new Exception("Byte load from stream less than input");
 
@@ -61,8 +61,8 @@ namespace cfEngine.Serialize
             return serializer.Deserialize(jsonReader);
         }
 
-        public override Task<object> DeserializeAsync(byte[] byteLoaded, CancellationToken token,
-            IDeserializeParam param = null)
+        public override Task<object> DeserializeAsync(byte[] byteLoaded, IDeserializeParam deserializeParam = null,
+            CancellationToken token = default)
         {
             return Task.Run(() =>
             {
@@ -88,8 +88,8 @@ namespace cfEngine.Serialize
             return serializer.Deserialize<T>(jsonReader);
         }
 
-        public override Task<T> DeserializeAsAsync<T>(byte[] byteLoaded, CancellationToken token,
-            IDeserializeParam param = null)
+        public override Task<T> DeserializeAsAsync<T>(byte[] byteLoaded, IDeserializeParam deserializeParam = null,
+            CancellationToken token = default)
         {
             return Task.Run(() =>
             {

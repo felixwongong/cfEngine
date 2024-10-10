@@ -137,7 +137,7 @@ namespace cfEngine.Info
             }
 
             var byteLoaded = await Storage.LoadBytesAsync(string.Empty, InfoDirectory, cancellationToken).ConfigureAwait(false);
-            var deserialized = await Serializer.DeserializeAsAsync<Dictionary<TKey, TInfo>>(byteLoaded, cancellationToken)
+            var deserialized = await Serializer.DeserializeAsAsync<Dictionary<TKey, TInfo>>(byteLoaded, token:cancellationToken)
                 .ConfigureAwait(false);
             
             _valueMap.EnsureCapacity(deserialized.Count);
