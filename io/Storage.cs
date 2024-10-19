@@ -83,7 +83,7 @@ namespace cfEngine.IO
             return fileBytes;       
         }
 
-        public override async Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken cancellationToken)
+        public override async Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken cancellationToken = default)
         {
             var absPath = GetFilePath(subDirectory, fileName);
 

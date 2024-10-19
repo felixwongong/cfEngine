@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
+using Newtonsoft.Json.Linq;
 
 namespace cfEngine.Core
 {
     public interface IRuntimeSavable
     {
-        public void Initialize(IReadOnlyDictionary<string, object> dataMap);
+        public void Initialize(IReadOnlyDictionary<string, JObject> dataMap);
         public void Save(Dictionary<string, object> dataMap);
     }
 
@@ -40,6 +41,30 @@ namespace cfEngine.Core
             _savables.Add(savable);
         }
 
+        public async Task LoadInitializeAsync(CancellationToken token = default)
+        {
+            try
+            {
+                if (!_storage.IsFileExist(dataFileName))
+                {
+                    return;
+                }
+                
+                var userDataBytes = await _storage.LoadBytesAsync(string.Empty, dataFileName, token);
+                var dataMap =
+                    await _serializer.DeserializeAsAsync<Dictionary<string, JObject>>(userDataBytes, token: token);
+
+                foreach (var savable in _savables)
+                {
+                    savable.Initialize(dataMap);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogException(ex, "Exception occurs saving, Loading cancelled.");
+            }
+        }
+
         public async Task SaveAsync(CancellationToken token = default)
         {
             Dictionary<string, object> dataMap = new();
@@ -56,7 +81,7 @@ namespace cfEngine.Core
                     _storage.CopyFile(dataFileName, backupFileName);
                 }
 
-                var data = await _serializer.SerializeAsync(dataMap);
+                var data = await _serializer.SerializeAsync(dataMap, token: token);
                 await _storage.SaveAsync(dataFileName, data, token);
 
                 _storage.DeleteFile(backupFileName);

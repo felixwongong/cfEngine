@@ -2,6 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using cfEngine.Core;
+using Newtonsoft.Json.Linq;
+using Unity.VisualScripting;
+
+
+namespace cfEngine.Core
+{
+    public partial class UserDataKey
+    {
+        public const string Statistic = "Statistic";
+    }
+}
 
 namespace cfEngine.Meta.Statistic
 {
@@ -17,7 +28,7 @@ namespace cfEngine.Meta.Statistic
             OnUpdate?.Invoke(_value);
         }
     }
-
+    
     public class StatisticController: IDisposable, IRuntimeSavable
     {
         private Dictionary<string, Statistic> _statisticMap = new();
@@ -25,19 +36,25 @@ namespace cfEngine.Meta.Statistic
 
         public event Action<string> OnNewStatisticRecorded;
 
-        public StatisticController(UserDataManager userData)
+        public StatisticController()
         {
-            userData.Register(this);
         }
         
-        public void Initialize(IReadOnlyDictionary<string, object> dataMap)
+        public void Initialize(IReadOnlyDictionary<string, JObject> dataMap)
         {
-            throw new NotImplementedException();
+            if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
+            {
+                var statMap = data.ToObject<Dictionary<string, Statistic>>();
+                if(statMap != null)
+                {
+                    _statisticMap.AddRange(statMap);
+                }
+            }
         }
 
         public void Save(Dictionary<string, object> dataMap)
         {
-            throw new NotImplementedException();
+            dataMap[UserDataKey.Statistic] = _statisticMap;
         }
         
         public void Record(string statisticKey)
