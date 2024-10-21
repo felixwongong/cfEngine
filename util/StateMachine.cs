@@ -5,92 +5,130 @@ using cfEngine.Logging;
 
 namespace cfEngine.Util
 {
+    public struct StateChangeRecord<TStateId>
+    {
+        public TStateId LastState;
+        public TStateId NewState;
+    }
+
+    public interface IStateMachine<TStateId>
+    {
+        public TStateId LastStateId { get; }
+        public TStateId CurrentStateId { get; }
+        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
+        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
+        public bool CanGoToState(TStateId id);
+        public void GoToState(TStateId nextStateId, in StateParam param = null, bool checkWhitelist = true);
+    }
+    
+    public class StateExecutionException<TStateId> : Exception
+    {
+        public StateExecutionException(TStateId stateId, Exception innerException): base($"State {stateId} execution failed", innerException)
+        {
+        }
+    }
+    
     public class StateParam
     {
     }
 
-    public class StateMachine<TStateId>: IDisposable
+    public class StateMachine<TStateId, TState, TStateMachine>: IStateMachine<TStateId>, IDisposable
+        where TStateMachine: StateMachine<TStateId, TState, TStateMachine>
+        where TState: State<TStateId, TState, TStateMachine>
     {
-        public struct StateChangeRecord
-        {
-            public State<TStateId> LastState;
-            public State<TStateId> NewState;
-        }
+        private TStateId _lastStateId;
+        private TStateId _currentStateId;
+        public TStateId LastStateId => _lastStateId;
+        public TStateId CurrentStateId => _currentStateId;
+        
+        private readonly Dictionary<TStateId, TState> _stateDictionary = new();
 
-        private State<TStateId> _lastState;
-        private State<TStateId> _currentState;
-        public State<TStateId> LastState => _lastState;
-        public State<TStateId> CurrentState => _currentState;
-
-        private readonly Dictionary<TStateId, State<TStateId>> _stateDictionary = new();
-
-        public event Action<StateChangeRecord> onBeforeStateChange;
-        public event Action<StateChangeRecord> onAfterStateChange;
+        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
+        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
 
         public StateMachine()
         {
         }
 
-        public void RegisterState([NotNull] State<TStateId> state)
+        public void RegisterState([NotNull] TState state)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
-            if (_stateDictionary.ContainsKey(state.Id))
+            if (!_stateDictionary.TryAdd(state.Id, state))
             {
                 throw new Exception($"State {state.GetType()} already registered");
             }
-
-            _stateDictionary[state.Id] = state;
+        }
+        
+        public bool CanGoToState(TStateId id)
+        {
+            return TryGetState(id, out _) && GetState(_currentStateId).Whitelist.Contains(id);
         }
 
-        public void GoToState(TStateId id, in StateParam param = null)
+        public void GoToState(TStateId nextStateId, in StateParam param = null, bool checkWhitelist = true)
         {
-            try
+            if (!TryGetState(nextStateId, out var nextState))
             {
-                if (!_stateDictionary.TryGetValue(id, out var currentState))
-                    throw new KeyNotFoundException($"State {id} not registered");
+                Log.LogException(new KeyNotFoundException($"State {nextStateId} not registered"));
+                return;
+            }
 
-                onBeforeStateChange?.Invoke(new StateChangeRecord()
-                    { LastState = _currentState, NewState = currentState });
-
-                if (_currentState != null)
+            if (TryGetState(_currentStateId, out var currentState))
+            {
+                if (checkWhitelist && !CanGoToState(nextState.Id))
                 {
-                    _currentState.OnEndContext();
-                    _lastState = _currentState;
+                    Log.LogException(new ArgumentException(
+                        $"Cannot go to state {nextState.Id}, not in current state {currentState.Id} whitelist"));
+                    return;
                 }
 
-                _currentState = currentState;
-                _currentState.StartContext(this, param);
+                OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
+                    { LastState = currentState.Id, NewState = nextState.Id });
 
-                onAfterStateChange?.Invoke(new StateChangeRecord()
-                    { LastState = _lastState, NewState = _currentState });
+                currentState.OnEndContext();
+                _lastStateId = currentState.Id;
+            }
 
-            }
-            catch (Exception ex)
-            {
-                Log.LogException(ex);
-            }
+            currentState.StartContext((TStateMachine)this, param);
+            _currentStateId = nextState.Id;
+
+            OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
+                { LastState = currentState.Id, NewState = nextState.Id });
         }
 
         public void GoToStateNoRepeat(TStateId id, in StateParam param = null)
         {
-            if (_currentState.Id.Equals(id))
+            if (_currentStateId.Equals(id))
                 GoToState(id, param);
         }
 
-        public T GetState<T>(TStateId id) where T : State<TStateId>
+        public TState GetState(TStateId id)
         {
             if (!_stateDictionary.TryGetValue(id, out var state))
             {
-                throw new Exception($"State {typeof(T)} not registered");
+                throw new Exception($"State {id} not registered");
             }
 
-            return (T)state;
+            return state;
+        }
+
+        public T GetState<T>(TStateId id) where T : TState
+        {
+            return (T)GetState(id);
+        }
+        
+        public bool TryGetState(TStateId id, out TState state)
+        {
+            if (!_stateDictionary.TryGetValue(id, out state))
+            {
+                Log.LogException(new Exception($"State {id} not registered"));
+                return false;
+            }
+
+            return true;
         }
 
         public void Dispose()
         {
-            _lastState = null;
-            _currentState = null;
             foreach (var state in _stateDictionary.Values)
             {
                 state.Dispose();
