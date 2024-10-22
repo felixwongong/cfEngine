@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace cfEngine.Core
 {
     public interface IRuntimeSavable
     {
-        public void Initialize(IReadOnlyDictionary<string, JObject> dataMap);
+        public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap);
         public void Save(Dictionary<string, object> dataMap);
     }
 
@@ -52,7 +52,7 @@ namespace cfEngine.Core
                 
                 var userDataBytes = await _storage.LoadBytesAsync(string.Empty, dataFileName, token);
                 var dataMap =
-                    await _serializer.DeserializeAsAsync<Dictionary<string, JObject>>(userDataBytes, token: token);
+                    await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
 
                 foreach (var savable in _savables)
                 {

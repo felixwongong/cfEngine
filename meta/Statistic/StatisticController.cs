@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Text.Json.Nodes;
 using cfEngine.Core;
-using Newtonsoft.Json.Linq;
 using Unity.VisualScripting;
 
 
@@ -40,11 +39,11 @@ namespace cfEngine.Meta.Statistic
         {
         }
         
-        public void Initialize(IReadOnlyDictionary<string, JObject> dataMap)
+        public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
             {
-                var statMap = data.ToObject<Dictionary<string, Statistic>>();
+                var statMap = data.GetValue<Dictionary<string, Statistic>>();
                 if(statMap != null)
                 {
                     _statisticMap.AddRange(statMap);
