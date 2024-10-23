@@ -11,20 +11,6 @@ namespace cfEngine.Asset
         private Dictionary<string, Task> _assetLoadingTasks = new();
         private Dictionary<string, WeakReference<TBaseObject>> _assetMap = new();
 
-        public TBaseObject Load(string path)
-        {
-            if (TryGetAsset(path, out var obj))
-            {
-                return obj;
-            }
-            
-            obj = _Load(path);
-            _assetMap[path] = new WeakReference<TBaseObject>(obj);
-            return obj;
-        }
-
-        protected abstract TBaseObject _Load(string path);
-        
         public T Load<T>(string path) where T: TBaseObject 
         {
             if (TryGetAsset(path, out var obj) && obj is T t)
@@ -39,32 +25,6 @@ namespace cfEngine.Asset
 
         protected abstract T _Load<T>(string path) where T : TBaseObject;
 
-        public Task<TBaseObject> LoadAsync(string path, CancellationToken token)
-        {
-            if (_assetLoadingTasks.TryGetValue(path, out var t))
-            {
-                if (t is not Task<TBaseObject> cachedObjectTask)
-                {
-                    Log.LogWarning($"Detect async loading different task result type but with same path {path}");
-                } 
-                else if(!cachedObjectTask.IsFaulted && !cachedObjectTask.IsCanceled)
-                {
-                    return cachedObjectTask;
-                }
-            }
-
-            var objectTask = _LoadAsync(path, token).ContinueWith(t =>
-                {
-                    var result = t.Result;
-                    _assetMap[path] = new WeakReference<TBaseObject>(result);
-                    return result;
-                }, token);
-            _assetLoadingTasks[path] = objectTask;
-            return objectTask;
-        }
-
-        protected abstract Task<TBaseObject> _LoadAsync(string path, CancellationToken token);
-        
         public async Task<T> LoadAsync<T>(string path, CancellationToken token) where T: TBaseObject
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
