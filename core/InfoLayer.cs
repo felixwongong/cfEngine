@@ -7,7 +7,7 @@ using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core.Layer
 {
-    public class InfoLayer: IDisposable
+    public partial class InfoLayer: IDisposable
     {
         private readonly Storage _storage;
         private readonly Serializer _serializer;
