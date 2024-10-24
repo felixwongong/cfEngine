@@ -43,11 +43,7 @@ namespace cfEngine.Meta.Statistic
         {
             if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
             {
-                var statMap = data.GetValue<Dictionary<string, Statistic>>();
-                if(statMap != null)
-                {
-                    _statisticMap.AddRange(statMap);
-                }
+                _statisticMap =  data.GetValue<Dictionary<string, Statistic>>();
             }
         }
 
