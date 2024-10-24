@@ -8,17 +8,19 @@ namespace cfEngine.Asset
 {
     public abstract class AssetHandle
     {
-        
+        public readonly Action ReleaseAction;
+        public AssetHandle(Action releaseAction)
+        {
+            ReleaseAction = releaseAction;
+        } 
     }
     public class AssetHandle<T>: AssetHandle where T : class
     {
         public readonly WeakReference<T> Asset;
-        public readonly Action ReleaseAction;
 
-        public AssetHandle(T asset, Action releaseAction)
+        public AssetHandle(T asset, Action releaseAction): base(releaseAction)
         {
             Asset = new WeakReference<T>(asset);
-            ReleaseAction = releaseAction;
         }
     }
     
@@ -27,9 +29,9 @@ namespace cfEngine.Asset
         private Dictionary<string, Task> _assetLoadingTasks = new();
         private Dictionary<string, AssetHandle> _assetMap = new();
 
-        public T Load<T>(string path) where T: TBaseObject 
+        public T Load<T>(string path) where T: class, TBaseObject 
         {
-            if (TryGetAsset(path, out var obj) && obj is T t)
+            if (TryGetAsset<T>(path, out var t))
             {
                 return t;
             }
@@ -40,9 +42,9 @@ namespace cfEngine.Asset
             return t;
         }
 
-        protected abstract AssetHandle<T> _Load<T>(string path) where T : TBaseObject;
+        protected abstract AssetHandle<T> _Load<T>(string path) where T : class, TBaseObject;
 
-        public async Task<T> LoadAsync<T>(string path, CancellationToken token) where T: TBaseObject
+        public async Task<T> LoadAsync<T>(string path, CancellationToken token) where T: class, TBaseObject
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
@@ -60,17 +62,20 @@ namespace cfEngine.Asset
             _assetLoadingTasks[path] = objectTask;
             
             var result = await objectTask;
-            
-            _assetMap[path] = new WeakReference<TBaseObject>(result);
-            return result;
+
+            _assetMap[path] = result;
+            result.Asset.TryGetTarget(out var asset);
+            return asset;
         }
 
-        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token) where T : TBaseObject;
+        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token) where T : class, TBaseObject;
         
-        public bool TryGetAsset(string path, out TBaseObject asset)
+        public bool TryGetAsset<T>(string path, out T asset) where T: class, TBaseObject
         {
             asset = null;
-            return _assetMap.TryGetValue(path, out var wr) && wr.TryGetTarget(out asset);
+            return _assetMap.TryGetValue(path, out var handle) && 
+                   handle is AssetHandle<T> tHandle &&
+                   tHandle.Asset.TryGetTarget(out asset);
         }
 
         public void Dispose()
@@ -84,10 +89,7 @@ namespace cfEngine.Asset
             
             foreach (var wr in _assetMap.Values)
             {
-                if (wr.TryGetTarget(out var t) && t is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                wr.ReleaseAction?.Invoke();
             }
             
             _assetMap.Clear();
