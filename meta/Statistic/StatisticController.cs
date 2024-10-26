@@ -1,9 +1,9 @@
+#if CF_STATISTIC
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using cfEngine.Core;
-using Unity.VisualScripting;
-
 
 namespace cfEngine.Core
 {
@@ -13,7 +13,8 @@ namespace cfEngine.Core
     }
 }
 
-namespace cfEngine.Meta.Statistic
+
+namespace cfEngine.Meta
 {
     public class Statistic
     {
@@ -37,6 +38,7 @@ namespace cfEngine.Meta.Statistic
 
         public StatisticController()
         {
+            Game.UserData.Register(this);
         }
         
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
@@ -75,3 +77,5 @@ namespace cfEngine.Meta.Statistic
         }
     }
 }
+
+#endif

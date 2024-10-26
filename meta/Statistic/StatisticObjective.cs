@@ -1,9 +1,10 @@
+#if CF_STATISTIC
 
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace cfEngine.Meta.Statistic
+namespace cfEngine.Meta
 {
     public class StatisticObjective: IDisposable
     {
@@ -94,3 +95,4 @@ namespace cfEngine.Meta.Statistic
     }
 }
 
+#endif
