@@ -20,7 +20,7 @@ namespace cfEngine.Core
         public const string SaveVersion = "SaveVersion";
     }
     
-    public class UserDataManager
+    public partial class UserDataManager
     {
         private readonly Storage _storage;
         private readonly Serializer _serializer;
@@ -35,6 +35,8 @@ namespace cfEngine.Core
             _storage = storage;
             _serializer = serializer;
         }
+
+        public partial void RegisterSavables();
 
         public void Register(IRuntimeSavable savable)
         {

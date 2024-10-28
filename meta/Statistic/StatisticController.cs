@@ -36,11 +36,6 @@ namespace cfEngine.Meta
 
         public event Action<string> OnNewStatisticRecorded;
 
-        public StatisticController()
-        {
-            Game.UserData.Register(this);
-        }
-        
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
