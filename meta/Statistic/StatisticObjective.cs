@@ -16,17 +16,18 @@ namespace cfEngine.Meta
         public double Value => _value;
         
         public event Action<double> OnUpdated;
+        public event Action OnCompleted;
 
         private HashSet<WeakReference<Statistic>> _statisticsRegistered = new();
 
-        public StatisticObjective(string regexKey, double start, double target, StatisticController statisticController) :
+        public StatisticObjective(StatisticController statisticController, string regexKey, double start, double target = -1) :
             this(regexKey, start, target)
         {
             _statisticController = statisticController;
             _statisticController.OnNewStatisticRecorded += OnNewStatisticRecorded;
         }
         
-        private StatisticObjective(string regexKey, double start, double target)
+        private StatisticObjective(string regexKey, double start, double target = -1)
         {
             this.RegexKey = regexKey;
             this.Target = target;
@@ -67,7 +68,14 @@ namespace cfEngine.Meta
             }
 
             _value = totalValue;
-            OnUpdated?.Invoke(_value);
+            if (Target > 0 && _value > Target)
+            {
+                OnCompleted?.Invoke();
+            }
+            else
+            {
+                OnUpdated?.Invoke(_value);
+            }
             
             foreach (var wr in pendingRemove)
             {

@@ -28,6 +28,11 @@ namespace cfEngine.Meta
             OnUpdate?.Invoke(_value);
         }
     }
+
+    public partial class StatisticKey
+    {
+        
+    }
     
     public class StatisticController: IDisposable, IRuntimeSavable
     {
@@ -61,9 +66,9 @@ namespace cfEngine.Meta
             statistic.RecordOnce();
         }
 
-        public StatisticObjective CreateObjective(string regex, double start, double target)
+        public StatisticObjective CreateObjective(string regex, double start, double target = -1)
         {
-            return new StatisticObjective(regex, start, target, this);
+            return new StatisticObjective(this, regex, start, target);
         }
 
         public void Dispose()
