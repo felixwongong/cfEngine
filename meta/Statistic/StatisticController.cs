@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using cfEngine.Core;
 
 namespace cfEngine.Core
@@ -69,6 +71,20 @@ namespace cfEngine.Meta
         public StatisticObjective CreateObjective(string regex, double start, double target = -1)
         {
             return new StatisticObjective(this, regex, start, target);
+        }
+
+        public StatisticObjective CreateForwardObjective(string regex, double target = -1)
+        {
+            var matched = _statisticMap
+                .Where(kvp => Regex.IsMatch(kvp.Key, regex));
+
+            double start = 0d;
+            foreach (var (_, statistic) in matched)
+            {
+                start += statistic.Value;
+            }
+
+            return CreateObjective(regex, start, target);
         }
 
         public void Dispose()
