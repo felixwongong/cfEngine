@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using cfEngine.Logging;
+using UnityEngine;
 
 namespace cfEngine.Meta
 {
@@ -33,6 +35,12 @@ namespace cfEngine.Meta
             this.Target = target;
             this.Start = start;
             this._value = 0;
+        }
+
+        ~StatisticObjective()
+        {
+            Log.LogWarning($"Objective ({RegexKey}) not disposed properly");
+            Dispose();
         }
 
         private void OnNewStatisticRecorded(string statisticKey)
