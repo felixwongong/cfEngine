@@ -2,19 +2,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Text.Json.Serialization;
 using cfEngine.Logging;
-using UnityEngine;
 
 namespace cfEngine.Meta
 {
+    [Serializable]
     public class StatisticObjective: IDisposable
     {
-        private readonly StatisticController _statisticController;
-        public readonly string RegexKey;
+        /// <summary>
+        /// default to Game Statistic, create a Controller property with new keyword if want custom statistic controller
+        /// </summary>
+        protected StatisticController Controller => Game.Meta?.Statistic;
+        
+        public readonly string Regex;
         public readonly double Start;
         public readonly double Target;
+        [JsonInclude] [JsonPropertyName(nameof(Value))]
         private double _value;
+        [JsonIgnore]
         public double Value => _value;
         
         public event Action<double> OnUpdated;
@@ -22,33 +28,34 @@ namespace cfEngine.Meta
 
         private HashSet<WeakReference<Statistic>> _statisticsRegistered = new();
 
-        public StatisticObjective(StatisticController statisticController, string regexKey, double start, double target = -1) :
-            this(regexKey, start, target)
+        public StatisticObjective(string regex, double start, double target = -1)
         {
-            _statisticController = statisticController;
-            _statisticController.OnNewStatisticRecorded += OnNewStatisticRecorded;
-        }
-        
-        private StatisticObjective(string regexKey, double start, double target = -1)
-        {
-            this.RegexKey = regexKey;
+            this.Regex = regex;
             this.Target = target;
             this.Start = start;
             this._value = 0;
+
+            if (Controller == null)
+            {
+                Log.LogError("Statistic Controller is null");
+                return;
+            }
+
+            Controller.OnNewStatisticRecorded += OnNewStatisticRecorded;
         }
 
         ~StatisticObjective()
         {
-            Log.LogWarning($"Objective ({RegexKey}) not disposed properly");
+            Log.LogWarning($"Objective ({Regex}) not disposed properly");
             Dispose();
         }
 
         private void OnNewStatisticRecorded(string statisticKey)
         {
-            if (!Regex.IsMatch(statisticKey, RegexKey))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(statisticKey, Regex))
                 return;
                 
-            var statistic = _statisticController.StatisticMap[statisticKey];
+            var statistic = Controller.StatisticMap[statisticKey];
             var wr = new WeakReference<Statistic>(statistic);
             if (_statisticsRegistered.Contains(wr))
             {
@@ -94,19 +101,23 @@ namespace cfEngine.Meta
         
         public void Dispose()
         {
-            if (_statisticController != null)
+            if (Controller != null)
             {
-                _statisticController.OnNewStatisticRecorded -= OnNewStatisticRecorded;
+                Controller.OnNewStatisticRecorded -= OnNewStatisticRecorded;
             }
-            foreach (var wr in _statisticsRegistered)
+
+            if (_statisticsRegistered != null)
             {
-                if (wr.TryGetTarget(out var statistic))
+                foreach (var wr in _statisticsRegistered)
                 {
-                    statistic.OnUpdate -= OnStatisticUpdate;
+                    if (wr.TryGetTarget(out var statistic))
+                    {
+                        statistic.OnUpdate -= OnStatisticUpdate;
+                    }
                 }
+                
+                _statisticsRegistered.Clear();
             }
-            
-            _statisticsRegistered.Clear();
         }
     }
 }

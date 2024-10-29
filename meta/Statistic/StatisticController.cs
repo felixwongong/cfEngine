@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using cfEngine.Core;
@@ -14,7 +15,6 @@ namespace cfEngine.Core
         public const string Statistic = "Statistic";
     }
 }
-
 
 namespace cfEngine.Meta
 {
@@ -70,7 +70,7 @@ namespace cfEngine.Meta
 
         public StatisticObjective CreateObjective(string regex, double start, double target = -1)
         {
-            return new StatisticObjective(this, regex, start, target);
+            return new StatisticObjective(regex, start, target);
         }
 
         public StatisticObjective CreateForwardObjective(string regex, double target = -1)
