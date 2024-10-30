@@ -98,12 +98,6 @@ namespace cfEngine.Util
             }
         }
 
-        public void GoToStateNoRepeat(TStateId id, in StateParam param = null)
-        {
-            if (_currentState.Equals(id))
-                GoToState(id, param);
-        }
-
         public TState GetState(TStateId id)
         {
             if (!_stateDictionary.TryGetValue(id, out var state))
