@@ -88,14 +88,13 @@ namespace cfEngine.Util
                 _lastState = _currentState;
             }
             
-            nextState.StartContext((TStateMachine)this, param);
             _currentState = nextState;
-
             if (_lastState != null)
             {
                 OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
                     { LastState = _lastState.Id, NewState = _currentState.Id });
             }
+            _currentState.StartContext((TStateMachine)this, param);
         }
 
         public TState GetState(TStateId id)
