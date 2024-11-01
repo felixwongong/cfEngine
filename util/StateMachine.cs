@@ -18,7 +18,8 @@ namespace cfEngine.Util
         public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
         public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
         public bool CanGoToState(TStateId id);
-        public void GoToState(TStateId nextStateId, in StateParam param = null, bool checkWhitelist = true);
+        public bool TryGoToState(TStateId nextStateId, in StateParam param = null);
+        public void ForceGoToState(TStateId nextStateId, in StateParam param = null);
     }
     
     public class StateExecutionException<TStateId> : Exception
@@ -42,7 +43,6 @@ namespace cfEngine.Util
         public TStateId CurrentStateId => _currentState.Id;
         
         private readonly Dictionary<TStateId, TState> _stateDictionary = new();
-
         public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
         public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
 
@@ -64,40 +64,83 @@ namespace cfEngine.Util
             return TryGetState(id, out _) && (_currentState == null || _currentState.Whitelist.Contains(id));
         }
 
-        public void GoToState(TStateId nextStateId, in StateParam param = null, bool checkWhitelist = true)
+        public bool TryGoToState(TStateId nextStateId, in StateParam param = null)
         {
-            if (!TryGetState(nextStateId, out var nextState))
+            try
             {
-                Log.LogException(new KeyNotFoundException($"State {nextStateId} not registered"));
-                return;
-            }
+                if (!TryGetState(nextStateId, out var nextState))
+                {
+                    Log.LogException(new KeyNotFoundException($"State {nextStateId} not registered"));
+                    return false;
+                }
 
-            if (checkWhitelist && !CanGoToState(nextState.Id))
-            {
-                Log.LogException(new ArgumentException(
-                    $"Cannot go to state {nextState.Id}, not in current state {_currentState.Id} whitelist"));
-                return;
-            }
+                if (!CanGoToState(nextState.Id))
+                {
+                    Log.LogException(new ArgumentException(
+                        $"Cannot go to state {nextState.Id}, not in current state {_currentState.Id} whitelist"));
+                    return false;
+                }
 
-            if (_currentState != null)
-            {
-                OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
-                    { LastState = _currentState.Id, NewState = nextState.Id });
+                if (_currentState != null)
+                {
+                    OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
+                        { LastState = _currentState.Id, NewState = nextState.Id });
                 
-                _currentState.OnEndContext();
-                _lastState = _currentState;
-            }
+                    _currentState.OnEndContext();
+                    _lastState = _currentState;
+                }
             
-            _currentState = nextState;
-            if (_lastState != null)
-            {
-                OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
-                    { LastState = _lastState.Id, NewState = _currentState.Id });
+                _currentState = nextState;
+                if (_lastState != null)
+                {
+                    OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
+                        { LastState = _lastState.Id, NewState = _currentState.Id });
+                }
+                _currentState.StartContext((TStateMachine)this, param);
+
+                return true;
             }
-            _currentState.StartContext((TStateMachine)this, param);
+            catch (Exception e)
+            {
+                Log.LogException(e);
+                return false;
+            }
         }
 
-        public TState GetState(TStateId id)
+        public void ForceGoToState(TStateId nextStateId, in StateParam param = null)
+        {
+            try
+            {
+                if (!TryGetState(nextStateId, out var nextState))
+                {
+                    Log.LogException(new KeyNotFoundException($"State {nextStateId} not registered"));
+                    return;
+                }
+
+                if (_currentState != null)
+                {
+                    OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
+                        { LastState = _currentState.Id, NewState = nextState.Id });
+                
+                    _currentState.OnEndContext();
+                    _lastState = _currentState;
+                }
+            
+                _currentState = nextState;
+                if (_lastState != null)
+                {
+                    OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
+                        { LastState = _lastState.Id, NewState = _currentState.Id });
+                }
+                _currentState.StartContext((TStateMachine)this, param);
+            }
+            catch (Exception e)
+            {
+                Log.LogException(e);
+            }
+        }
+
+        public TState GetStateUnsafe(TStateId id)
         {
             if (!_stateDictionary.TryGetValue(id, out var state))
             {
@@ -107,9 +150,9 @@ namespace cfEngine.Util
             return state;
         }
 
-        public T GetState<T>(TStateId id) where T : TState
+        public T GetStateUnsafe<T>(TStateId id) where T : TState
         {
-            return (T)GetState(id);
+            return (T)GetStateUnsafe(id);
         }
         
         public bool TryGetState(TStateId id, out TState state)
