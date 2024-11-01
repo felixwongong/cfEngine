@@ -43,8 +43,36 @@ namespace cfEngine.Util
         public TStateId CurrentStateId => _currentState.Id;
         
         private readonly Dictionary<TStateId, TState> _stateDictionary = new();
-        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
-        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
+
+        #region Relay & Events (OnBeforeStateChange[Once], OnAfterStateChange[Once]);
+
+        private Relay<StateChangeRecord<TStateId>> _beforeStateChangeRelay = new();
+        private Relay<StateChangeRecord<TStateId>> _afterStateChangeRelay = new();
+        
+        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange
+        {
+            add => _beforeStateChangeRelay.AddListener(value);
+            remove => _beforeStateChangeRelay.RemoveListener(value);
+        }
+        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange
+        {
+            add => _afterStateChangeRelay.AddListener(value);
+            remove => _afterStateChangeRelay.RemoveListener(value);
+        }
+
+        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChangeOnce
+        {
+            add => _beforeStateChangeRelay.AddOnce(value);
+            remove => _beforeStateChangeRelay.RemoveOnce(value);
+        }
+        
+        public event Action<StateChangeRecord<TStateId>> OnAfterStateChangeOnce
+        {
+            add => _afterStateChangeRelay.AddOnce(value);
+            remove => _afterStateChangeRelay.RemoveOnce(value);
+        } 
+
+        #endregion
 
         public StateMachine()
         {
@@ -83,7 +111,7 @@ namespace cfEngine.Util
 
                 if (_currentState != null)
                 {
-                    OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
+                    _beforeStateChangeRelay.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _currentState.Id, NewState = nextState.Id });
                 
                     _currentState.OnEndContext();
@@ -93,7 +121,7 @@ namespace cfEngine.Util
                 _currentState = nextState;
                 if (_lastState != null)
                 {
-                    OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
+                    _afterStateChangeRelay.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _lastState.Id, NewState = _currentState.Id });
                 }
                 _currentState.StartContext((TStateMachine)this, param);
@@ -119,7 +147,7 @@ namespace cfEngine.Util
 
                 if (_currentState != null)
                 {
-                    OnBeforeStateChange?.Invoke(new StateChangeRecord<TStateId>
+                    _beforeStateChangeRelay.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _currentState.Id, NewState = nextState.Id });
                 
                     _currentState.OnEndContext();
@@ -129,7 +157,7 @@ namespace cfEngine.Util
                 _currentState = nextState;
                 if (_lastState != null)
                 {
-                    OnAfterStateChange?.Invoke(new StateChangeRecord<TStateId>
+                    _afterStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _lastState.Id, NewState = _currentState.Id });
                 }
                 _currentState.StartContext((TStateMachine)this, param);
