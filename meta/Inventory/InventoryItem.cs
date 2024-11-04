@@ -1,22 +1,15 @@
 ﻿using System;
-using cfEngine.Meta;
 
 [Serializable]
 public class InventoryItem
 {
     public readonly string Id;
-    public readonly InventoryConfigInfo Config;
 
-    private int _count;
+    public readonly int ItemCount;
     
-    public InventoryItem(string id)
+    public InventoryItem(string id, int itemCount)
     {
         Id = id;
-        Config = Game.Info.Get<InventoryConfigInfoManager>().GetOrDefault(Id);
-    }
-
-    public void Gain(int count)
-    {
-        _count += count;
+        ItemCount = itemCount;
     }
 }
