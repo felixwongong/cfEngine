@@ -42,6 +42,7 @@ namespace cfEngine.Info
         public abstract void LoadSerialized();
         public abstract Task LoadSerializedAsync(CancellationToken cancellationToken);
         public abstract void SerializeIntoStorage();
+        public virtual void OnLoadCompleted() {}
 
         public virtual void Dispose()
         {
@@ -95,6 +96,8 @@ namespace cfEngine.Info
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
                 _valueMap.Add(KeyFn(decoded), decoded);
             }
+            
+            OnLoadCompleted();
         }
 
         public override void LoadSerialized()
@@ -118,6 +121,8 @@ namespace cfEngine.Info
             {
                 _valueMap.Add(kvp.Key, kvp.Value);
             }
+            
+            OnLoadCompleted();
             
             Log.LogDebug($"{InfoDirectory} loaded from serialized, value count: {_valueMap.Count}");
         }
@@ -145,6 +150,8 @@ namespace cfEngine.Info
             {
                 _valueMap.Add(kvp.Key, kvp.Value);
             }
+            
+            OnLoadCompleted();
         }
 
         public override void SerializeIntoStorage()
