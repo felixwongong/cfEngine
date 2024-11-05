@@ -18,7 +18,7 @@ namespace cfEngine.Meta
             return new InventoryConfigInfo()
             {
                 itemId = itemId,
-                maxStackableSize = 1,
+                maxStackSize = 1,
             };
         }
     }
@@ -26,6 +26,7 @@ namespace cfEngine.Meta
     public class InventoryConfigInfo
     {
         public string itemId;
-        public int maxStackableSize;
+        public int maxStackSize;
+        public int maxStackCount;
     }
 }

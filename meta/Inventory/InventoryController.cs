@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using cfEngine.Core;
 
 namespace cfEngine.Meta
@@ -13,14 +14,14 @@ namespace cfEngine.Meta
         {
         }
 
-        public class AddInventoryRequest
+        public class UpdateInventoryRequest
         {
             public string itemId;
             public int count;
             public Guid stackId = Guid.Empty;
         }
         
-        public void AddItem(AddInventoryRequest req)
+        public void TryAddItem(UpdateInventoryRequest req)
         {
             var configInfo = Game.Info.Get<InventoryConfigInfoManager>().GetOrDefault(req.itemId);
 
@@ -37,7 +38,7 @@ namespace cfEngine.Meta
                 var targetStack = Guid.Empty;
                 InventoryItem targetItem = null;
                 if (!req.stackId.Equals(Guid.Empty) && stackMap.TryGetValue(req.stackId, out targetItem) &&
-                    targetItem.ItemCount < configInfo.maxStackableSize)
+                    targetItem.ItemCount < configInfo.maxStackSize)
                 {
                     targetStack = req.stackId;
                 }
@@ -45,10 +46,11 @@ namespace cfEngine.Meta
                 {
                     foreach (var (stackId, item) in stackMap)
                     {
-                        if (item.ItemCount < configInfo.maxStackableSize)
+                        if (item.ItemCount < configInfo.maxStackSize)
                         {
                             targetStack = stackId;
                             targetItem = item;
+                            break;
                         }
                     }
 
@@ -59,15 +61,15 @@ namespace cfEngine.Meta
                     }
                 }
 
-                var stackGain = targetItem.ItemCount + count > configInfo.maxStackableSize
-                    ? configInfo.maxStackableSize - targetItem.ItemCount
+                var stackGain = targetItem.ItemCount + count > configInfo.maxStackSize
+                    ? configInfo.maxStackSize - targetItem.ItemCount
                     : count;
 
                 stackMap[targetStack] = new InventoryItem(req.itemId, targetItem.ItemCount + stackGain);
                 count -= stackGain;
             }
         }
-
+        
         public void Save(Dictionary<string, object> dataMap)
         {
             
