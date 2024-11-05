@@ -1,14 +1,37 @@
+using System;
+
 namespace cfEngine.Util
 {
-    public enum ValidationState
+    public enum ValidationState: byte
     {
         Success,
-        Failed,
+        Failure,
     }
 
-    public sealed class Validation
+    public sealed class Validation<T>
     {
-        public readonly ValidationState State;
-        public readonly object Result;
+        public ValidationState State;
+        public T Result;
+        public Exception Exception;
+
+        public static Validation<T> Success(T result)
+        {
+            return new Validation<T>()
+            {
+                State = ValidationState.Success,
+                Result = result,
+                Exception = null
+            };
+        }
+
+        public static Validation<T> Failure(Exception exception)
+        {
+            return new Validation<T>()
+            {
+                State = ValidationState.Failure,
+                Result = default,
+                Exception = exception
+            };
+        }
     }
 }

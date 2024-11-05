@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using cfEngine.Core;
+using cfEngine.Util;
 
 namespace cfEngine.Meta
 {
@@ -21,7 +21,7 @@ namespace cfEngine.Meta
             public Guid stackId = Guid.Empty;
         }
         
-        public void TryAddItem(UpdateInventoryRequest req)
+        public Validation<bool> AddItem(UpdateInventoryRequest req)
         {
             var configInfo = Game.Info.Get<InventoryConfigInfoManager>().GetOrDefault(req.itemId);
 
@@ -38,7 +38,7 @@ namespace cfEngine.Meta
                 var targetStack = Guid.Empty;
                 InventoryItem targetItem = null;
                 if (!req.stackId.Equals(Guid.Empty) && stackMap.TryGetValue(req.stackId, out targetItem) &&
-                    targetItem.ItemCount < configInfo.maxStackSize)
+                    (configInfo.maxStackSize == -1 || targetItem.ItemCount < configInfo.maxStackSize))
                 {
                     targetStack = req.stackId;
                 }
@@ -54,22 +54,30 @@ namespace cfEngine.Meta
                         }
                     }
 
-                    if (targetStack == Guid.Empty || targetItem == null)
+                    if (targetStack.Equals(Guid.Empty) || targetItem == null)
                     {
+                        if (stackMap.Count >= configInfo.maxStackCount)
+                        {
+                            return Validation<bool>.Failure(new InvalidOperationException($"{req.itemId} stack count has reached config maximum ({configInfo.maxStackCount})"));
+                        }
+                        
                         targetStack = Guid.NewGuid();
                         targetItem = new InventoryItem(req.itemId, 0);
                     }
                 }
 
-                var stackGain = targetItem.ItemCount + count > configInfo.maxStackSize
-                    ? configInfo.maxStackSize - targetItem.ItemCount
-                    : count;
+                if (targetItem.ItemCount + count <= configInfo.maxStackSize)
+                {
+                    stackMap[targetStack] = new InventoryItem(req.itemId, targetItem.ItemCount + count);
+                    return Validation<bool>.Success(false);  //add inventory without creating a new stack
+                }
 
-                stackMap[targetStack] = new InventoryItem(req.itemId, targetItem.ItemCount + stackGain);
-                count -= stackGain;
+                count -= configInfo.maxStackSize - targetItem.ItemCount;
             }
+            
+            return Validation<bool>.Success(true);  //add inventory by creating a new stack
         }
-        
+
         public void Save(Dictionary<string, object> dataMap)
         {
             
