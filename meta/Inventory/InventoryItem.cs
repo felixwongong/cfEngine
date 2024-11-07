@@ -12,4 +12,9 @@ public class InventoryItem
         Id = id;
         ItemCount = itemCount;
     }
+
+    public InventoryItem CloneNewCount(int itemCount)
+    {
+        return new InventoryItem(Id, itemCount);
+    }
 }
