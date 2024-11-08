@@ -6,14 +6,12 @@ using cfEngine.Util;
 
 namespace cfEngine.Rx
 {
-    public class RxDictionary<TKey, TValue>: IDictionary<TKey, TValue>
+    public abstract class RxReadOnlyDictionary<TKey, TValue>: IDictionary<TKey, TValue>, IDisposable
     {
-        private Dictionary<TKey, TValue> _dictionary = new();
-
         #region Rx Events
-        private Relay<(TKey key, TValue value)> OnAddRelay;
-        private Relay<(TKey key, TValue value)> OnRemoveRelay;
-        private Relay<(TKey key, TValue oldValue, TValue newValue)> OnUpdateRelay;
+        protected Relay<(TKey key, TValue value)> OnAddRelay;
+        protected Relay<(TKey key, TValue value)> OnRemoveRelay;
+        protected Relay<(TKey key, TValue oldValue, TValue newValue)> OnUpdateRelay;
 
         public event Action<(TKey key, TValue value)> OnAdd
         {
@@ -34,17 +32,63 @@ namespace cfEngine.Rx
         } 
         #endregion
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return _dictionary.GetEnumerator();
-        }
+        #region abstract IDictionary Implementation 
 
+        public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator()
         {
+            return GetEnumerator();
+        }
+
+        public abstract void Add(KeyValuePair<TKey, TValue> item);
+        public abstract void Clear();
+        public abstract bool Contains(KeyValuePair<TKey, TValue> item);
+        public abstract void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex);
+        public abstract bool Remove(KeyValuePair<TKey, TValue> item);
+        public abstract int Count { get; }
+        public abstract bool IsReadOnly { get; }
+        public abstract void Add(TKey key, TValue value);
+        public abstract bool ContainsKey(TKey key);
+        public abstract bool Remove(TKey key);
+        public abstract bool TryGetValue(TKey key, out TValue value);
+        public abstract TValue this[TKey key] { get; set; }
+        public abstract ICollection<TKey> Keys { get; }
+        public abstract ICollection<TValue> Values { get; }
+
+        #endregion
+
+        private readonly RxReadOnlyDictionary<TKey, TValue> _source;
+
+        protected RxReadOnlyDictionary()
+        {
+        }
+        
+        public RxReadOnlyDictionary(RxReadOnlyDictionary<TKey, TValue> source)
+        {
+            _source = source;
+        }
+
+        public void Dispose()
+        {
+            if (_source != null)
+            {
+                
+            }
+        }
+    }
+    
+    public class RxDictionary<TKey, TValue>: RxReadOnlyDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
+    {
+        private Dictionary<TKey, TValue> _dictionary = new();
+
+        #region Dictionary Implementation 
+
+        public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
             return _dictionary.GetEnumerator();
         }
 
-        public void Add(KeyValuePair<TKey, TValue> kvp)
+        public override void Add(KeyValuePair<TKey, TValue> kvp)
         {
             var (key, value) = kvp;
             if (_dictionary.TryAdd(key, value))
@@ -57,7 +101,7 @@ namespace cfEngine.Rx
             }
         }
 
-        public void Clear()
+        public override void Clear()
         {
             foreach (var (key, value) in _dictionary)
             {
@@ -66,17 +110,17 @@ namespace cfEngine.Rx
             }
         }
 
-        public bool Contains(KeyValuePair<TKey, TValue> kvp)
+        public override bool Contains(KeyValuePair<TKey, TValue> kvp)
         {
             return _dictionary.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value);
         }
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             ((ICollection<KeyValuePair<TKey, TValue>>)_dictionary).CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> kvp)
+        public override bool Remove(KeyValuePair<TKey, TValue> kvp)
         {
             var (key, value) = kvp;
             if (_dictionary.TryGetValue(key, out var v) && v.Equals(value))
@@ -89,10 +133,10 @@ namespace cfEngine.Rx
             return false;
         }
 
-        public int Count => _dictionary.Count;
-        public bool IsReadOnly => false;
+        public override int Count => _dictionary.Count;
+        public override bool IsReadOnly => false;
         
-        public void Add(TKey key, TValue value)
+        public override void Add(TKey key, TValue value)
         {
             if (_dictionary.TryAdd(key, value))
             {
@@ -104,12 +148,12 @@ namespace cfEngine.Rx
             }
         }
 
-        public bool ContainsKey(TKey key)
+        public override bool ContainsKey(TKey key)
         {
             return _dictionary.ContainsKey(key);
         }
 
-        public bool Remove(TKey key)
+        public override bool Remove(TKey key)
         {
             if (!_dictionary.Remove(key, out var value)) return false;
             
@@ -118,18 +162,26 @@ namespace cfEngine.Rx
 
         }
 
-        public bool TryGetValue(TKey key, out TValue value)
+        public override bool TryGetValue(TKey key, out TValue value)
         {
             return _dictionary.TryGetValue(key, out value);
         }
 
-        public TValue this[TKey key]
+        public override TValue this[TKey key]
         {
             get => _dictionary[key];
             set => _dictionary[key] = value;
         }
 
-        public ICollection<TKey> Keys => _dictionary.Keys;
-        public ICollection<TValue> Values => _dictionary.Values;
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _dictionary.Keys;
+        public override ICollection<TValue> Values => _dictionary.Values;
+
+        public override ICollection<TKey> Keys => _dictionary.Keys;
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _dictionary.Values;
+
+        #endregion
+
+        
+        public RxDictionary(RxReadOnlyDictionary<TKey, TValue> source): base(source) { }
     }
 }
