@@ -9,33 +9,32 @@ namespace cfEngine.Rx
         public static RtSelectValueDictionary<TKey, TValue, TSelectValue> SelectValue<TKey, TValue, TSelectValue>(
             this RtReadOnlyDictionary<TKey, TValue> source, Func<TValue, TSelectValue> selectFn)
         {
-            return new RtSelectValueDictionary<TKey, TValue, TSelectValue>(source, selectFn);
+            return new RtSelectValueDictionary<TKey, TValue, TSelectValue>(source.Events, selectFn);
         }
     }
     
     public class RtSelectValueDictionary<TKey, TOrigValue, TValue>: RtReadOnlyDictionary<TKey, TValue>
     {
-        private readonly RtReadOnlyDictionary<TKey,TOrigValue> _source;
         private readonly Func<TOrigValue,TValue> _selectFn;
-
         private readonly Dictionary<TKey, TValue> _selected = new();
+        private readonly ICollectionEvents<KeyValuePair<TKey,TOrigValue>> _sourceEvent;
 
-        public RtSelectValueDictionary(RtReadOnlyDictionary<TKey, TOrigValue> source, Func<TOrigValue, TValue> selectFn)
+        public RtSelectValueDictionary(ICollectionEvents<KeyValuePair<TKey, TOrigValue>> sourceEvents, Func<TOrigValue, TValue> selectFn)
         {
-            _source = source;
+            _sourceEvent = sourceEvents;
             _selectFn = selectFn;
             
-            _source.OnAdd += OnSourceAdd;
-            _source.OnRemove += OnSourceRemove;
-            _source.OnUpdate += OnSourceUpdate;
+            _sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
         #region OnSourceCollectionUpdate 
 
-        private void OnSourceUpdate((TKey key, TOrigValue oldValue, TOrigValue newValue) kvp)
+        private void OnSourceUpdate(KeyValuePair<TKey, TOrigValue> oldPair, KeyValuePair<TKey, TOrigValue> newPair)
         {
-            var (key, oldValue, newValue) = kvp;
-
+            var key = oldPair.Key;
+            var oldValue = oldPair.Value;
+            var newValue = newPair.Value;
+            
             if (!_selected.TryGetValue(key, out var oldSelected))
             {
                 Log.LogException(new ArgumentException($"Invalid argument ({key}, {oldValue.ToString()}, {newValue.ToString()}), cannot update"), nameof(OnSourceUpdate));
@@ -44,10 +43,13 @@ namespace cfEngine.Rx
 
             var newSelected = _selectFn(newValue);
             _selected[key] = newSelected; 
-            OnUpdateRelay.Dispatch((key, oldSelected, newSelected));
+            CollectionEvents.OnUpdateRelay.Dispatch(
+                new KeyValuePair<TKey, TValue>(key, oldSelected),
+                new KeyValuePair<TKey, TValue>(key, newSelected)
+                );
         }
 
-        private void OnSourceRemove((TKey key, TOrigValue value) kvp)
+        private void OnSourceRemove(KeyValuePair<TKey, TOrigValue> kvp)
         {
             var (key, value) = kvp;
             if (!_selected.TryGetValue(key, out var selectedValue))
@@ -57,10 +59,10 @@ namespace cfEngine.Rx
             }
 
             _selected.Remove(key);
-            OnRemoveRelay.Dispatch((key, selectedValue));
+            CollectionEvents.OnRemoveRelay.Dispatch(new (key, selectedValue));
         }
 
-        private void OnSourceAdd((TKey key, TOrigValue value) kvp)
+        private void OnSourceAdd(KeyValuePair<TKey, TOrigValue> kvp)
         {
             var (key, value) = kvp;
             var selectedValue = _selectFn(value);
@@ -71,7 +73,7 @@ namespace cfEngine.Rx
                 return;
             }
             
-            OnAddRelay.Dispatch((key, selectedValue));
+            CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TKey, TValue>(key, selectedValue));
         }
 
 
@@ -96,5 +98,15 @@ namespace cfEngine.Rx
 
         public override IEnumerable<TKey> Keys => _selected.Keys;
         public override IEnumerable<TValue> Values => _selected.Values;
+
+        public override void Dispose()
+        {
+            _selected.Clear();
+            CollectionEvents.OnDisposeRelay.Dispatch();
+            
+            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            
+            base.Dispose();
+        }
     }
 }

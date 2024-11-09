@@ -9,25 +9,23 @@ namespace cfEngine.Rx
         public static RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue> SelectKey<TOrigKey, TSelectedKey, TValue>(
             this RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectedKey> selectFn)
         {
-            return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source, selectFn);
+            return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source.Events, selectFn);
         }
     }
 
     public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtReadOnlyDictionary<TSelectKey, TValue>
     {
-        private readonly RtReadOnlyDictionary<TOrigKey, TValue> _source;
+        private readonly ICollectionEvents<KeyValuePair<TOrigKey, TValue>> _sourceEvents;
         private readonly Func<TOrigKey, TSelectKey> _selectFn;
 
         private readonly Dictionary<TSelectKey, TValue> _selected = new();
 
-        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
+        public RtSelectKeyDictionary(ICollectionEvents<KeyValuePair<TOrigKey, TValue>> sourceEvents, Func<TOrigKey, TSelectKey> selectFn)
         {
-            _source = source;
+            _sourceEvents = sourceEvents;
             _selectFn = selectFn;
             
-            _source.OnAdd += OnSourceAdd;
-            _source.OnRemove += OnSourceRemove;
-            _source.OnUpdate += OnSourceUpdate;
+            _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
         public override IEnumerator<KeyValuePair<TSelectKey, TValue>> GetEnumerator()
         {
@@ -50,15 +48,20 @@ namespace cfEngine.Rx
         public override IEnumerable<TSelectKey> Keys => _selected.Keys;
         public override IEnumerable<TValue> Values => _selected.Values;
         
-        private void OnSourceUpdate((TOrigKey key, TValue oldValue, TValue newValue) kvp)
+        private void OnSourceUpdate(KeyValuePair<TOrigKey, TValue> oldPair, KeyValuePair<TOrigKey, TValue> newPair)
         {
-            var (key, oldValue, newValue) = kvp;
+            var key = oldPair.Key;
+            var oldValue = oldPair.Value;
+            var newValue = newPair.Value;
             var selectedKey = _selectFn(key);
             
             if (_selected.TryGetValue(selectedKey, out var v) && v.Equals(oldValue))
             {
                 _selected[selectedKey] = newValue;
-                OnUpdateRelay.Dispatch((selectedKey, v, newValue));
+                CollectionEvents.OnUpdateRelay.Dispatch(
+                    new KeyValuePair<TSelectKey, TValue>(selectedKey, v),
+                    new KeyValuePair<TSelectKey, TValue>(selectedKey, newValue)
+                    );
             }
             else
             {
@@ -66,7 +69,7 @@ namespace cfEngine.Rx
             }
         }
 
-        private void OnSourceRemove((TOrigKey key, TValue value) kvp)
+        private void OnSourceRemove(KeyValuePair<TOrigKey, TValue> kvp)
         {
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
@@ -74,7 +77,7 @@ namespace cfEngine.Rx
             if (_selected.TryGetValue(selectedKey, out var v) && v.Equals(value))
             {
                 _selected.Remove(selectedKey);
-                OnRemoveRelay.Dispatch((selectedKey, v));
+                CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, v));
             }
             else
             {
@@ -82,13 +85,13 @@ namespace cfEngine.Rx
             }
         }
 
-        private void OnSourceAdd((TOrigKey key, TValue value) kvp)
+        private void OnSourceAdd(KeyValuePair<TOrigKey, TValue> kvp)
         {
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
             if (_selected.TryAdd(selectedKey, value))
             {
-                OnAddRelay.Dispatch((selectedKey, value));
+                CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, value));
             }
             else
             {
@@ -98,11 +101,12 @@ namespace cfEngine.Rx
 
         public override void Dispose()
         {
-            base.Dispose();
+            _selected.Clear();
+            CollectionEvents.OnDisposeRelay.Dispatch();
             
-            _source.OnAdd -= OnSourceAdd;
-            _source.OnRemove -= OnSourceRemove;
-            _source.OnUpdate -= OnSourceUpdate;
+            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            
+            base.Dispose();
         }
     }
 }

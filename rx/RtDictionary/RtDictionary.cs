@@ -8,7 +8,7 @@ namespace cfEngine.Rx
     
     public class RtDictionary<TKey, TValue>: RtReadOnlyDictionary<TKey, TValue>
     {
-        private Dictionary<TKey, TValue> _dictionary = new();
+        private readonly Dictionary<TKey, TValue> _dictionary = new();
 
         #region Dictionary Implementation 
         
@@ -24,23 +24,13 @@ namespace cfEngine.Rx
         public void Add(KeyValuePair<TKey, TValue> kvp)
         {
             var (key, value) = kvp;
-            if (_dictionary.TryAdd(key, value))
-            {
-                OnAddRelay.Dispatch((key, value));
-            }
-            else
+            if (!_dictionary.TryAdd(key, value))
             {
                 Log.LogException(new ArgumentException($"{key} already exist, cannot add"));
+                return;
             }
-        }
 
-        public void Clear()
-        {
-            foreach (var (key, value) in _dictionary)
-            {
-                _dictionary.Remove(key);
-                OnRemoveRelay.Dispatch((key, value));
-            }
+            CollectionEvents.OnAddRelay.Dispatch(kvp);
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> kvp)
@@ -56,10 +46,10 @@ namespace cfEngine.Rx
         public bool Remove(KeyValuePair<TKey, TValue> kvp)
         {
             var (key, value) = kvp;
-            if (_dictionary.TryGetValue(key, out var v) && v.Equals(value))
+            if (_dictionary.TryGetValue(kvp.Key, out var v) && v.Equals(kvp.Value))
             {
                 _dictionary.Remove(key);
-                OnRemoveRelay.Dispatch((key, value));
+                CollectionEvents.OnRemoveRelay.Dispatch(kvp);
                 return true;
             }
 
@@ -69,30 +59,9 @@ namespace cfEngine.Rx
         public override int Count => _dictionary.Count;
         public bool IsReadOnly => false;
         
-        public void Add(TKey key, TValue value)
-        {
-            if (_dictionary.TryAdd(key, value))
-            {
-                OnAddRelay.Dispatch((key, value));
-            }
-            else
-            {
-                Log.LogException(new ArgumentException($"{key} already exist, cannot add"));
-            }
-        }
-
         public override bool ContainsKey(TKey key)
         {
             return _dictionary.ContainsKey(key);
-        }
-
-        public bool Remove(TKey key)
-        {
-            if (!_dictionary.Remove(key, out var value)) return false;
-            
-            OnRemoveRelay.Dispatch((key, value));
-            return true;
-
         }
 
         public override bool TryGetValue(TKey key, out TValue value)
@@ -100,24 +69,56 @@ namespace cfEngine.Rx
             return _dictionary.TryGetValue(key, out value);
         }
 
+        public void Add(TKey key, TValue value)
+        {
+            if (!_dictionary.TryAdd(key, value))
+            {
+                Log.LogException(new ArgumentException($"{key} already exist, cannot add"));
+                return;
+            }
+
+            CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TKey, TValue>(key, value));
+        }
+
         public void Upsert(TKey key, TValue value)
         {
             if (_dictionary.TryGetValue(key, out var oldValue))
             {
                 _dictionary[key] = value;
-                OnUpdateRelay.Dispatch((key, oldValue, value));
+                CollectionEvents.OnUpdateRelay.Dispatch(
+                    new KeyValuePair<TKey, TValue>(key, oldValue),
+                    new KeyValuePair<TKey, TValue>(key, value)
+                    );
             }
             else
             {
-                _dictionary[key] = value;
-                OnAddRelay.Dispatch((key, value));
+                Add(new KeyValuePair<TKey, TValue>(key, value));
+            }
+        }
+        
+        public bool Remove(TKey key)
+        {
+            if (!_dictionary.Remove(key, out var value)) return false;
+            
+            CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TKey, TValue>(key, value));
+            return true;
+
+        }
+        
+        public void Clear()
+        {
+            foreach (var kvp in _dictionary)
+            {
+                Remove(kvp);
             }
         }
 
         public override void Dispose()
         {
-            base.Dispose();
             _dictionary.Clear();
+            CollectionEvents.OnDisposeRelay.Dispatch();
+            
+            base.Dispose();
         }
 
         #endregion
