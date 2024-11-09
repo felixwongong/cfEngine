@@ -4,7 +4,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public static class RtSelectKeyDictionaryExtension
+    public static partial class RtDictionaryExtension 
     {
         public static RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue> SelectKey<TOrigKey, TSelectedKey, TValue>(
             this RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectedKey> selectFn)
@@ -12,7 +12,7 @@ namespace cfEngine.Rx
             return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source, selectFn);
         }
     }
-    
+
     public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtReadOnlyDictionary<TSelectKey, TValue>
     {
         private readonly RtReadOnlyDictionary<TOrigKey, TValue> _source;
@@ -62,7 +62,7 @@ namespace cfEngine.Rx
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {v}, {newValue}), cannot update"), nameof(kvp));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {v}, {newValue}), cannot update"), nameof(OnSourceUpdate));
             }
         }
 
@@ -78,7 +78,7 @@ namespace cfEngine.Rx
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot remove"), nameof(kvp));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot remove"), nameof(OnSourceRemove));
             }
         }
 
@@ -92,7 +92,7 @@ namespace cfEngine.Rx
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot add"), nameof(kvp));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot add"), nameof(OnSourceAdd));
             }
         }
 
