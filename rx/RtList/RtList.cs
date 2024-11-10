@@ -1,57 +1,114 @@
 using System;
 using System.Collections.Generic;
+using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
     public class RtList<T>: RtReadOnlyList<T>
     {
-        public void CopyTo(Array array, int index)
+        private readonly List<T> _list;
+
+        public RtList() : base()
         {
-            throw new NotImplementedException();
-        }
-        
-        public int Add(object value)
-        {
-            throw new NotImplementedException();
+            _list = new List<T>();
         }
 
-        public void Clear()
+        public RtList(int capacity): base()
         {
-            throw new NotImplementedException();
+            _list = new List<T>(capacity);
         }
 
-        public bool Contains(object value)
+        public RtList(IEnumerable<T> defaultItems)
         {
-            throw new NotImplementedException();
-        }
-
-        public int IndexOf(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(int index, object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Remove(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
+            _list = new List<T>();
+            _list.AddRange(defaultItems);
         }
 
         public override IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return _list.GetEnumerator();
         }
 
-        public override int Count { get; }
+        public void Add(T item)
+        {
+            _list.Add(item);
+            
+            CollectionEvents.OnAddRelay.Dispatch((_list.Count - 1, item));
+        }
 
-        public override T this[int index] => throw new NotImplementedException();
+        public void Clear()
+        {
+            for (var i = _list.Count - 1; i >= 0; i--)
+            {
+                var item = _list[i];
+                _list.RemoveAt(i);
+                
+                CollectionEvents.OnRemoveRelay.Dispatch((i, item));
+            }
+        }
+
+        public bool Contains(T item)
+        {
+            return _list.Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            _list.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(T item)
+        {
+            var index = _list.IndexOf(item);
+            if (index == -1)
+            {
+                Log.LogException(new ArgumentException($"RtList item not found: {item?.ToString()}"));
+                return false;
+            }
+            
+            _list.RemoveAt(index);
+            CollectionEvents.OnRemoveRelay.Dispatch((index, item));
+            return true;
+        }
+
+        public override int Count => _list.Count;
+        public bool IsReadOnly => false;
+        public int IndexOf(T item)
+        {
+            var index = -1;
+            for (var i = 0; i < _list.Count; i++)
+            {
+                if (_list[i].Equals(item))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        public void Insert(int index, T item)
+        {
+            _list.Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _list.RemoveAt(index);
+        }
+
+        public void Update(int index, T item)
+        {
+            var existing = _list[index];
+            _list[index] = item;
+            
+            CollectionEvents.OnUpdateRelay.Dispatch(
+                (index, existing),
+                (index, item)
+                );
+        }
+
+        public override T this[int index] => _list[index];
     }
 }

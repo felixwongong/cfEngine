@@ -16,7 +16,12 @@ namespace cfEngine.Rx
         public abstract TValue this[TKey key] { get; }
         public abstract IEnumerable<TKey> Keys { get; }
         public abstract IEnumerable<TValue> Values { get; }
-        
+
+        private RtReadOnlyList<TKey> _rtKeys;
+        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= new RtList<TKey>(Keys);
+        private RtReadOnlyList<TValue> _rtValues;
+        public RtReadOnlyList<TValue> RtValues => _rtValues ??= new RtList<TValue>(Values);
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         public virtual void Dispose()

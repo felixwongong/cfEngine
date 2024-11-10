@@ -6,8 +6,8 @@ namespace cfEngine.Rx
 {
     public abstract class RtReadOnlyList<T>: IReadOnlyList<T>, IDisposable
     {
-        protected readonly CollectionEvents<T> CollectionEvents = new();
-        public ICollectionEvents<T> Events => CollectionEvents;
+        protected readonly CollectionEvents<(int index, T item)> CollectionEvents = new();
+        public ICollectionEvents<(int index, T item)> Events => CollectionEvents;
 
         public abstract IEnumerator<T> GetEnumerator();
 

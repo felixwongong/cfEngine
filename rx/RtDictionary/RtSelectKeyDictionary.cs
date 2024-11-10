@@ -9,7 +9,7 @@ namespace cfEngine.Rx
         public static RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue> SelectKey<TOrigKey, TSelectedKey, TValue>(
             this RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectedKey> selectFn)
         {
-            return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source.Events, selectFn);
+            return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source, selectFn);
         }
     }
 
@@ -20,10 +20,16 @@ namespace cfEngine.Rx
 
         private readonly Dictionary<TSelectKey, TValue> _selected = new();
 
-        public RtSelectKeyDictionary(ICollectionEvents<KeyValuePair<TOrigKey, TValue>> sourceEvents, Func<TOrigKey, TSelectKey> selectFn)
+        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
         {
-            _sourceEvents = sourceEvents;
+            _sourceEvents = source.Events;
             _selectFn = selectFn;
+
+            _selected.EnsureCapacity(source.Count);
+            foreach (var (origKey, value) in source)
+            {
+                _selected[selectFn(origKey)] = value;
+            }
             
             _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
