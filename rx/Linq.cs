@@ -19,7 +19,7 @@ namespace cfEngine.Rt
             return new RtSelectValueDictionary<TKey, TValue, TSelectValue>(source, selectFn);
         }
 
-        public static RtGroup<TKey, TValue> GroupBy<TKey, TValue>(RtReadOnlyList<TValue> rtList, Func<TValue, TKey> keyFn)
+        public static RtGroup<TKey, TValue> GroupBy<TKey, TValue>(this RtReadOnlyList<TValue> rtList, Func<TValue, TKey> keyFn)
         {
             return new RtGroup<TKey, TValue>(rtList, keyFn);
         }
