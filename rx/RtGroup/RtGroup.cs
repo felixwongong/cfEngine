@@ -9,7 +9,7 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<(int index, TValue item)> _sourceEvent;
         private readonly Func<TValue, TKey> _keyFn;
         
-        private readonly RtDictionary<TKey, RtList<TValue>> _groups = new();
+        private readonly Dictionary<TKey, RtList<TValue>> _groups = new();
 
         public RtGroup(RtReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
         {
@@ -111,12 +111,10 @@ namespace cfEngine.Rt
 
         public override void Dispose()
         {
-            foreach (var (_, group) in _groups)
+            foreach (var group in _groups.Values)
             {
                 group.Dispose();
             }
-            
-            _groups.Dispose();
             
             CollectionEvents.OnDisposeRelay.Dispatch();
             

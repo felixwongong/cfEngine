@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using cfEngine.Core;
 using cfEngine.Logging;
+using cfEngine.Rt;
 using cfEngine.Util;
 using ItemId = System.String;
 using StackId = System.Guid;
@@ -11,8 +12,13 @@ namespace cfEngine.Meta
 {
     public partial class InventoryController : IRuntimeSavable, IDisposable
     {
-        private Dictionary<ItemId, HashSet<StackId>> itemStackRegistry = new();
-        private Dictionary<StackId, InventoryItem> _itemMap = new();
+        private RtDictionary<StackId, InventoryItem> _itemMap = new();
+        private RtGroup<string, InventoryItem> _itemStackGroup;
+
+        public InventoryController()
+        {
+            _itemStackGroup = _itemMap.RtValues.GroupBy(item => item.Id);
+        }
 
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
@@ -32,56 +38,20 @@ namespace cfEngine.Meta
             var itemId = req.itemId;
             var requestItemAddCount = req.count;
 
-            if (!itemStackRegistry.TryGetValue(itemId, out var stackRegistry))
-            {
-                stackRegistry = new HashSet<Guid>(1);
-                itemStackRegistry.Add(itemId, stackRegistry);
-            }
-            
             if(requestItemAddCount <=  0) return Validation<bool>.Success(false);
 
-            var remaining = TryPutInExistingStack(requestItemAddCount);
-            if (remaining <= 0)
-            {
-                return Validation<bool>.Success(false);
-            }
+            var pendingAddStacks = new List<InventoryItem>();
+            var pendingAddCount = 0;
+            
 
-            while (remaining > 0)
+            InventoryItem CreateNewStackInMap(string itemId)
             {
-                var newStackItemCount = Math.Min(remaining, configInfo.maxStackSize);
-                CreateNewStackItem(newStackItemCount);
-                remaining -= newStackItemCount;
+                var item = new InventoryItem(itemId, 0);
+                _itemMap.Add(Guid.NewGuid(), item);
+                return item;
             }
 
             return Validation<bool>.Success(true);  //add inventory by creating a new stack
-
-            void CreateNewStackItem(int itemCount)
-            {
-                var stackId = Guid.NewGuid();
-                stackRegistry.Add(stackId);
-                _itemMap.Add(stackId, new InventoryItem(itemId, itemCount));
-            }
-
-            int TryPutInExistingStack(int count)
-            {
-                var remaining = count;
-                foreach (var stackId in stackRegistry)
-                {
-                    if (!_itemMap.TryGetValue(stackId, out var item))
-                    {
-                        Log.LogException(new KeyNotFoundException($"Unexpected missing stackId {stackId} in itemMap."));
-                        continue;
-                    }
-
-                    var stackGain = Math.Min(configInfo.maxStackSize - item.ItemCount, count);
-                    if(stackGain <= 0) continue;
-
-                    _itemMap[stackId] = item.CloneNewCount(item.ItemCount + stackGain);
-                    remaining -= stackGain;
-                }
-
-                return remaining;
-            }
         }
 
         public void Save(Dictionary<string, object> dataMap)
