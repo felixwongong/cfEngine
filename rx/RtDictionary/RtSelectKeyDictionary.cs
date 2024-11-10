@@ -4,15 +4,6 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public static partial class RtDictionaryExtension 
-    {
-        public static RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue> SelectKey<TOrigKey, TSelectedKey, TValue>(
-            this RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectedKey> selectFn)
-        {
-            return new RtSelectKeyDictionary<TOrigKey, TSelectedKey, TValue>(source, selectFn);
-        }
-    }
-
     public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtReadOnlyDictionary<TSelectKey, TValue>
     {
         private readonly ICollectionEvents<KeyValuePair<TOrigKey, TValue>> _sourceEvents;
