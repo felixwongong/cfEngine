@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace cfEngine.Rx
+namespace cfEngine.Rt
 {
     public static class Linq
     {
@@ -17,6 +17,11 @@ namespace cfEngine.Rx
             this RtReadOnlyDictionary<TKey, TValue> source, Func<TValue, TSelectValue> selectFn)
         {
             return new RtSelectValueDictionary<TKey, TValue, TSelectValue>(source, selectFn);
+        }
+
+        public static RtGroup<TKey, TValue> GroupBy<TKey, TValue>(RtReadOnlyList<TValue> rtList, Func<TValue, TKey> keyFn)
+        {
+            return new RtGroup<TKey, TValue>(rtList, keyFn);
         }
     }
 }

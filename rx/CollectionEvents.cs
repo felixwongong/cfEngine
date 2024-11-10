@@ -1,7 +1,7 @@
 using System;
 using cfEngine.Util;
 
-namespace cfEngine.Rx
+namespace cfEngine.Rt
 {
     public interface ICollectionEvents<out T>
     {

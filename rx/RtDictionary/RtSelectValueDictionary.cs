@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
 
-namespace cfEngine.Rx
+namespace cfEngine.Rt
 {
     public class RtSelectValueDictionary<TKey, TOrigValue, TValue>: RtReadOnlyDictionary<TKey, TValue>
     {

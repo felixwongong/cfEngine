@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
 
-namespace cfEngine.Rx
+namespace cfEngine.Rt
 {
     public class RtList<T>: RtReadOnlyList<T>
     {
