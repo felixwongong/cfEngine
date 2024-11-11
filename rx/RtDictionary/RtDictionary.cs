@@ -113,10 +113,9 @@ namespace cfEngine.Rt
 
         public override void Dispose()
         {
-            _dictionary.Clear();
-            CollectionEvents.OnDisposeRelay.Dispatch();
-            
             base.Dispose();
+            
+            _dictionary.Clear();
         }
 
         #endregion

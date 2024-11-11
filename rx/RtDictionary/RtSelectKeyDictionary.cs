@@ -98,12 +98,11 @@ namespace cfEngine.Rt
 
         public override void Dispose()
         {
-            _selected.Clear();
-            CollectionEvents.OnDisposeRelay.Dispatch();
+            base.Dispose();
             
             _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
             
-            base.Dispose();
+            _selected.Clear();
         }
     }
 }

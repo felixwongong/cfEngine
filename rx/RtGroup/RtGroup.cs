@@ -111,16 +111,16 @@ namespace cfEngine.Rt
 
         public override void Dispose()
         {
+            base.Dispose();
+            
+            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            
             foreach (var group in _groups.Values)
             {
                 group.Dispose();
             }
             
-            CollectionEvents.OnDisposeRelay.Dispatch();
-            
-            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-
-            base.Dispose();
+            _groups.Clear();
         }
     }
 }
