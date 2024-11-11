@@ -16,10 +16,10 @@ namespace cfEngine.Rt
     
     public class CollectionEvents<T>: ICollectionEvents<T>, IDisposable
     {
-        public Relay<T> OnAddRelay;
-        public Relay<T> OnRemoveRelay;
-        public Relay<T, T> OnUpdateRelay;
-        public Relay OnDisposeRelay;
+        public readonly Relay<T> OnAddRelay = new();
+        public readonly Relay<T> OnRemoveRelay = new();
+        public readonly Relay<T, T> OnUpdateRelay = new();
+        public readonly Relay OnDisposeRelay = new();
 
         public event Action<T> OnAdd
         {

@@ -17,7 +17,7 @@ namespace cfEngine.Rt
 
         public abstract T this[int index] { get; }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             CollectionEvents?.Dispose();
         }
