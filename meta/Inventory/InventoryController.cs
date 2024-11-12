@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using cfEngine.Core;
 using cfEngine.Rt;
+using cfEngine.Util;
 using ItemId = System.String;
 using StackId = System.Guid;
 
@@ -91,7 +93,41 @@ namespace cfEngine.Meta
                 count -= itemCount;
             }
         }
-        
+
+        public Validation<bool> RemoveItem(UpdateInventoryRequest request)
+        {
+            if (!_itemGroup.TryGetValue(request.itemId, out var group))
+            {
+                return Validation<bool>.Failure(new InvalidOperationException($"Item {request.itemId} not found, cannot remove."));
+            }
+
+            var sum = group.Sum(item => item.ItemCount);
+            if (sum < request.count)
+            {
+                return Validation<bool>.Failure(new InvalidOperationException($"Item owned ({sum}) less than requested ({request.count}), cannot remove"));
+            }
+
+            var remain = request.count;
+            if (request.stackId != Guid.Empty && TryRemoveFromStack(request.stackId, request.count, out remain))
+            {
+                return Validation<bool>.Success(true);
+            }
+            
+            for (var i = group.Count - 1; i >= 0 && remain > 0; i--)
+            {
+                var stack = group[i];
+                _stackMap.Remove(stack.StackId);
+                remain -= stack.ItemCount;
+            }
+
+            if (remain > 0)
+            {
+                return Validation<bool>.Failure(new InvalidOperationException($"removal request remain {remain} at the end, somethings go wrong."));
+            }
+
+            return Validation<bool>.Success(false);
+        }
+
         public bool TryRemoveFromStack(StackId stackId, int count, out int remain)
         {
             remain = count;
