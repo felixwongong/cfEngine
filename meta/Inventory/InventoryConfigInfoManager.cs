@@ -18,7 +18,7 @@ namespace cfEngine.Meta
             return new InventoryConfigInfo()
             {
                 itemId = itemId,
-                maxStackSize = -1,
+                maxStackSize = int.MaxValue,
             };
         }
     }

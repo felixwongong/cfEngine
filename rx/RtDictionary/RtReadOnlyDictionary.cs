@@ -16,11 +16,14 @@ namespace cfEngine.Rt
         public abstract TValue this[TKey key] { get; }
         public abstract IEnumerable<TKey> Keys { get; }
         public abstract IEnumerable<TValue> Values { get; }
+        
+        private RtReadOnlyList<KeyValuePair<TKey, TValue>> _rtPairs;
+        public RtReadOnlyList<KeyValuePair<TKey, TValue>> RtPairs => _rtPairs ??= new RtObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents); 
 
         private RtReadOnlyList<TKey> _rtKeys;
-        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= new RtList<TKey>(Keys);
+        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.SelectLocal(kvp => kvp.Key);
         private RtReadOnlyList<TValue> _rtValues;
-        public RtReadOnlyList<TValue> RtValues => _rtValues ??= new RtList<TValue>(Values);
+        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.SelectLocal(kvp => kvp.Value);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         

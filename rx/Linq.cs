@@ -30,5 +30,10 @@ namespace cfEngine.Rt
         {
             return new RtGroup<TKey, TValue>(rtList, keyFn);
         }
+        
+        public static RtSelectLocalList<T, TSelect> SelectLocal<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
+        {
+            return new RtSelectLocalList<T, TSelect>(source, selectFn);
+        }
     }
 }

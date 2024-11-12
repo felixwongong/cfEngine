@@ -110,5 +110,12 @@ namespace cfEngine.Rt
         }
 
         public override T this[int index] => _list[index];
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            
+            _list.Clear();
+        }
     }
 }

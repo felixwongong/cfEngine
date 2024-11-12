@@ -28,16 +28,16 @@ namespace cfEngine.Meta
         }
 
         private RtDictionary<StackId, InventoryItem> _stackMap = new();
-        public RtGroup<string, InventoryItem> _itemGroup;
-        public RtGroup<string, InventoryItem> _vacantItemGroup;
+        public RtReadOnlyDictionary<StackId, InventoryItem> stackMap => _stackMap;
+        public RtGroup<string, InventoryItem> itemGroup;
+        public RtGroup<string, InventoryItem> vacantItemGroup;
 
         public InventoryController()
         {
-            _itemGroup = _stackMap.RtValues.GroupBy(item => item.Id);
-            _vacantItemGroup = _stackMap
+            itemGroup = _stackMap.RtValues.GroupBy(item => item.Id);
+            vacantItemGroup = _stackMap
                 .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .GroupBy(item => item.Id);
-
         }
 
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
@@ -67,23 +67,25 @@ namespace cfEngine.Meta
             
             if(itemCount <= 0) return;
 
-            var vacantItems = _vacantItemGroup[request.itemId];
-            Span<(int, int)> itemAddCounts = stackalloc (int, int)[vacantItems.Count];
+            if (vacantItemGroup.TryGetValue(request.itemId, out var vacantItems))
+            {
+                Span<(int, int)> itemAddCounts = stackalloc (int, int)[vacantItems.Count];
 
-            for (var i = 0; i < vacantItems.Count && itemCount > 0; i++)
-            {
-                var stackAddCount = Math.Min(vacantItems[i].GetVacancies(), itemCount);
-                itemAddCounts[i] = (i, stackAddCount);
-                itemCount -= stackAddCount;
+                for (var i = 0; i < vacantItems.Count && itemCount > 0; i++)
+                {
+                    var stackAddCount = Math.Min(vacantItems[i].GetVacancies(), itemCount);
+                    itemAddCounts[i] = (i, stackAddCount);
+                    itemCount -= stackAddCount;
+                }
+
+                foreach (var (idx, addCount) in itemAddCounts)
+                {
+                    var item = vacantItems[idx];
+                    _stackMap.Upsert(item.StackId, item.CloneNewCount(item.ItemCount + addCount));
+                }
+
+                if (itemCount <= 0) return;
             }
-            
-            foreach (var (idx, addCount) in itemAddCounts)
-            {
-                var item = vacantItems[idx];
-                _stackMap.Upsert(item.StackId, item.CloneNewCount(item.ItemCount + addCount));
-            }
-            
-            if(itemCount <= 0) return;
             
             AddAllToNewStacks(request.itemId, itemCount);
         }
@@ -117,7 +119,7 @@ namespace cfEngine.Meta
 
         public Validation<bool> RemoveItem(UpdateInventoryRequest request)
         {
-            if (!_itemGroup.TryGetValue(request.itemId, out var group))
+            if (!itemGroup.TryGetValue(request.itemId, out var group))
             {
                 return Validation<bool>.Failure(new InvalidOperationException($"Item {request.itemId} not found, cannot remove."));
             }
@@ -175,8 +177,8 @@ namespace cfEngine.Meta
 
         public void Dispose()
         {
-            _itemGroup.Dispose();
-            _vacantItemGroup.Dispose();
+            itemGroup.Dispose();
+            vacantItemGroup.Dispose();
             _stackMap.Dispose();
         }
     }
