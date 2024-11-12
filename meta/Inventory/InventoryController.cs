@@ -8,10 +8,25 @@ using cfEngine.Util;
 using ItemId = System.String;
 using StackId = System.Guid;
 
+namespace cfEngine.Core
+{
+    public partial class UserDataKey
+    {
+        public const string Inventory = "Inventory";
+    }
+}
+
 namespace cfEngine.Meta
 {
     public partial class InventoryController : IRuntimeSavable, IDisposable
     {
+        public class UpdateInventoryRequest
+        {
+            public string itemId;
+            public int count;
+            public Guid stackId = Guid.Empty;
+        }
+
         private RtDictionary<StackId, InventoryItem> _stackMap = new();
         public RtGroup<string, InventoryItem> _itemGroup;
         public RtGroup<string, InventoryItem> _vacantItemGroup;
@@ -27,13 +42,19 @@ namespace cfEngine.Meta
 
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
+            if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
+            {
+                var saved = data.GetValue<Dictionary<StackId, InventoryItem>>();
+                foreach (var kvp in saved)
+                {
+                    _stackMap.Add(kvp);
+                }
+            }
         }
-
-        public class UpdateInventoryRequest
+        
+        public void Save(Dictionary<string, object> dataMap)
         {
-            public string itemId;
-            public int count;
-            public Guid stackId = Guid.Empty;
+            dataMap[UserDataKey.Inventory] = _stackMap;
         }
 
         public void AddItem(UpdateInventoryRequest request)
@@ -151,14 +172,12 @@ namespace cfEngine.Meta
                 return true;
             }
         }
-        
-        public void Save(Dictionary<string, object> dataMap)
-        {
-            
-        }
 
         public void Dispose()
         {
+            _itemGroup.Dispose();
+            _vacantItemGroup.Dispose();
+            _stackMap.Dispose();
         }
     }
 }
