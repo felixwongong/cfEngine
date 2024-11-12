@@ -18,6 +18,13 @@ namespace cfEngine.Rt
         {
             return new RtSelectValueDictionary<TKey, TValue, TSelectValue>(source, selectFn);
         }
+        
+        public static RtFilteredDictionary<TKey, TValue> Where<TKey, TValue>(
+            this RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn
+            )
+        {
+            return new RtFilteredDictionary<TKey, TValue>(source, filterFn);
+        }
 
         public static RtGroup<TKey, TValue> GroupBy<TKey, TValue>(this RtReadOnlyList<TValue> rtList, Func<TValue, TKey> keyFn)
         {

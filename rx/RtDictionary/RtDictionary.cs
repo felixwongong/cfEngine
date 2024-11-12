@@ -93,7 +93,7 @@ namespace cfEngine.Rt
                 Add(new KeyValuePair<TKey, TValue>(key, value));
             }
         }
-        
+
         public bool Remove(TKey key)
         {
             if (!_dictionary.Remove(key, out var value)) return false;
