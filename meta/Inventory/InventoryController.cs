@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using cfEngine.Core;
 using cfEngine.Rt;
@@ -12,8 +11,8 @@ namespace cfEngine.Meta
     public partial class InventoryController : IRuntimeSavable, IDisposable
     {
         private RtDictionary<StackId, InventoryItem> _stackMap = new();
-        private RtGroup<string, InventoryItem> _itemGroup;
-        private RtGroup<string, InventoryItem> _vacantItemGroup;
+        public RtGroup<string, InventoryItem> _itemGroup;
+        public RtGroup<string, InventoryItem> _vacantItemGroup;
 
         public InventoryController()
         {
@@ -92,7 +91,31 @@ namespace cfEngine.Meta
                 count -= itemCount;
             }
         }
+        
+        public bool TryRemoveFromStack(StackId stackId, int count, out int remain)
+        {
+            remain = count;
 
+            if (!_stackMap.TryGetValue(stackId, out var stack))
+            {
+                return false;
+            }
+
+            if (stack.ItemCount <= remain)
+            {
+                _stackMap.Remove(stackId);
+                remain -= stack.ItemCount;
+                return stack.ItemCount == remain;
+            }
+            else
+            {
+                var stackRemoveCount = stack.ItemCount - remain;
+                _stackMap.Upsert(stackId, stack.CloneNewCount(stack.ItemCount - stackRemoveCount));
+                remain -= stackRemoveCount;
+                return true;
+            }
+        }
+        
         public void Save(Dictionary<string, object> dataMap)
         {
             
