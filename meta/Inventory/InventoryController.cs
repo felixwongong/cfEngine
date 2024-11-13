@@ -139,8 +139,19 @@ namespace cfEngine.Meta
             for (var i = group.Count - 1; i >= 0 && remain > 0; i--)
             {
                 var stack = group[i];
-                _stackMap.Remove(stack.StackId);
-                remain -= stack.ItemCount;
+                var stackRemoveCount = Math.Min(remain, stack.ItemCount);
+                var stackRemain = stack.ItemCount - stackRemoveCount;
+
+                if (stackRemain <= 0)
+                {
+                    _stackMap.Remove(stack.StackId);
+                }
+                else
+                {
+                    _stackMap.Upsert(stack.StackId, stack.CloneNewCount(stackRemain));
+                }
+
+                remain -= stackRemoveCount;
             }
 
             if (remain > 0)
