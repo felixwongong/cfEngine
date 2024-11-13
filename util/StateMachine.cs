@@ -85,6 +85,8 @@ namespace cfEngine.Util
             {
                 throw new Exception($"State {state.GetType()} already registered");
             }
+
+            state.StateMachine = (TStateMachine)this;
         }
         
         public bool CanGoToState(TStateId id)
@@ -124,7 +126,7 @@ namespace cfEngine.Util
                     _afterStateChangeRelay.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _lastState.Id, NewState = _currentState.Id });
                 }
-                _currentState.StartContext((TStateMachine)this, param);
+                _currentState.StartContext(param);
 
                 return true;
             }
@@ -160,7 +162,7 @@ namespace cfEngine.Util
                     _afterStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
                         { LastState = _lastState.Id, NewState = _currentState.Id });
                 }
-                _currentState.StartContext((TStateMachine)this, param);
+                _currentState.StartContext(param);
             }
             catch (Exception e)
             {

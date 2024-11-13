@@ -9,13 +9,15 @@ namespace cfEngine.Util
     {
         public abstract TStateId Id { get; }
         public virtual HashSet<TStateId> Whitelist { get; } = new();
+        
+        public TStateMachine StateMachine { get; internal set; }
 
         public virtual bool IsReady()
         {
             return true;
         }
         
-        protected internal abstract void StartContext(TStateMachine gsm, StateParam param);
+        protected internal abstract void StartContext(StateParam param);
 
         protected internal virtual void OnEndContext()
         {
