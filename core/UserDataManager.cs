@@ -36,8 +36,6 @@ namespace cfEngine.Core
             _serializer = serializer;
         }
 
-        public partial void RegisterSavables();
-
         public void Register(IRuntimeSavable savable)
         {
             _savables.Add(savable);
