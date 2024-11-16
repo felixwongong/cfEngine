@@ -44,7 +44,7 @@ namespace cfEngine.Asset
 
         protected abstract AssetHandle<T> _Load<T>(string path) where T : class, TBaseObject;
 
-        public async Task<T> LoadAsync<T>(string path, CancellationToken token) where T: class, TBaseObject
+        public async Task<T> LoadAsync<T>(string path, CancellationToken token = default) where T: class, TBaseObject
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
@@ -68,7 +68,7 @@ namespace cfEngine.Asset
             return asset;
         }
 
-        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token) where T : class, TBaseObject;
+        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token = default) where T : class, TBaseObject;
         
         public bool TryGetAsset<T>(string path, out T asset) where T: class, TBaseObject
         {
