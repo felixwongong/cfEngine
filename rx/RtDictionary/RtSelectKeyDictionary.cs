@@ -7,37 +7,16 @@ namespace cfEngine.Rt
     public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
     {
         private readonly Func<TOrigKey, TSelectKey> _selectFn;
-        private readonly Dictionary<TSelectKey, TValue> _selected = new();
 
         public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn): base(source.Events)
         {
             _selectFn = selectFn;
-            _selected.EnsureCapacity(source.Count);
+            Mutated.EnsureCapacity(source.Count);
             foreach (var (origKey, value) in source)
             {
-                _selected[selectFn(origKey)] = value;
+                Mutated[selectFn(origKey)] = value;
             }
         }
-        public override IEnumerator<KeyValuePair<TSelectKey, TValue>> GetEnumerator()
-        {
-            return _selected.GetEnumerator();
-        }
-
-        public override int Count => _selected.Count;
-        public override bool ContainsKey(TSelectKey key)
-        {
-            return _selected.ContainsKey(key);
-        }
-
-        public override bool TryGetValue(TSelectKey key, out TValue value)
-        {
-            return _selected.TryGetValue(key, out value);
-        }
-
-        public override TValue this[TSelectKey key] => _selected[key];
-
-        public override IEnumerable<TSelectKey> Keys => _selected.Keys;
-        public override IEnumerable<TValue> Values => _selected.Values;
 
         protected override void OnSourceUpdate(KeyValuePair<TOrigKey, TValue> oldPair, KeyValuePair<TOrigKey, TValue> newPair)
         {
@@ -46,9 +25,9 @@ namespace cfEngine.Rt
             var newValue = newPair.Value;
             var selectedKey = _selectFn(key);
             
-            if (_selected.TryGetValue(selectedKey, out var v) && v.Equals(oldValue))
+            if (TryGetValue(selectedKey, out var v) && v.Equals(oldValue))
             {
-                _selected[selectedKey] = newValue;
+                Mutated[selectedKey] = newValue;
                 CollectionEvents.OnUpdateRelay.Dispatch(
                     new KeyValuePair<TSelectKey, TValue>(selectedKey, v),
                     new KeyValuePair<TSelectKey, TValue>(selectedKey, newValue)
@@ -65,9 +44,9 @@ namespace cfEngine.Rt
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
             
-            if (_selected.TryGetValue(selectedKey, out var v) && v.Equals(value))
+            if (TryGetValue(selectedKey, out var v) && v.Equals(value))
             {
-                _selected.Remove(selectedKey);
+                Mutated.Remove(selectedKey);
                 CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, v));
             }
             else
@@ -80,7 +59,7 @@ namespace cfEngine.Rt
         {
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
-            if (_selected.TryAdd(selectedKey, value))
+            if (Mutated.TryAdd(selectedKey, value))
             {
                 CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, value));
             }
@@ -88,12 +67,6 @@ namespace cfEngine.Rt
             {
                 Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot add"), nameof(OnSourceAdd));
             }
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _selected.Clear();
         }
     }
 }
