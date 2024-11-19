@@ -3,17 +3,15 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rt
 {
-    public class RtFilteredDictionary<TKey, TValue>: RtReadOnlyDictionary<TKey, TValue>
+    public class RtFilteredDictionary<TKey, TValue>: RtMutatedDictionaryBase<TKey, TValue, TKey, TValue>
     {
-        private readonly ICollectionEvents<KeyValuePair<TKey, TValue>> _sourceEvents;
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
         private readonly Dictionary<TKey, TValue> _filtered = new();
 
-        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn)
+        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn): base(source.Events)
         {
             _filterFn = filterFn;
-            _sourceEvents = source.Events;
             
             foreach (var kvp in source)
             {
@@ -21,11 +19,9 @@ namespace cfEngine.Rt
                 
                 _filtered.Add(kvp.Key, kvp.Value);
             }
-            
-            source.Events.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
-        private void OnSourceUpdate(KeyValuePair<TKey, TValue> oldPair, KeyValuePair<TKey, TValue> newPair)
+        protected override void OnSourceUpdate(KeyValuePair<TKey, TValue> oldPair, KeyValuePair<TKey, TValue> newPair)
         {
             bool canAdd, canRemove;
 
@@ -47,7 +43,7 @@ namespace cfEngine.Rt
             }
         }
 
-        private void OnSourceRemove(KeyValuePair<TKey, TValue> kvp)
+        protected override void OnSourceRemove(KeyValuePair<TKey, TValue> kvp)
         {
             if (_filtered.TryGetValue(kvp.Key, out var oldValue) && oldValue.Equals(kvp.Value))
             {
@@ -56,7 +52,7 @@ namespace cfEngine.Rt
             }
         }
 
-        private void OnSourceAdd(KeyValuePair<TKey, TValue> kvp)
+        protected override void OnSourceAdd(KeyValuePair<TKey, TValue> kvp)
         {
             if (_filterFn(kvp))
             {
@@ -90,7 +86,6 @@ namespace cfEngine.Rt
         {
             base.Dispose();
             
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
             _filtered.Clear();
         }
     }

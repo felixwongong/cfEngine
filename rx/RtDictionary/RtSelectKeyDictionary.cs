@@ -4,25 +4,19 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
-    public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtReadOnlyDictionary<TSelectKey, TValue>
+    public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
     {
-        private readonly ICollectionEvents<KeyValuePair<TOrigKey, TValue>> _sourceEvents;
         private readonly Func<TOrigKey, TSelectKey> _selectFn;
-
         private readonly Dictionary<TSelectKey, TValue> _selected = new();
 
-        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
+        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn): base(source.Events)
         {
-            _sourceEvents = source.Events;
             _selectFn = selectFn;
-
             _selected.EnsureCapacity(source.Count);
             foreach (var (origKey, value) in source)
             {
                 _selected[selectFn(origKey)] = value;
             }
-            
-            _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
         public override IEnumerator<KeyValuePair<TSelectKey, TValue>> GetEnumerator()
         {
@@ -44,8 +38,8 @@ namespace cfEngine.Rt
 
         public override IEnumerable<TSelectKey> Keys => _selected.Keys;
         public override IEnumerable<TValue> Values => _selected.Values;
-        
-        private void OnSourceUpdate(KeyValuePair<TOrigKey, TValue> oldPair, KeyValuePair<TOrigKey, TValue> newPair)
+
+        protected override void OnSourceUpdate(KeyValuePair<TOrigKey, TValue> oldPair, KeyValuePair<TOrigKey, TValue> newPair)
         {
             var key = oldPair.Key;
             var oldValue = oldPair.Value;
@@ -66,7 +60,7 @@ namespace cfEngine.Rt
             }
         }
 
-        private void OnSourceRemove(KeyValuePair<TOrigKey, TValue> kvp)
+        protected override void OnSourceRemove(KeyValuePair<TOrigKey, TValue> kvp)
         {
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
@@ -82,7 +76,7 @@ namespace cfEngine.Rt
             }
         }
 
-        private void OnSourceAdd(KeyValuePair<TOrigKey, TValue> kvp)
+        protected override void OnSourceAdd(KeyValuePair<TOrigKey, TValue> kvp)
         {
             var (key, value) = kvp;
             var selectedKey = _selectFn(key);
@@ -99,9 +93,6 @@ namespace cfEngine.Rt
         public override void Dispose()
         {
             base.Dispose();
-            
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            
             _selected.Clear();
         }
     }
