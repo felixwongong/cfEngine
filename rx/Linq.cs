@@ -35,5 +35,10 @@ namespace cfEngine.Rt
         {
             return new RtSelectLocalList<T, TSelect>(source, selectFn);
         }
+        
+        public static RtSelectList<T, TSelect> Select<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
+        {
+            return new RtSelectList<T, TSelect>(source, selectFn);
+        }
     }
 }
