@@ -3,39 +3,49 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rt
 {
-    public class RtFilteredDictionary<TKey, TValue>: RtMutatedDictionaryBase<TKey, TValue, TKey, TValue>
+    /// <summary>
+    /// Represents a dictionary that filters its elements based on a provided function.
+    /// </summary>
+    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+    public class RtFilteredDictionary<TKey, TValue> : RtMutatedDictionaryBase<TKey, TValue, TKey, TValue>
     {
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
-        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn): base(source.Events, out var mutated)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RtFilteredDictionary{TKey, TValue}"/> class.
+        /// </summary>
+        /// <param name="source">The source dictionary.</param>
+        /// <param name="filterFn">The function to filter elements.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filterFn"/> is null.</exception>
+        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events, out var mutated)
         {
-            _filterFn = filterFn;
-            
+            _filterFn = filterFn ?? throw new ArgumentNullException(nameof(filterFn));
+
             foreach (var kvp in source)
             {
-                if(!filterFn(kvp)) continue;
-                
+                if (!filterFn(kvp)) continue;
+
                 mutated.Add(kvp.Key, kvp.Value);
             }
         }
 
-        protected override void _OnSourceUpdate(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TValue> oldPair,
-            KeyValuePair<TKey, TValue> newPair)
+        protected override void _OnSourceUpdate(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TValue> oldPair, KeyValuePair<TKey, TValue> newPair)
         {
-            bool canAdd, canRemove;
-
-            canRemove = mutated.TryGetValue(oldPair.Key, out var oldValue) && oldValue.Equals(oldPair.Value);
-            canAdd = _filterFn(newPair);
+            bool canRemove = mutated.TryGetValue(oldPair.Key, out var oldValue) && oldValue.Equals(oldPair.Value);
+            bool canAdd = _filterFn(newPair);
 
             if (canRemove && canAdd && oldPair.Key.Equals(newPair.Key))
             {
                 mutated[oldPair.Key] = newPair.Value;
                 CollectionEvents.OnUpdateRelay.Dispatch(oldPair, newPair);
-            } else if (canAdd)
+            }
+            else if (canAdd)
             {
                 mutated[oldPair.Key] = newPair.Value;
                 CollectionEvents.OnAddRelay.Dispatch(newPair);
-            } else if (canRemove)
+            }
+            else if (canRemove)
             {
                 mutated.Remove(oldPair.Key);
                 CollectionEvents.OnRemoveRelay.Dispatch(oldPair);

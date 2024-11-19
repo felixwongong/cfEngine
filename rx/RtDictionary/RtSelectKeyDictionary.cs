@@ -4,13 +4,25 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
-    public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue>: RtMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
+    /// <summary>
+    /// Represents a dictionary that selects keys based on a provided function.
+    /// </summary>
+    /// <typeparam name="TOrigKey">The type of the original keys in the source dictionary.</typeparam>
+    /// <typeparam name="TSelectKey">The type of the selected keys in the mutated dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+    public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue> : RtMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
     {
         private readonly Func<TOrigKey, TSelectKey> _selectFn;
 
-        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn): base(source.Events, out var mutated)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RtSelectKeyDictionary{TOrigKey, TSelectKey, TValue}"/> class.
+        /// </summary>
+        /// <param name="source">The source read-only dictionary.</param>
+        /// <param name="selectFn">The function to select keys.</param>
+        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
+            : base(source.Events, out var mutated)
         {
-            _selectFn = selectFn;
+            _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
             mutated.EnsureCapacity(source.Count);
             foreach (var (origKey, value) in source)
             {
@@ -22,53 +34,48 @@ namespace cfEngine.Rt
             KeyValuePair<TOrigKey, TValue> oldPair,
             KeyValuePair<TOrigKey, TValue> newPair)
         {
-            var key = oldPair.Key;
-            var oldValue = oldPair.Value;
-            var newValue = newPair.Value;
-            var selectedKey = _selectFn(key);
-            
-            if (TryGetValue(selectedKey, out var v) && v.Equals(oldValue))
+            var selectedKey = _selectFn(oldPair.Key);
+
+            if (mutated.TryGetValue(selectedKey, out var v) && v.Equals(oldPair.Value))
             {
-                mutated[selectedKey] = newValue;
+                mutated[selectedKey] = newPair.Value;
                 CollectionEvents.OnUpdateRelay.Dispatch(
                     new KeyValuePair<TSelectKey, TValue>(selectedKey, v),
-                    new KeyValuePair<TSelectKey, TValue>(selectedKey, newValue)
-                    );
+                    new KeyValuePair<TSelectKey, TValue>(selectedKey, newPair.Value)
+                );
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {v}, {newValue}), cannot update"), nameof(_OnSourceUpdate));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey}, {v}, {newPair.Value}), cannot update"), nameof(_OnSourceUpdate));
             }
         }
 
         protected override void _OnSourceRemove(in Dictionary<TSelectKey, TValue> mutated,
             KeyValuePair<TOrigKey, TValue> kvp)
         {
-            var (key, value) = kvp;
-            var selectedKey = _selectFn(key);
-            
-            if (TryGetValue(selectedKey, out var v) && v.Equals(value))
+            var selectedKey = _selectFn(kvp.Key);
+
+            if (mutated.TryGetValue(selectedKey, out var v) && v.Equals(kvp.Value))
             {
                 mutated.Remove(selectedKey);
                 CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, v));
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot remove"), nameof(_OnSourceRemove));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey}, {kvp.Value}), cannot remove"), nameof(_OnSourceRemove));
             }
         }
 
         protected override void _OnSourceAdd(in Dictionary<TSelectKey, TValue> mutated, KeyValuePair<TOrigKey, TValue> kvp)
         {
-            var (key, value) = kvp;
-            var selectedKey = _selectFn(key);
-            if (mutated.TryAdd(selectedKey, value))
+            var selectedKey = _selectFn(kvp.Key);
+            if (mutated.TryAdd(selectedKey, kvp.Value))
             {
-                CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, value));
+                CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TSelectKey, TValue>(selectedKey, kvp.Value));
             }
             else
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey.ToString()}, {value.ToString()}), cannot add"), nameof(_OnSourceAdd));
+                Log.LogException(new ArgumentException($"Invalid argument ({selectedKey}, {kvp.Value}), cannot add"), nameof(_OnSourceAdd));
             }
         }
     }
