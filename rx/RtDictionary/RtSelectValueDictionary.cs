@@ -8,58 +8,60 @@ namespace cfEngine.Rt
     {
         private readonly Func<TOrigValue,TValue> _selectFn;
 
-        public RtSelectValueDictionary(RtReadOnlyDictionary<TKey, TOrigValue> source, Func<TOrigValue, TValue> selectFn): base(source.Events)
+        public RtSelectValueDictionary(RtReadOnlyDictionary<TKey, TOrigValue> source, Func<TOrigValue, TValue> selectFn): base(source.Events, out var mutated)
         {
             _selectFn = selectFn;
             foreach (var (key, origValue) in source)
             {
-                Mutated[key] = _selectFn(origValue);
+                mutated[key] = _selectFn(origValue);
             }
         }
 
         #region OnSourceCollectionUpdate
 
-        protected override void OnSourceUpdate(KeyValuePair<TKey, TOrigValue> oldPair, KeyValuePair<TKey, TOrigValue> newPair)
+        protected override void _OnSourceUpdate(in Dictionary<TKey, TValue> mutated,
+            KeyValuePair<TKey, TOrigValue> oldPair,
+            KeyValuePair<TKey, TOrigValue> newPair)
         {
             var key = oldPair.Key;
             var oldValue = oldPair.Value;
             var newValue = newPair.Value;
             
-            if (!Mutated.TryGetValue(key, out var oldSelected))
+            if (!mutated.TryGetValue(key, out var oldSelected))
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({key}, {oldValue.ToString()}, {newValue.ToString()}), cannot update"), nameof(OnSourceUpdate));
+                Log.LogException(new ArgumentException($"Invalid argument ({key}, {oldValue.ToString()}, {newValue.ToString()}), cannot update"), nameof(_OnSourceUpdate));
                 return;
             }
 
             var newSelected = _selectFn(newValue);
-            Mutated[key] = newSelected; 
+            mutated[key] = newSelected; 
             CollectionEvents.OnUpdateRelay.Dispatch(
                 new KeyValuePair<TKey, TValue>(key, oldSelected),
                 new KeyValuePair<TKey, TValue>(key, newSelected)
                 );
         }
 
-        protected override void OnSourceRemove(KeyValuePair<TKey, TOrigValue> kvp)
+        protected override void _OnSourceRemove(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TOrigValue> kvp)
         {
             var (key, value) = kvp;
-            if (!Mutated.TryGetValue(key, out var selectedValue))
+            if (!mutated.TryGetValue(key, out var selectedValue))
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({key.ToString()}, {value.ToString()}), cannot remove"), nameof(OnSourceRemove));
+                Log.LogException(new ArgumentException($"Invalid argument ({key.ToString()}, {value.ToString()}), cannot remove"), nameof(_OnSourceRemove));
                 return;
             }
 
-            Mutated.Remove(key);
+            mutated.Remove(key);
             CollectionEvents.OnRemoveRelay.Dispatch(new (key, selectedValue));
         }
 
-        protected override void OnSourceAdd(KeyValuePair<TKey, TOrigValue> kvp)
+        protected override void _OnSourceAdd(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TOrigValue> kvp)
         {
             var (key, value) = kvp;
             var selectedValue = _selectFn(value);
 
-            if (!Mutated.TryAdd(key, selectedValue))
+            if (!mutated.TryAdd(key, selectedValue))
             {
-                Log.LogException(new ArgumentException($"Invalid argument ({key.ToString()}, {selectedValue.ToString()}), cannot add"), nameof(OnSourceAdd));
+                Log.LogException(new ArgumentException($"Invalid argument ({key.ToString()}, {selectedValue.ToString()}), cannot add"), nameof(_OnSourceAdd));
                 return;
             }
             

@@ -7,7 +7,7 @@ namespace cfEngine.Rt
     {
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
-        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn): base(source.Events)
+        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn): base(source.Events, out var mutated)
         {
             _filterFn = filterFn;
             
@@ -15,46 +15,47 @@ namespace cfEngine.Rt
             {
                 if(!filterFn(kvp)) continue;
                 
-                Mutated.Add(kvp.Key, kvp.Value);
+                mutated.Add(kvp.Key, kvp.Value);
             }
         }
 
-        protected override void OnSourceUpdate(KeyValuePair<TKey, TValue> oldPair, KeyValuePair<TKey, TValue> newPair)
+        protected override void _OnSourceUpdate(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TValue> oldPair,
+            KeyValuePair<TKey, TValue> newPair)
         {
             bool canAdd, canRemove;
 
-            canRemove = Mutated.TryGetValue(oldPair.Key, out var oldValue) && oldValue.Equals(oldPair.Value);
+            canRemove = mutated.TryGetValue(oldPair.Key, out var oldValue) && oldValue.Equals(oldPair.Value);
             canAdd = _filterFn(newPair);
 
             if (canRemove && canAdd && oldPair.Key.Equals(newPair.Key))
             {
-                Mutated[oldPair.Key] = newPair.Value;
+                mutated[oldPair.Key] = newPair.Value;
                 CollectionEvents.OnUpdateRelay.Dispatch(oldPair, newPair);
             } else if (canAdd)
             {
-                Mutated[oldPair.Key] = newPair.Value;
+                mutated[oldPair.Key] = newPair.Value;
                 CollectionEvents.OnAddRelay.Dispatch(newPair);
             } else if (canRemove)
             {
-                Mutated.Remove(oldPair.Key);
+                mutated.Remove(oldPair.Key);
                 CollectionEvents.OnRemoveRelay.Dispatch(oldPair);
             }
         }
 
-        protected override void OnSourceRemove(KeyValuePair<TKey, TValue> kvp)
+        protected override void _OnSourceRemove(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TValue> kvp)
         {
-            if (Mutated.TryGetValue(kvp.Key, out var oldValue) && oldValue.Equals(kvp.Value))
+            if (mutated.TryGetValue(kvp.Key, out var oldValue) && oldValue.Equals(kvp.Value))
             {
-                Mutated.Remove(kvp.Key);
+                mutated.Remove(kvp.Key);
                 CollectionEvents.OnRemoveRelay.Dispatch(kvp);
             }
         }
 
-        protected override void OnSourceAdd(KeyValuePair<TKey, TValue> kvp)
+        protected override void _OnSourceAdd(in Dictionary<TKey, TValue> mutated, KeyValuePair<TKey, TValue> kvp)
         {
             if (_filterFn(kvp))
             {
-                Mutated[kvp.Key] = kvp.Value;
+                mutated[kvp.Key] = kvp.Value;
                 CollectionEvents.OnAddRelay.Dispatch(kvp);
             }
         }

@@ -5,42 +5,58 @@ namespace cfEngine.Rt
     public abstract class RtMutatedDictionaryBase<TSourceKey, TSourceValue, TKey, TValue>: RtReadOnlyDictionary<TKey, TValue>
     {
         private readonly ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> _sourceEvents;
-        protected readonly Dictionary<TKey, TValue> Mutated = new();
+        private readonly Dictionary<TKey, TValue> _mutated = new();
 
-        protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents)
+        protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated)
         {
+            mutated = _mutated;
             _sourceEvents = sourceEvents;
             _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
-        protected abstract void OnSourceUpdate(KeyValuePair<TSourceKey, TSourceValue> oldPair, KeyValuePair<TSourceKey, TSourceValue> newPair);
+        private void OnSourceUpdate(KeyValuePair<TSourceKey, TSourceValue> oldPair, KeyValuePair<TSourceKey, TSourceValue> newPair)
+        {
+            _OnSourceUpdate(_mutated, oldPair, newPair);
+        }
 
-        protected abstract void OnSourceRemove(KeyValuePair<TSourceKey, TSourceValue> kvp);
+        private void OnSourceRemove(KeyValuePair<TSourceKey, TSourceValue> kvp)
+        {
+            _OnSourceRemove(_mutated, kvp);
+        }
 
-        protected abstract void OnSourceAdd(KeyValuePair<TSourceKey, TSourceValue> kvp);
+        private void OnSourceAdd(KeyValuePair<TSourceKey, TSourceValue> kvp)
+        {
+            _OnSourceAdd(_mutated, kvp);
+        }
+        
+        protected abstract void _OnSourceUpdate(in Dictionary<TKey, TValue> mutated, KeyValuePair<TSourceKey, TSourceValue> oldPair, KeyValuePair<TSourceKey, TSourceValue> newPair);
+
+        protected abstract void _OnSourceRemove(in Dictionary<TKey, TValue> mutated, KeyValuePair<TSourceKey, TSourceValue> kvp);
+
+        protected abstract void _OnSourceAdd(in Dictionary<TKey, TValue> mutated, KeyValuePair<TSourceKey, TSourceValue> kvp);
 
         #region IReadOnlyDictionary Implementation
 
         public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return Mutated.GetEnumerator();
+            return _mutated.GetEnumerator();
         }
 
-        public override int Count => Mutated.Count;
+        public override int Count => _mutated.Count;
         public override bool ContainsKey(TKey key)
         {
-            return Mutated.ContainsKey(key);
+            return _mutated.ContainsKey(key);
         }
 
         public override bool TryGetValue(TKey key, out TValue value)
         {
-            return Mutated.TryGetValue(key, out value);
+            return _mutated.TryGetValue(key, out value);
         }
 
-        public override TValue this[TKey key] => Mutated[key];
+        public override TValue this[TKey key] => _mutated[key];
 
-        public override IEnumerable<TKey> Keys => Mutated.Keys;
-        public override IEnumerable<TValue> Values => Mutated.Values;
+        public override IEnumerable<TKey> Keys => _mutated.Keys;
+        public override IEnumerable<TValue> Values => _mutated.Values;
 
         #endregion
 
@@ -49,7 +65,7 @@ namespace cfEngine.Rt
             base.Dispose();
             
             _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            Mutated.Clear();
+            _mutated.Clear();
         }
     }
 }
