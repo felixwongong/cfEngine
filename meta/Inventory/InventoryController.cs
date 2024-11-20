@@ -22,20 +22,20 @@ namespace cfEngine.Meta
     {
         public class UpdateInventoryRequest
         {
-            public string itemId;
-            public int count;
-            public Guid stackId = Guid.Empty;
+            public string ItemId;
+            public int Count;
+            public Guid StackId = Guid.Empty;
         }
 
         private RtDictionary<StackId, InventoryItem> _stackMap = new();
-        public RtReadOnlyDictionary<StackId, InventoryItem> stackMap => _stackMap;
-        public RtGroup<string, InventoryItem> itemGroup;
-        public RtGroup<string, InventoryItem> vacantItemGroup;
+        public RtReadOnlyDictionary<StackId, InventoryItem> StackMap => _stackMap;
+        public RtGroup<string, InventoryItem> ItemGroup;
+        public RtGroup<string, InventoryItem> VacantItemGroup;
 
         public InventoryController()
         {
-            itemGroup = _stackMap.RtValues.GroupBy(item => item.Id);
-            vacantItemGroup = _stackMap
+            ItemGroup = _stackMap.RtValues.GroupBy(item => item.Id);
+            VacantItemGroup = _stackMap
                 .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .GroupBy(item => item.Id);
         }
@@ -59,15 +59,15 @@ namespace cfEngine.Meta
 
         public void AddItem(UpdateInventoryRequest request)
         {
-            var itemCount = request.count;
-            if (request.stackId != Guid.Empty)
+            var itemCount = request.Count;
+            if (request.StackId != Guid.Empty)
             {
-                TryAddToStack(request.stackId, itemCount, out itemCount);
+                TryAddToStack(request.StackId, itemCount, out itemCount);
             }
             
             if(itemCount <= 0) return;
 
-            if (vacantItemGroup.TryGetValue(request.itemId, out var vacantItems))
+            if (VacantItemGroup.TryGetValue(request.ItemId, out var vacantItems))
             {
                 Span<(int, int)> itemAddCounts = stackalloc (int, int)[vacantItems.Count];
 
@@ -87,7 +87,7 @@ namespace cfEngine.Meta
                 if (itemCount <= 0) return;
             }
             
-            AddAllToNewStacks(request.itemId, itemCount);
+            AddAllToNewStacks(request.ItemId, itemCount);
         }
 
         public bool TryAddToStack(StackId stackId, int count, out int remain)
@@ -119,19 +119,19 @@ namespace cfEngine.Meta
 
         public Validation<bool> RemoveItem(UpdateInventoryRequest request)
         {
-            if (!itemGroup.TryGetValue(request.itemId, out var group))
+            if (!ItemGroup.TryGetValue(request.ItemId, out var group))
             {
-                return Validation<bool>.Failure(new InvalidOperationException($"Item {request.itemId} not found, cannot remove."));
+                return Validation<bool>.Failure(new InvalidOperationException($"Item {request.ItemId} not found, cannot remove."));
             }
 
             var sum = group.Sum(item => item.ItemCount);
-            if (sum < request.count)
+            if (sum < request.Count)
             {
-                return Validation<bool>.Failure(new InvalidOperationException($"Item owned ({sum}) less than requested ({request.count}), cannot remove"));
+                return Validation<bool>.Failure(new InvalidOperationException($"Item owned ({sum}) less than requested ({request.Count}), cannot remove"));
             }
 
-            var remain = request.count;
-            if (request.stackId != Guid.Empty && TryRemoveFromStack(request.stackId, request.count, out remain))
+            var remain = request.Count;
+            if (request.StackId != Guid.Empty && TryRemoveFromStack(request.StackId, request.Count, out remain))
             {
                 return Validation<bool>.Success(true);
             }
@@ -188,8 +188,8 @@ namespace cfEngine.Meta
 
         public void Dispose()
         {
-            itemGroup.Dispose();
-            vacantItemGroup.Dispose();
+            ItemGroup.Dispose();
+            VacantItemGroup.Dispose();
             _stackMap.Dispose();
         }
     }
