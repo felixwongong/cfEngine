@@ -1,9 +1,6 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using NUnit.Framework;
-using cfEngine.Meta;
-using cfEngine.Rt;
 using cfEngine.Util;
 
 namespace cfEngine.Meta
@@ -125,7 +122,7 @@ namespace cfEngine.Meta
         public void AddItemToExistingStack_ShouldAddToStack()
         {
             var stackId = Guid.NewGuid();
-            var item = new InventoryItem(stackId, "item1", 1);
+            var item = new InventoryItemRecord(stackId, "item1", 1);
             _inventoryController._stackMap.Add(stackId, item);
 
             var request = new InventoryController.UpdateInventoryRequest
@@ -144,7 +141,7 @@ namespace cfEngine.Meta
         public void RemoveItemFromExistingStack_ShouldRemoveFromStack()
         {
             var stackId = Guid.NewGuid();
-            var item = new InventoryItem(stackId, "item1", 2);
+            var item = new InventoryItemRecord(stackId, "item1", 2);
             _inventoryController._stackMap.Add(stackId, item);
 
             var request = new InventoryController.UpdateInventoryRequest

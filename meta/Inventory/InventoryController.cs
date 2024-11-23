@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using cfEngine.Core;
+using cfEngine.Logging;
 using cfEngine.Rt;
 using cfEngine.Util;
 using ItemId = System.String;
@@ -27,10 +28,15 @@ namespace cfEngine.Meta
             public Guid StackId = Guid.Empty;
         }
 
-        private RtDictionary<StackId, InventoryItem> _stackMap = new();
-        public RtReadOnlyDictionary<StackId, InventoryItem> StackMap => _stackMap;
-        public RtGroup<string, InventoryItem> ItemGroup;
-        public RtGroup<string, InventoryItem> VacantItemGroup;
+        private const int PAGE_SIZE = 16;
+
+        private RtDictionary<StackId, InventoryItemRecord> _stackMap = new();
+        public RtReadOnlyDictionary<StackId, InventoryItemRecord> StackMap => _stackMap;
+        public RtGroup<string, InventoryItemRecord> ItemGroup;
+        public RtGroup<string, InventoryItemRecord> VacantItemGroup;
+
+        private RtList<InventoryPageRecord> _pages = new();
+        public RtReadOnlyList<InventoryPageRecord> Pages => _pages;
 
         public InventoryController()
         {
@@ -38,17 +44,23 @@ namespace cfEngine.Meta
             VacantItemGroup = _stackMap
                 .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .GroupBy(item => item.Id);
+            
+            _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, null, OnItemDispose);
         }
-
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
             {
-                var saved = data.GetValue<Dictionary<StackId, InventoryItem>>();
+                var saved = data.GetValue<Dictionary<StackId, InventoryItemRecord>>();
                 foreach (var kvp in saved)
                 {
                     _stackMap.Add(kvp);
                 }
+            }
+
+            if (_pages.Count <= 0)
+            {
+                _pages.Add(new InventoryPageRecord(PAGE_SIZE));
             }
         }
         
@@ -56,6 +68,48 @@ namespace cfEngine.Meta
         {
             dataMap[UserDataKey.Inventory] = _stackMap;
         }
+
+        private void OnItemAdd(KeyValuePair<Guid, InventoryItemRecord> kvp)
+        {
+            var stackId = kvp.Key;
+            foreach (var page in _pages)
+            {
+                if (page.TryAddToEmptySlot(stackId))
+                {
+                    return;
+                }
+            }
+            
+            var newPage = new InventoryPageRecord(PAGE_SIZE);
+            newPage.TryAddToEmptySlot(kvp.Key);
+            
+            _pages.Add(newPage);
+        }
+        
+        private void OnItemRemove(KeyValuePair<Guid, InventoryItemRecord> kvp)
+        {
+            var stackId = kvp.Key;
+            foreach (var page in _pages)
+            {
+                var index = page.IndexOf(stackId);
+                if (index != -1)
+                {
+                    page.RemoveItem(index);
+                }
+            }
+            
+            Log.LogError("StackId not found in any page, something went wrong.");
+        }
+        
+        private void OnItemDispose()
+        {
+            foreach (var page in _pages)
+            {
+                page.Dispose();
+            }
+            _pages.Dispose();
+        }
+
 
         public void AddItem(UpdateInventoryRequest request)
         {
@@ -112,7 +166,7 @@ namespace cfEngine.Meta
             {
                 var itemCount = Math.Min(count, maxStackSize);
                 var stackId = Guid.NewGuid();
-                _stackMap.Add(stackId, new InventoryItem(stackId, itemId, itemCount));
+                _stackMap.Add(stackId, new InventoryItemRecord(stackId, itemId, itemCount));
                 count -= itemCount;
             }
         }
@@ -185,9 +239,16 @@ namespace cfEngine.Meta
                 return true;
             }
         }
+        
+        public InventoryPageRecord GetPage(int index)
+        {
+            return _pages[index];
+        }
 
         public void Dispose()
         {
+            _stackMap.Events.Unsubscribe(OnItemAdd, OnItemRemove, null, OnItemDispose);
+            
             ItemGroup.Dispose();
             VacantItemGroup.Dispose();
             _stackMap.Dispose();
