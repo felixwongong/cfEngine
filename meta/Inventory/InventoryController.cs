@@ -45,8 +45,9 @@ namespace cfEngine.Meta
                 .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .GroupBy(item => item.Id);
             
-            _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, null, OnItemDispose);
+            _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate, OnItemDispose);
         }
+
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
@@ -99,6 +100,25 @@ namespace cfEngine.Meta
             }
             
             Log.LogError("StackId not found in any page, something went wrong.");
+        }
+        
+        private void OnItemUpdate(KeyValuePair<Guid, InventoryItemRecord> oldItem, KeyValuePair<Guid, InventoryItemRecord> newItem)
+        {
+            if(oldItem.Key != newItem.Key)
+            {
+                Log.LogError("StackId changed, something went wrong.");
+                return;
+            }
+            
+            foreach (var page in _pages)
+            {
+                var index = page.IndexOf(oldItem.Key);
+                if (index != -1)
+                {
+                    page.Update(index, newItem.Key);
+                    return;
+                }
+            }
         }
         
         private void OnItemDispose()
@@ -247,7 +267,7 @@ namespace cfEngine.Meta
 
         public void Dispose()
         {
-            _stackMap.Events.Unsubscribe(OnItemAdd, OnItemRemove, null, OnItemDispose);
+            _stackMap.Events.Unsubscribe(OnItemAdd, OnItemRemove, OnItemUpdate, OnItemDispose);
             
             ItemGroup.Dispose();
             VacantItemGroup.Dispose();
