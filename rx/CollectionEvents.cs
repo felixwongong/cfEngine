@@ -5,7 +5,12 @@ namespace cfEngine.Rt
 {
     public struct SubscriptionHandle
     {
-        public Action Unsubscribe;
+        public Action UnsubscribeAction;
+
+        public void UnsubscribeIfNotNull()
+        {
+            UnsubscribeAction?.Invoke();
+        }
     }
     
     public interface ICollectionEvents<out T>
@@ -66,7 +71,7 @@ namespace cfEngine.Rt
 
             return new SubscriptionHandle()
             {
-                Unsubscribe = () => Unsubscribe(onAdd, onRemove, onUpdate, onDispose)
+                UnsubscribeAction = () => Unsubscribe(onAdd, onRemove, onUpdate, onDispose)
             };
         }
 

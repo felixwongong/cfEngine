@@ -269,7 +269,7 @@ namespace cfEngine.Meta.Inventory
 
         public void Dispose()
         {
-            _stackItemChangeHandle.Unsubscribe();
+            _stackItemChangeHandle.UnsubscribeIfNotNull();
             
             ItemGroup.Dispose();
             VacantItemGroup.Dispose();

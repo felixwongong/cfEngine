@@ -22,5 +22,10 @@ namespace cfEngine.Rt
             CollectionEvents.OnDisposeRelay.Dispatch();
             CollectionEvents?.Dispose();
         }
+        
+        public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)
+        {
+            return list.SelectLocal(t => (object)t);
+        }
     }
 }
