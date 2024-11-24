@@ -3,6 +3,11 @@ using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
+    public struct SubscriptionHandle
+    {
+        public Action Unsubscribe;
+    }
+    
     public interface ICollectionEvents<out T>
     {
         public event Action<T> OnAdd;
@@ -10,7 +15,7 @@ namespace cfEngine.Rt
         public event Action<T, T> OnUpdate;
         public event Action OnDispose;
 
-        public void Subscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null);
+        public SubscriptionHandle Subscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null);
         public void Unsubscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null);
     }
     
@@ -45,9 +50,9 @@ namespace cfEngine.Rt
             remove => OnDisposeRelay.RemoveListener(value);
         }
 
-        public void Subscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null)
+        public SubscriptionHandle Subscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null)
         {
-            if (onAdd != null)
+            if (onAdd != null) {}
                 OnAddRelay.AddListener(onAdd);
 
             if (onRemove != null)
@@ -58,6 +63,11 @@ namespace cfEngine.Rt
 
             if (onDispose != null)
                 OnDisposeRelay.AddListener(onDispose);
+
+            return new SubscriptionHandle()
+            {
+                Unsubscribe = () => Unsubscribe(onAdd, onRemove, onUpdate, onDispose)
+            };
         }
 
         public void Unsubscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null)
