@@ -3,7 +3,7 @@ using System;
 using NUnit.Framework;
 using cfEngine.Util;
 
-namespace cfEngine.Meta
+namespace cfEngine.Meta.Inventory
 {
     [TestFixture]
     public partial class InventoryController
@@ -243,7 +243,7 @@ namespace cfEngine.Meta
 
             _inventoryController.AddItem(request);
 
-            var defaultMaxStackSize = Game.Info.Get<InventoryConfigInfoManager>().GetOrDefault("item6").maxStackSize;
+            var defaultMaxStackSize = Game.Info.Get<InventoryInfoManager>().GetOrDefault("item6").maxStackSize;
             Assert.IsTrue(_inventoryController.ItemGroup.ContainsKey("item6"));
             Assert.AreEqual(1, _inventoryController.ItemGroup["item6"][0].ItemCount);
         }

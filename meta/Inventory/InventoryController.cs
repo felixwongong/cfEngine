@@ -17,7 +17,7 @@ namespace cfEngine.Core
     }
 }
 
-namespace cfEngine.Meta
+namespace cfEngine.Meta.Inventory
 {
     public partial class InventoryController : IRuntimeSavable, IDisposable
     {
@@ -35,8 +35,8 @@ namespace cfEngine.Meta
         public RtGroup<string, InventoryItemRecord> ItemGroup;
         public RtGroup<string, InventoryItemRecord> VacantItemGroup;
 
-        private RtList<InventoryPageRecord> _pages = new();
-        public RtReadOnlyList<InventoryPageRecord> Pages => _pages;
+        private RtList<PageRecord> _pages = new();
+        public RtReadOnlyList<PageRecord> Pages => _pages;
 
         public InventoryController()
         {
@@ -61,7 +61,7 @@ namespace cfEngine.Meta
 
             if (_pages.Count <= 0)
             {
-                _pages.Add(new InventoryPageRecord(PAGE_SIZE));
+                _pages.Add(new PageRecord(PAGE_SIZE));
             }
         }
         
@@ -81,7 +81,7 @@ namespace cfEngine.Meta
                 }
             }
             
-            var newPage = new InventoryPageRecord(PAGE_SIZE);
+            var newPage = new PageRecord(PAGE_SIZE);
             newPage.TryAddToEmptySlot(kvp.Key);
             
             _pages.Add(newPage);
@@ -181,7 +181,7 @@ namespace cfEngine.Meta
 
         public void AddAllToNewStacks(ItemId itemId, int count)
         {
-            var maxStackSize = Game.Info.Get<InventoryConfigInfoManager>().GetOrDefault(itemId).maxStackSize;
+            var maxStackSize = Game.Info.Get<InventoryInfoManager>().GetOrDefault(itemId).maxStackSize;
             while (count > 0)
             {
                 var itemCount = Math.Min(count, maxStackSize);
@@ -260,7 +260,7 @@ namespace cfEngine.Meta
             }
         }
         
-        public InventoryPageRecord GetPage(int index)
+        public PageRecord GetPage(int index)
         {
             return _pages[index];
         }
