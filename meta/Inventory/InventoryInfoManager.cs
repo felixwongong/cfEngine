@@ -19,6 +19,7 @@ namespace cfEngine.Meta
             {
                 itemId = itemId,
                 maxStackSize = int.MaxValue,
+                iconKey = string.Empty
             };
         }
     }
@@ -27,5 +28,6 @@ namespace cfEngine.Meta
     {
         public string itemId;
         public int maxStackSize;
+        public string iconKey;
     }
 }
