@@ -48,13 +48,15 @@ namespace cfEngine.Asset
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
-                if (t is not Task<T> cachedObjectTask)
+                if (t is not Task<AssetHandle<T>> cachedObjectTask)
                 {
                     Log.LogWarning($"Detect async loading different task result type but with same path {path}");
                 } 
                 else if(!cachedObjectTask.IsFaulted && !cachedObjectTask.IsCanceled)
                 {
-                    return await cachedObjectTask;
+                    var cachedResult = await cachedObjectTask;
+                    cachedResult.Asset.TryGetTarget(out var cachedAsset);
+                    return cachedAsset;
                 }
             }
             
@@ -62,7 +64,7 @@ namespace cfEngine.Asset
             _assetLoadingTasks[path] = objectTask;
             
             var result = await objectTask;
-
+            
             _assetMap[path] = result;
             result.Asset.TryGetTarget(out var asset);
             return asset;
