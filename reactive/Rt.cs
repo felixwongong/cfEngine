@@ -2,18 +2,18 @@
 
 namespace cfEngine.Rt
 {
-    public class Rx<T>: IDisposable
+    public class Rt<T>: IDisposable
     {
         public T Value { get; private set; }
 
         private CollectionEvents<T> CollectionEvents = new();
         public ICollectionEvents<T> Events => CollectionEvents;
 
-        public Rx()
+        public Rt()
         {
         }
         
-        public Rx(T defaultValue)
+        public Rt(T defaultValue)
         {
             Value = defaultValue;
         }
@@ -37,6 +37,6 @@ namespace cfEngine.Rt
             CollectionEvents = null;
         }
         
-        public static implicit operator T(Rx<T> rx) => rx.Value;
+        public static implicit operator T(Rt<T> rt) => rt.Value;
     }
 }
