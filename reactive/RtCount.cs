@@ -2,8 +2,11 @@ namespace cfEngine.Rt
 {
     public class RtCount<T>: RtMutatedSingleBase<T, int>
     {
-        public RtCount(RtReadOnlyList<T> source) : base(source.Events) { }
-
+        public RtCount(RtReadOnlyList<T> source) : base(source.Events)
+        {
+            Value = source.Count;
+        }
+        
         protected override void _OnSourceUpdate((int index, T item) oldItem, (int index, T item) newItem)
         {
         }
@@ -19,9 +22,5 @@ namespace cfEngine.Rt
             var oldCount = Value++;
             CollectionEvents.OnUpdateRelay.Dispatch((0, oldCount), (0, Value));
         }
-
-        public override int Count { get; }
-
-        public override int this[int index] => throw new System.NotImplementedException();
     }
 }
