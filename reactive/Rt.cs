@@ -1,13 +1,10 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace cfEngine.Rt
 {
-    public class Rt<T>: IDisposable
+    public class Rt<T>: RtReadOnlyList<T>
     {
         public T Value { get; private set; }
-
-        private CollectionEvents<T> CollectionEvents = new();
-        public ICollectionEvents<T> Events => CollectionEvents;
 
         public Rt()
         {
@@ -22,7 +19,7 @@ namespace cfEngine.Rt
         {
             var oldValue = Value;
             Value = value;
-            CollectionEvents.OnUpdateRelay.Dispatch(oldValue, Value);
+            CollectionEvents.OnUpdateRelay.Dispatch((0, oldValue), (0, value));
         }
 
         public void SetNoTrigger(T value)
@@ -30,13 +27,14 @@ namespace cfEngine.Rt
             Value = value;
         }
 
-        public void Dispose()
-        {
-            Value = default;
-            CollectionEvents.Dispose();
-            CollectionEvents = null;
-        }
-        
         public static implicit operator T(Rt<T> rt) => rt.Value;
+        public override IEnumerator<T> GetEnumerator()
+        {
+            yield return Value;
+        }
+
+        public override int Count => 1;
+
+        public override T this[int index] => Value;
     }
 }

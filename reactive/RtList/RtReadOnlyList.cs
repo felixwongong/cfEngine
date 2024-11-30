@@ -26,7 +26,7 @@ namespace cfEngine.Rt
         
         public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)
         {
-            return list.SelectLocal(t => (object)t);
+            return list.Select(t => (object)t);
         }
     }
 }

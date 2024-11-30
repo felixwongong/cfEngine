@@ -65,13 +65,13 @@ namespace cfEngine.Rt
         /// <summary>
         /// Gets the read-only list of keys.
         /// </summary>
-        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.SelectLocal(kvp => kvp.Key);
+        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.Select(kvp => kvp.Key);
 
         private RtReadOnlyList<TValue> _rtValues;
         /// <summary>
         /// Gets the read-only list of values.
         /// </summary>
-        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.SelectLocal(kvp => kvp.Value);
+        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.Select(kvp => kvp.Value);
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.

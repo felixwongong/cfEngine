@@ -29,12 +29,12 @@ namespace cfEngine.Rt
             return new RtGroup<TKey, TValue>(rtList, keyFn);
         }
         
-        public static RtSelectLocalList<T, TSelect> SelectLocal<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
+        public static RtSelectLocalList<T, TSelect> Select<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
         {
             return new RtSelectLocalList<T, TSelect>(source, selectFn);
         }
         
-        public static RtSelectList<T, TSelect> Select<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
+        public static RtSelectList<T, TSelect> SelectNew<T, TSelect>(this RtReadOnlyList<T> source, Func<T, TSelect> selectFn)
         {
             return new RtSelectList<T, TSelect>(source, selectFn);
         }
