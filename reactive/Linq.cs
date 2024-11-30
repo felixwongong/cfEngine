@@ -38,5 +38,10 @@ namespace cfEngine.Rt
         {
             return new RtSelectList<T, TSelect>(source, selectFn);
         }
+        
+        public static RtCount<T> Count<T>(this RtReadOnlyList<T> source)
+        {
+            return new RtCount<T>(source);
+        }
     }
 }
