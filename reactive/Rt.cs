@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace cfEngine.Rt
 {
@@ -14,7 +15,17 @@ namespace cfEngine.Rt
         {
             Value = defaultValue;
         }
-        
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            if (Value is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+
         public void Set(T value)
         {
             var oldValue = Value;

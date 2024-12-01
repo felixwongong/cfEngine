@@ -22,7 +22,8 @@ namespace cfEngine.Rt
         public virtual void Dispose()
         {
             _collectionEvents?.OnDisposeRelay.Dispatch();
-            _collectionEvents?.Dispose() ;
+            _collectionEvents?.Dispose();
+            _collectionEvents = null;
         }
         
         public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)

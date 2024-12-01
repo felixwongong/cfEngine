@@ -13,17 +13,17 @@ namespace cfEngine.Rt
             _sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
         }
 
-        protected abstract void _OnSourceUpdate((int index, TOrig item) oldItem, (int index, TOrig item) newItem);
-
-        protected abstract void _OnSourceRemove((int index, TOrig item) item);
-
-        protected abstract void _OnSourceAdd((int index, TOrig item) item);
-
         public override void Dispose()
         {
             base.Dispose();
             _sourceEvents.Unsubscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
         }
+
+        protected abstract void _OnSourceUpdate((int index, TOrig item) oldItem, (int index, TOrig item) newItem);
+
+        protected abstract void _OnSourceRemove((int index, TOrig item) item);
+
+        protected abstract void _OnSourceAdd((int index, TOrig item) item);
     }
 
     public abstract class RtMutatedListBase<TOrig, TNew>: RtReadOnlyList<TNew>
@@ -37,6 +37,20 @@ namespace cfEngine.Rt
             
             _sourceEvents = sourceEvents;
             _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+        }
+        
+        public override void Dispose()
+        {
+            base.Dispose();
+            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            foreach (var item in _mutated)
+            {
+                if (item is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            _mutated.Clear();
         }
 
         private void OnSourceUpdate((int index, TOrig item) oldItem, (int index, TOrig item) newItem)
@@ -68,12 +82,5 @@ namespace cfEngine.Rt
         public override int Count => _mutated.Count;
 
         public override TNew this[int index] => _mutated[index];
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            _mutated.Clear();
-        }
     }
 }

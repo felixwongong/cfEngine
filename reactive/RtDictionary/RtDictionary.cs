@@ -13,6 +13,18 @@ namespace cfEngine.Rt
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new();
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            
+            foreach (var (key, value) in _dictionary)
+            {
+                if(key is IDisposable disposableKey) disposableKey.Dispose();
+                if(value is IDisposable disposableValue) disposableValue.Dispose();
+            }
+            _dictionary.Clear();
+        }
+        
         #region Dictionary Implementation
 
         public override TValue this[TKey key] => _dictionary[key];
@@ -127,12 +139,6 @@ namespace cfEngine.Rt
             {
                 CollectionEvents.OnRemoveRelay.Dispatch(kvp);
             }
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _dictionary.Clear();
         }
 
         #endregion

@@ -24,6 +24,18 @@ namespace cfEngine.Rt
             _list.AddRange(defaultItems);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            
+            foreach (var item in _list)
+            {
+                if (item is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            _list.Clear();
+        }
+
         public override IEnumerator<T> GetEnumerator()
         {
             return _list.GetEnumerator();
@@ -110,11 +122,5 @@ namespace cfEngine.Rt
         }
 
         public override T this[int index] => _list[index];
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _list.Clear();
-        }
     }
 }

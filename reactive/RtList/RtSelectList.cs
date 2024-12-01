@@ -12,12 +12,6 @@ namespace cfEngine.Rt
     {
         private readonly Func<TOrig, TNew> _selectFn;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RtSelectList{TOrig, TNew}"/> class.
-        /// </summary>
-        /// <param name="source">The source list.</param>
-        /// <param name="selectFn">The function to project each element of the source list.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="selectFn"/> is null.</exception>
         public RtSelectList(RtReadOnlyList<TOrig> source, Func<TOrig, TNew> selectFn) : base(source.Events, out var mutated)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));

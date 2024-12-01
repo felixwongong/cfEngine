@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace cfEngine.Rt
@@ -8,6 +9,16 @@ namespace cfEngine.Rt
 
         public RtMutatedSingleBase(ICollectionEvents<(int index, TOrig item)> sourceEvents) : base(sourceEvents)
         {
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            if (Value is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
         public override IEnumerator<TNew> GetEnumerator()

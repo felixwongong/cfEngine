@@ -12,12 +12,6 @@ namespace cfEngine.Rt
     {
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RtFilteredDictionary{TKey, TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The source dictionary.</param>
-        /// <param name="filterFn">The function to filter elements.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filterFn"/> is null.</exception>
         public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events, out var mutated)
         {
             _filterFn = filterFn ?? throw new ArgumentNullException(nameof(filterFn));

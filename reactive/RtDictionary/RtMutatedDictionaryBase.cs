@@ -15,17 +15,24 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> _sourceEvents;
         private readonly Dictionary<TKey, TValue> _mutated = new();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RtMutatedDictionaryBase{TSourceKey, TSourceValue, TKey, TValue}"/> class.
-        /// </summary>
-        /// <param name="sourceEvents">The source events to subscribe to.</param>
-        /// <param name="mutated">The mutated dictionary.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="sourceEvents"/> is null.</exception>
         protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated)
         {
             _sourceEvents = sourceEvents ?? throw new ArgumentNullException(nameof(sourceEvents));
             mutated = _mutated;
             _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+        }
+        
+        public override void Dispose()
+        {
+            base.Dispose();
+            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            
+            foreach (var (key, value) in _mutated)
+            {
+                if(key is IDisposable disposableKey) disposableKey.Dispose();
+                if(value is IDisposable disposableValue) disposableValue.Dispose();
+            }
+            _mutated.Clear();
         }
 
         private void OnSourceUpdate(KeyValuePair<TSourceKey, TSourceValue> oldPair, KeyValuePair<TSourceKey, TSourceValue> newPair)
@@ -73,12 +80,5 @@ namespace cfEngine.Rt
         public override IEnumerable<TValue> Values => _mutated.Values;
 
         #endregion
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            _mutated.Clear();
-        }
     }
 }

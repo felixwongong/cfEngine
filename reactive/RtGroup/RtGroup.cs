@@ -15,11 +15,6 @@ namespace cfEngine.Rt
         private readonly Func<TValue, TKey> _keyFn;
         private readonly Dictionary<TKey, RtList<TValue>> _groups = new();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RtGroup{TKey, TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The source read-only list.</param>
-        /// <param name="keyFn">The function to extract keys from values.</param>
         public RtGroup(RtReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
         {
             _sourceEvent = source.Events;
@@ -39,6 +34,19 @@ namespace cfEngine.Rt
             _sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+            foreach (var group in _groups.Values)
+            {
+                group.Dispose();
+            }
+
+            _groups.Clear();
+        }
+        
         private void OnSourceUpdate((int index, TValue item) oldListItem, (int index, TValue item) newListItem)
         {
             OnSourceRemove(oldListItem);
@@ -114,18 +122,5 @@ namespace cfEngine.Rt
         public override IEnumerable<TKey> Keys => _groups.Keys;
 
         public override IEnumerable<RtReadOnlyList<TValue>> Values => _groups.Values;
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-
-            foreach (var group in _groups.Values)
-            {
-                group.Dispose();
-            }
-
-            _groups.Clear();
-        }
     }
 }

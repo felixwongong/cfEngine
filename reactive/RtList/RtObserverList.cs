@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
 
@@ -14,6 +15,18 @@ namespace cfEngine.Rt
             _sourceEvents = sourceEvents;
             
             sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            foreach (var item in _list)
+            {
+                if (item is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            _list.Clear();
         }
 
         private void OnSourceUpdate(T oldItem, T newItem)
@@ -56,12 +69,5 @@ namespace cfEngine.Rt
         public override int Count => _list.Count;
 
         public override T this[int index] => _list[index];
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            _list.Clear();
-        }
     }
 }
