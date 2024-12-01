@@ -114,7 +114,6 @@ namespace cfEngine.Rt
         public override void Dispose()
         {
             base.Dispose();
-            
             _list.Clear();
         }
     }

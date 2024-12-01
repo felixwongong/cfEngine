@@ -50,6 +50,22 @@ namespace cfEngine.Meta.Inventory
             _stackItemChangeHandle = _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate, OnItemDispose);
         }
 
+        public void Dispose()
+        {
+            _stackItemChangeHandle.UnsubscribeIfNotNull();
+            
+            ItemGroup.Dispose();
+            VacantItemGroup.Dispose();
+            _stackMap.Dispose();
+            
+            foreach (var pageRecord in _pages)
+            {
+                pageRecord.Dispose();
+            }
+            _pages.Dispose();
+            _pages.Clear();
+        }
+
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
@@ -265,15 +281,6 @@ namespace cfEngine.Meta.Inventory
         public PageRecord GetPage(int index)
         {
             return _pages[index];
-        }
-
-        public void Dispose()
-        {
-            _stackItemChangeHandle.UnsubscribeIfNotNull();
-            
-            ItemGroup.Dispose();
-            VacantItemGroup.Dispose();
-            _stackMap.Dispose();
         }
     }
 }

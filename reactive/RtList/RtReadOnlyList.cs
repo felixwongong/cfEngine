@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
@@ -20,13 +21,25 @@ namespace cfEngine.Rt
 
         public virtual void Dispose()
         {
-            CollectionEvents.OnDisposeRelay.Dispatch();
-            CollectionEvents?.Dispose();
+            _collectionEvents?.OnDisposeRelay.Dispatch();
+            _collectionEvents?.Dispose() ;
         }
         
         public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)
         {
             return list.Select(t => (object)t);
+        }
+        
+        ~RtReadOnlyList()
+        {
+            if (_collectionEvents != null && 
+                (_collectionEvents.OnAddRelay.listenerCount > 0 || 
+                _collectionEvents.OnRemoveRelay.listenerCount > 0 ||
+                _collectionEvents.OnUpdateRelay.listenerCount > 0))
+            {
+                Log.LogError($"{this}.Finalizer, it was not disposed properly!");
+                Dispose();
+            }
         }
     }
 }

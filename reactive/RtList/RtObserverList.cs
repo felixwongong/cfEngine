@@ -60,9 +60,7 @@ namespace cfEngine.Rt
         public override void Dispose()
         {
             base.Dispose();
-            
             _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-            
             _list.Clear();
         }
     }

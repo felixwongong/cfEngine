@@ -5,11 +5,14 @@ namespace cfEngine.Rt
 {
     public struct SubscriptionHandle
     {
-        public Action UnsubscribeAction;
+        public WeakReference<Action> UnsubscribeAction;
 
         public void UnsubscribeIfNotNull()
         {
-            UnsubscribeAction?.Invoke();
+            if (UnsubscribeAction != null && UnsubscribeAction.TryGetTarget(out var action))
+            {
+                action?.Invoke();        
+            }
         }
     }
     
@@ -71,7 +74,7 @@ namespace cfEngine.Rt
 
             return new SubscriptionHandle()
             {
-                UnsubscribeAction = () => Unsubscribe(onAdd, onRemove, onUpdate, onDispose)
+                UnsubscribeAction = new WeakReference<Action>(() => Unsubscribe(onAdd, onRemove, onUpdate, onDispose))
             };
         }
 
