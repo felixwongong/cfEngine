@@ -1,18 +1,38 @@
 using System;
+using System.Collections.Generic;
+using cfEngine.Pooling;
 using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
-    public struct SubscriptionHandle
+    public class SubscriptionHandle
     {
-        public WeakReference<Action> UnsubscribeAction;
+        private static ListPool<IRelayBinding> bindingListPool = new();
 
-        public void UnsubscribeIfNotNull()
+        private List<IRelayBinding> _bindings;
+        private List<IRelayBinding> bindings => _bindings ??= bindingListPool.Get();
+
+        public void AddBinding(IRelayBinding binding)
         {
-            if (UnsubscribeAction != null && UnsubscribeAction.TryGetTarget(out var action))
+            bindings.Add(binding);
+        }
+
+        public void Unsubscribe()
+        {
+            foreach (var binding in _bindings)
             {
-                action?.Invoke();        
+                binding.Enable(false);
             }
+
+            bindingListPool.Release(_bindings);
+        }
+    }
+
+    public static class SubscriptionHandleExtension
+    {
+        public static void UnsubscribeIfNotNull(this SubscriptionHandle handle)
+        {
+            handle?.Unsubscribe();
         }
     }
     
@@ -60,22 +80,20 @@ namespace cfEngine.Rt
 
         public SubscriptionHandle Subscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null)
         {
-            if (onAdd != null) {}
-                OnAddRelay.AddListener(onAdd);
+            var handle = new SubscriptionHandle();
+            if (onAdd != null)
+                handle.AddBinding(OnAddRelay.BindListener(onAdd));
 
             if (onRemove != null)
-                OnRemoveRelay.AddListener(onRemove);
+                handle.AddBinding(OnRemoveRelay.BindListener(onRemove));
 
             if (onUpdate != null)
-                OnUpdateRelay.AddListener(onUpdate);
+                handle.AddBinding(OnUpdateRelay.BindListener(onUpdate));
 
-            if (onDispose != null)
-                OnDisposeRelay.AddListener(onDispose);
+            if (onDispose != null) 
+                handle.AddBinding(OnDisposeRelay.BindListener(onDispose));
 
-            return new SubscriptionHandle()
-            {
-                UnsubscribeAction = new WeakReference<Action>(() => Unsubscribe(onAdd, onRemove, onUpdate, onDispose))
-            };
+            return handle;
         }
 
         public void Unsubscribe(Action<T> onAdd = null, Action<T> onRemove = null, Action<T, T> onUpdate = null, Action onDispose = null)
