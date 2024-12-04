@@ -1,22 +1,25 @@
 using System;
 using System.Collections.Generic;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
     public abstract class RtMutatedLocalListBase<TOrig, TNew> : RtReadOnlyList<TNew>
     {
         private readonly ICollectionEvents<(int, TOrig)> _sourceEvents;
+        
+        Subscription _sourceChangeSubscription;
 
         protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
             _sourceEvents = sourceEvents;
-            _sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = _sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            _sourceEvents.Unsubscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
+            _sourceChangeSubscription.UnsubscribeIfNotNull();
         }
 
         protected abstract void _OnSourceUpdate((int index, TOrig item) oldItem, (int index, TOrig item) newItem);
@@ -31,18 +34,19 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<(int, TOrig)> _sourceEvents;
         private readonly List<TNew> _mutated = new();
 
+        private Subscription _sourceChangeSubscription;
         protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated)
         {
             mutated = _mutated;
             
             _sourceEvents = sourceEvents;
-            _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
         
         public override void Dispose()
         {
             base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription.UnsubscribeIfNotNull();
             foreach (var item in _mutated)
             {
                 if (item is IDisposable disposable)

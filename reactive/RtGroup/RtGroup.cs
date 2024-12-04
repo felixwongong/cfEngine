@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
@@ -14,6 +15,8 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<(int index, TValue item)> _sourceEvent;
         private readonly Func<TValue, TKey> _keyFn;
         private readonly Dictionary<TKey, RtList<TValue>> _groups = new();
+        
+        private Subscription _sourceChangeSubscription;
 
         public RtGroup(RtReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
         {
@@ -31,13 +34,13 @@ namespace cfEngine.Rt
                 group.Add(item);
             }
 
-            _sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = _sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            _sourceEvent.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription.UnsubscribeIfNotNull();
 
             foreach (var group in _groups.Values)
             {

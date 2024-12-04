@@ -60,18 +60,6 @@ namespace cfEngine.Util
             remove => _afterStateChangeRelay.RemoveListener(value);
         }
 
-        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChangeOnce
-        {
-            add => _beforeStateChangeRelay.AddOnce(value);
-            remove => _beforeStateChangeRelay.RemoveOnce(value);
-        }
-        
-        public event Action<StateChangeRecord<TStateId>> OnAfterStateChangeOnce
-        {
-            add => _afterStateChangeRelay.AddOnce(value);
-            remove => _afterStateChangeRelay.RemoveOnce(value);
-        } 
-
         #endregion
 
         public StateMachine()

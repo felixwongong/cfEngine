@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
@@ -9,18 +10,19 @@ namespace cfEngine.Rt
         private readonly List<T> _list;
         private readonly ICollectionEvents<T> _sourceEvents;
 
+        Subscription _sourceChangeSubscription;
         public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents)
         {
             _list = new List<T>(sourceItems);
             _sourceEvents = sourceEvents;
             
-            sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription.UnsubscribeIfNotNull();
             foreach (var item in _list)
             {
                 if (item is IDisposable disposable)

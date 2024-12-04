@@ -38,7 +38,7 @@ namespace cfEngine.Meta.Inventory
         private RtList<PageRecord> _pages = new();
         public RtReadOnlyList<PageRecord> Pages => _pages;
         
-        SubscriptionHandle _stackItemChangeHandle;
+        Subscription _stackItemChangeBinding;
 
         public InventoryController()
         {
@@ -47,12 +47,12 @@ namespace cfEngine.Meta.Inventory
                 .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .GroupBy(item => item.Id);
             
-            _stackItemChangeHandle = _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate, OnItemDispose);
+            _stackItemChangeBinding = _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate);
         }
 
         public void Dispose()
         {
-            _stackItemChangeHandle.UnsubscribeIfNotNull();
+            _stackItemChangeBinding.UnsubscribeIfNotNull();
             
             ItemGroup.Dispose();
             VacantItemGroup.Dispose();
@@ -138,16 +138,6 @@ namespace cfEngine.Meta.Inventory
                 }
             }
         }
-        
-        private void OnItemDispose()
-        {
-            foreach (var page in _pages)
-            {
-                page.Dispose();
-            }
-            _pages.Dispose();
-        }
-
 
         public void AddItem(UpdateInventoryRequest request)
         {

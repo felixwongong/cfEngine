@@ -22,7 +22,6 @@ namespace cfEngine.Rt
         public virtual void Dispose()
         {
             _collectionEvents?.OnDisposeRelay.Dispatch();
-            _collectionEvents?.Dispose();
             _collectionEvents = null;
         }
         

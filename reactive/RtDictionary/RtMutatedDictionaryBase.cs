@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
@@ -15,17 +16,19 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> _sourceEvents;
         private readonly Dictionary<TKey, TValue> _mutated = new();
 
+        Subscription _sourceChangeSubscription;
+        
         protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated)
         {
             _sourceEvents = sourceEvents ?? throw new ArgumentNullException(nameof(sourceEvents));
             mutated = _mutated;
-            _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
         
         public override void Dispose()
         {
             base.Dispose();
-            _sourceEvents.Unsubscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription.Unsubscribe();
             
             foreach (var (key, value) in _mutated)
             {
