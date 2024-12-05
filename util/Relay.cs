@@ -6,7 +6,14 @@ namespace cfEngine.Util
 {
     public abstract class Subscription
     {
-        public abstract void Unsubscribe();
+#if UNITY_EDITOR
+        private static int _uniqueId;
+        private static int getId => unchecked(_uniqueId++);
+        public int Id = getId;
+#endif
+        public virtual void Unsubscribe()
+        {
+        }
     }
 
     public class SubscriptionGroup : Subscription
@@ -20,6 +27,7 @@ namespace cfEngine.Util
         
         public override void Unsubscribe()
         {
+            base.Unsubscribe();
             foreach (var subscription in _subscriptions)
             {
                 subscription.UnsubscribeIfNotNull();
@@ -51,8 +59,11 @@ namespace cfEngine.Util
         
         public override void Unsubscribe()
         {
-            if(ListenerRef.TryGetTarget(out var listener))
+            base.Unsubscribe();
+            if (_relay != null && ListenerRef.TryGetTarget(out var listener))
+            {
                 _relay.RemoveListener(listener);
+            }
         }
     }
 
