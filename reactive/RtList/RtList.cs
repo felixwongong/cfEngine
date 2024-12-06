@@ -18,7 +18,7 @@ namespace cfEngine.Rt
             _list = new List<T>(capacity);
         }
 
-        public RtList(IEnumerable<T> defaultItems)
+        public RtList(IEnumerable<T> defaultItems): base()
         {
             _list = new List<T>();
             _list.AddRange(defaultItems);

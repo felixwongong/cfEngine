@@ -2,15 +2,10 @@ using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
 
-namespace cfEngine.Util
+namespace cfEngine.Rt
 {
-    public abstract class Subscription
+    public abstract partial class Subscription
     {
-#if UNITY_EDITOR
-        private static int _uniqueId;
-        private static int getId => unchecked(_uniqueId++);
-        public int Id = getId;
-#endif
         public virtual void Unsubscribe()
         {
         }

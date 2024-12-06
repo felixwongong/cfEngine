@@ -27,7 +27,7 @@ namespace cfEngine.Rt
         {
             var sub = OnAddRelay.AddListener(onAdd);
 #if UNITY_EDITOR
-            Debug.Instance.Record(this, sub);
+            _RtDebug.Instance.RecordSubscription(this, sub);
 #endif
             return sub;
         }
@@ -36,7 +36,7 @@ namespace cfEngine.Rt
         {
             var sub = OnRemoveRelay.AddListener(onRemove);
 #if UNITY_EDITOR
-            Debug.Instance.Record(this, sub);
+            _RtDebug.Instance.RecordSubscription(this, sub);
 #endif
             return sub;
         }
@@ -45,7 +45,7 @@ namespace cfEngine.Rt
         {
             var sub = OnUpdateRelay.AddListener(onUpdate);
 #if UNITY_EDITOR
-            Debug.Instance.Record(this, sub);
+            _RtDebug.Instance.RecordSubscription(this, sub);
 #endif
             return sub;
         }
@@ -54,7 +54,7 @@ namespace cfEngine.Rt
         {
             var sub = OnDisposeRelay.AddListener(onDispose);
 #if UNITY_EDITOR
-            Debug.Instance.Record(this, sub);
+            _RtDebug.Instance.RecordSubscription(this, sub);
 #endif
             return sub;
         }

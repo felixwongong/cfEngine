@@ -10,7 +10,7 @@ namespace cfEngine.Rt
         
         Subscription _sourceChangeSubscription;
 
-        protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
+        protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents): base()
         {
             _sourceEvents = sourceEvents;
             _sourceChangeSubscription = _sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
@@ -35,7 +35,7 @@ namespace cfEngine.Rt
         private readonly List<TNew> _mutated = new();
 
         private Subscription _sourceChangeSubscription;
-        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated)
+        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated): base()
         {
             mutated = _mutated;
             

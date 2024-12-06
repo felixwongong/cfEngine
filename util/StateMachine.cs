@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using cfEngine.Logging;
+using cfEngine.Rt;
 
 namespace cfEngine.Util
 {

@@ -10,7 +10,7 @@ namespace cfEngine.Rt
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public abstract class RtReadOnlyDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IDisposable
+    public abstract partial class RtReadOnlyDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IDisposable
     {
         private CollectionEvents<KeyValuePair<TKey, TValue>> _collectionEvents;
         protected CollectionEvents<KeyValuePair<TKey, TValue>> CollectionEvents => _collectionEvents ??= new CollectionEvents<KeyValuePair<TKey, TValue>>();
@@ -34,10 +34,10 @@ namespace cfEngine.Rt
         public RtReadOnlyList<KeyValuePair<TKey, TValue>> RtPairs => _rtPairs ??= new RtObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
 
         private RtReadOnlyList<TKey> _rtKeys;
-        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.Select(kvp => kvp.Key);
+        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.select(kvp => kvp.Key);
 
         private RtReadOnlyList<TValue> _rtValues;
-        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.Select(kvp => kvp.Value);
+        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.select(kvp => kvp.Value);
 
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
 
@@ -47,7 +47,14 @@ namespace cfEngine.Rt
         {
             CollectionEvents.OnDisposeRelay.Dispatch();
         }
-        
+
+        protected RtReadOnlyDictionary()
+        {
+#if UNITY_EDITOR
+            _RtDebug.Instance.RecordCollection(this);
+#endif
+        }
+
         ~RtReadOnlyDictionary()
         {
             if (_collectionEvents != null && (_collectionEvents.OnAddRelay.listenerCount > 0 ||

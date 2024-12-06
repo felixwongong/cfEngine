@@ -42,10 +42,10 @@ namespace cfEngine.Meta.Inventory
 
         public InventoryController()
         {
-            ItemGroup = _stackMap.RtValues.GroupBy(item => item.Id);
+            ItemGroup = _stackMap.RtValues.groupBy(item => item.Id);
             VacantItemGroup = _stackMap
-                .Where(kvp => kvp.Value.GetVacancies() > 0).RtValues
-                .GroupBy(item => item.Id);
+                .where(kvp => kvp.Value.GetVacancies() > 0).RtValues
+                .groupBy(item => item.Id);
             
             _stackItemChangeSub = _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate);
         }

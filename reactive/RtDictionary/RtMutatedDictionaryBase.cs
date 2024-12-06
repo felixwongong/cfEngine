@@ -18,7 +18,7 @@ namespace cfEngine.Rt
 
         Subscription _sourceChangeSubscription;
         
-        protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated)
+        protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated): base()
         {
             _sourceEvents = sourceEvents ?? throw new ArgumentNullException(nameof(sourceEvents));
             mutated = _mutated;

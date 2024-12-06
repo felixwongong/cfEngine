@@ -5,7 +5,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
-    public abstract class RtReadOnlyList<T>: IReadOnlyList<T>, IDisposable
+    public abstract partial class RtReadOnlyList<T>: IReadOnlyList<T>, IDisposable
     {
         private CollectionEvents<(int index, T item)> _collectionEvents;
         protected CollectionEvents<(int index, T item)> CollectionEvents => _collectionEvents ??= new CollectionEvents<(int index, T item)>();
@@ -27,9 +27,16 @@ namespace cfEngine.Rt
         
         public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)
         {
-            return list.Select(t => (object)t);
+            return list.select(t => (object)t);
         }
-        
+
+        protected RtReadOnlyList()
+        {
+#if UNITY_EDITOR
+            _RtDebug.Instance.RecordCollection(this);
+#endif 
+        }
+
         ~RtReadOnlyList()
         {
             if (_collectionEvents != null && 

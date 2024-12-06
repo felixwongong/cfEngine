@@ -11,7 +11,7 @@ namespace cfEngine.Rt
         private readonly ICollectionEvents<T> _sourceEvents;
 
         Subscription _sourceChangeSubscription;
-        public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents)
+        public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents): base()
         {
             _list = new List<T>(sourceItems);
             _sourceEvents = sourceEvents;
