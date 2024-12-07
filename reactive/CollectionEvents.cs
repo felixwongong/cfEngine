@@ -1,10 +1,10 @@
 using System;
-using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
-    public partial class CollectionEventsBase
+    public abstract partial class CollectionEventsBase: IDisposable
     {
+        public abstract void Dispose();
     }
     
     public interface ICollectionEvents<out T>
@@ -75,6 +75,14 @@ namespace cfEngine.Rt
                 handle.Add(SubscribeOnDispose(onDispose));
 
             return handle;
+        }
+
+        public override void Dispose()
+        {
+            OnAddRelay.RemoveAll();
+            OnRemoveRelay.RemoveAll();
+            OnUpdateRelay.RemoveAll();
+            OnDisposeRelay.RemoveAll();
         }
     }
 }

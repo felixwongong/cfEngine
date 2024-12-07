@@ -10,13 +10,8 @@ namespace cfEngine.Rt
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public abstract partial class RtReadOnlyDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IDisposable
+    public abstract partial class RtReadOnlyDictionary<TKey, TValue> : RtCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, IDisposable
     {
-        private CollectionEvents<KeyValuePair<TKey, TValue>> _collectionEvents;
-        protected CollectionEvents<KeyValuePair<TKey, TValue>> CollectionEvents => _collectionEvents ??= new CollectionEvents<KeyValuePair<TKey, TValue>>();
-
-        public ICollectionEvents<KeyValuePair<TKey, TValue>> Events => CollectionEvents;
-
         public abstract int Count { get; }
 
         public abstract bool ContainsKey(TKey key);
@@ -42,28 +37,5 @@ namespace cfEngine.Rt
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public virtual void Dispose()
-        {
-            CollectionEvents.OnDisposeRelay.Dispatch();
-        }
-
-        protected RtReadOnlyDictionary()
-        {
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordCollection(this);
-#endif
-        }
-
-        ~RtReadOnlyDictionary()
-        {
-            if (_collectionEvents != null && (_collectionEvents.OnAddRelay.listenerCount > 0 ||
-                                              _collectionEvents.OnRemoveRelay.listenerCount > 0 ||
-                                              _collectionEvents.OnUpdateRelay.listenerCount > 0))
-            {
-                Log.LogError($"{this}.Finalizer, it was not disposed properly!");
-                Dispose();
-            }
-        }
     }
 }

@@ -11,7 +11,7 @@ namespace cfEngine.Rt
         }
     }
 
-    public class SubscriptionGroup : Subscription
+    public partial class SubscriptionGroup : Subscription
     {
         private List<Subscription> _subscriptions = new List<Subscription>();
         
@@ -32,7 +32,7 @@ namespace cfEngine.Rt
         }
     }
     
-    public class SubscriptionBinding<TDelegate>: Subscription where TDelegate: class
+    public partial class SubscriptionBinding<TDelegate>: Subscription where TDelegate: class
     {
         public readonly WeakReference<TDelegate> ListenerRef;
         private readonly RelayBase<TDelegate> _relay;
@@ -121,6 +121,16 @@ namespace cfEngine.Rt
             }
 
             return result;
+        }
+
+        public void RemoveAll()
+        {
+            for (var i = 0; i < _subscriptionRefList.Length; i++)
+            {
+                _subscriptionRefList[i] = null;
+            }
+
+            _cap = _subscriptionRefList.Length;
         }
 
         public bool Contains(TDelegate d)

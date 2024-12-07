@@ -1,69 +1,93 @@
+#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
-    public partial class CollectionEventsBase
+    public interface IDebugMarked
     {
-#if UNITY_EDITOR
-        public Guid Id { get; private set; }
-        public void SetCollectionId(Guid collectionId)
+        public Guid __GetId();
+        public string __GetDebugInfo();
+    }
+    public abstract partial class CollectionEventsBase: IDebugMarked
+    {
+        private Guid __Id;
+        public void __SetCollectionId(Guid collectionId)
         {
-            Id = collectionId;
+            __Id = collectionId;
         }
-#endif
+
+        public Guid __GetId() => __Id;
+
+        public string __GetDebugInfo() => string.Empty;
     }
 
-    public abstract partial class Subscription
+    public abstract partial class Subscription: IDebugMarked
     {
-#if UNITY_EDITOR
-        private static int _uniqueId;
-        private static int getId => unchecked(_uniqueId++);
-        public int Id = getId;
-#endif
-    }
-
-    public abstract partial class RtReadOnlyDictionary<TKey, TValue>
-    {
-#if UNITY_EDITOR
-        private Guid id = Guid.Empty;
-
-        public Guid Id
+        private Guid __Id = Guid.Empty;
+        public Guid __GetId()
         {
-            get
+            if (__Id.Equals(Guid.Empty))
             {
-                if (id == Guid.Empty)
-                {
-                    id = Guid.NewGuid();
-                    CollectionEvents.SetCollectionId(id);
-                }
+                __Id = Guid.NewGuid();
+            }
+            
+            return __Id;
+        }
 
-                return id;
+        public abstract string __GetDebugInfo();
+    }
+    
+    public abstract partial class RtCollection<TEventArgs>: IDebugMarked
+    {
+        private Guid __id = Guid.Empty;
+        public Guid __GetId()
+        {
+            if (__id.Equals(Guid.Empty))
+            {
+                __id = Guid.NewGuid();
+                CollectionEvents.__SetCollectionId(__id);
+            }
+
+            return __id;
+        }
+
+        public string __GetDebugInfo()
+        {
+            return string.Empty;
+        }
+    }
+
+    public partial class SubscriptionBinding<TDelegate>
+    {
+        public override string __GetDebugInfo()
+        {
+            if (ListenerRef.TryGetTarget(out var listener))
+            {
+                return listener is Delegate d ? $"{d.Method.Name}: {d.Target.GetType().GetTypeName()}" : listener.GetType().GetTypeName();
+            }
+            else
+            {
+                return "No listener in subscription";
             }
         }
-#endif
     }
 
-    public abstract partial class RtReadOnlyList<T>
+    public partial class SubscriptionGroup: Subscription
     {
-#if UNITY_EDITOR
-        private Guid id = Guid.Empty;
-
-        public Guid Id
+        public override string __GetDebugInfo()
         {
-            get
+            var sb = new StringBuilder("SubscriptionGroup:");
+            foreach (var subscription in _subscriptions)
             {
-                if (id == Guid.Empty)
-                {
-                    id = Guid.NewGuid();
-                    CollectionEvents.SetCollectionId(id);
-                }
-
-                return id;
+                sb.AppendLine(subscription.__GetDebugInfo());
             }
+
+            return sb.ToString();
         }
-#endif
     }
 
     public class _RtDebug
@@ -74,29 +98,31 @@ namespace cfEngine.Rt
         private Dictionary<Guid, WeakReference<object>> _collections = new();      //Dictionary<CollectionId, IEnumerable<object>>
         public IReadOnlyDictionary<Guid, WeakReference<object>> Collections => _collections;
 
-        private Dictionary<Guid, Dictionary<int, WeakReference<Subscription>>> _collectionSubs = new();      //Dictionary<CollectionId, Dictionary<SubscriptionId, Subscription>>
-        public IReadOnlyDictionary<Guid, Dictionary<int, WeakReference<Subscription>>> CollectionSubs => _collectionSubs;
+        private Dictionary<Guid, Dictionary<Guid, WeakReference<Subscription>>> _collectionSubs = new();      //Dictionary<CollectionId, Dictionary<SubscriptionId, Subscription>>
+        public IReadOnlyDictionary<Guid, Dictionary<Guid, WeakReference<Subscription>>> CollectionSubs => _collectionSubs;
 
-        public void RecordCollection<TKey, TValue>(RtReadOnlyDictionary<TKey, TValue> collection)
+        public void RecordCollection<TEventArgs>(RtCollection<TEventArgs> collection)
         {
-            _collections.Add(collection.Id, new WeakReference<object>(collection));
-        }
-        
-        public void RecordCollection<T>(RtReadOnlyList<T> collection)
-        {
-            _collections.Add(collection.Id, new WeakReference<object>(collection));
+            _collections.Add(collection.__GetId(), new WeakReference<object>(collection));
         }
         
         public void RecordSubscription(CollectionEventsBase events, Subscription subscription)
         {
-            if (!_collectionSubs.TryGetValue(events.Id, out var subscriptions))
+            if (!_collectionSubs.TryGetValue(events.__GetId(), out var subscriptions))
             {
-                subscriptions = new Dictionary<int, WeakReference<Subscription>>();
-                _collectionSubs.Add(events.Id, subscriptions);
+                subscriptions = new();
+                _collectionSubs.Add(events.__GetId(), subscriptions);
             }
 
-            subscriptions.Add(subscription.Id, new WeakReference<Subscription>(subscription));
+            subscriptions.Add(subscription.__GetId(), new WeakReference<Subscription>(subscription));
+        }
+
+        public IReadOnlyDictionary<Guid, WeakReference<Subscription>> GetCollectionSubs(Guid collectionId)
+        {
+            return _collectionSubs.GetValueOrDefault(collectionId);
         }
     }
 
 }
+
+#endif
