@@ -94,13 +94,12 @@ namespace cfEngine.Rt
 
             if (_count == _cap)
             {
-                _cap *= 2;
                 _count = Expand(ref _subscriptionRefList);
             }
 
             var subscription = new SubscriptionBinding<TDelegate>(listener, this);
             var subscriptionRef = new WeakReference<SubscriptionBinding<TDelegate>>(subscription);
-            _subscriptionRefList[_count] = subscriptionRef;
+            _subscriptionRefList[_count++] = subscriptionRef;
 
             return subscription;
         }
@@ -159,9 +158,9 @@ namespace cfEngine.Rt
 
         public int Expand(ref WeakReference<SubscriptionBinding<TDelegate>>[] bindings)
         {
-            var newCap = _cap * 2;
+            _cap *= 2;
             
-            var newBindings = new WeakReference<SubscriptionBinding<TDelegate>>[newCap];
+            var newBindings = new WeakReference<SubscriptionBinding<TDelegate>>[_cap];
             var newCount = 0;
             for (var i = 0; i < bindings.Length; i++)
             {
@@ -170,6 +169,8 @@ namespace cfEngine.Rt
                    newBindings[newCount++] = bindings[i]; 
                 }
             }
+            
+            bindings = newBindings;
 
             return newCount;
         }
