@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if CF_REACTIVE_DEBUG
 
 using System;
 using System.Collections.Generic;
@@ -106,7 +106,7 @@ namespace cfEngine.Rt
             _collections.Add(collection.__GetId(), new WeakReference<object>(collection));
         }
         
-        public void RecordSubscription(CollectionEventsBase events, Subscription subscription)
+        public void RecordSubscription(CollectionEventsBase events, WeakReference<Subscription> subscriptionRef)
         {
             if (!_collectionSubs.TryGetValue(events.__GetId(), out var subscriptions))
             {
@@ -114,7 +114,10 @@ namespace cfEngine.Rt
                 _collectionSubs.Add(events.__GetId(), subscriptions);
             }
 
-            subscriptions.Add(subscription.__GetId(), new WeakReference<Subscription>(subscription));
+            if (subscriptionRef.TryGetTarget(out var sub))
+            {
+                subscriptions.Add(sub.__GetId(), subscriptionRef);
+            }
         }
 
         public IReadOnlyDictionary<Guid, WeakReference<Subscription>> GetCollectionSubs(Guid collectionId)

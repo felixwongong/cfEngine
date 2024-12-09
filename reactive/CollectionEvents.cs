@@ -26,8 +26,8 @@ namespace cfEngine.Rt
         public Subscription SubscribeOnAdd(Action<T> onAdd)
         {
             var sub = OnAddRelay.AddListener(onAdd);
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordSubscription(this, sub);
+#if CF_REACTIVE_DEBUG
+            _RtDebug.Instance.RecordSubscription(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -35,8 +35,8 @@ namespace cfEngine.Rt
         public Subscription SubscribeOnRemove(Action<T> onRemove)
         {
             var sub = OnRemoveRelay.AddListener(onRemove);
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordSubscription(this, sub);
+#if CF_REACTIVE_DEBUG
+            _RtDebug.Instance.RecordSubscription(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -44,8 +44,8 @@ namespace cfEngine.Rt
         public Subscription SubscribeOnUpdate(Action<T, T> onUpdate)
         {
             var sub = OnUpdateRelay.AddListener(onUpdate);
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordSubscription(this, sub);
+#if CF_REACTIVE_DEBUG
+            _RtDebug.Instance.RecordSubscription(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -53,8 +53,8 @@ namespace cfEngine.Rt
         public Subscription SubscribeOnDispose(Action onDispose)
         {
             var sub = OnDisposeRelay.AddListener(onDispose);
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordSubscription(this, sub);
+#if CF_REACTIVE_DEBUG
+            _RtDebug.Instance.RecordSubscription(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }

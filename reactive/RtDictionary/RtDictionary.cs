@@ -16,12 +16,6 @@ namespace cfEngine.Rt
         public override void Dispose()
         {
             base.Dispose();
-            
-            foreach (var (key, value) in _dictionary)
-            {
-                if(key is IDisposable disposableKey) disposableKey.Dispose();
-                if(value is IDisposable disposableValue) disposableValue.Dispose();
-            }
             _dictionary.Clear();
         }
         

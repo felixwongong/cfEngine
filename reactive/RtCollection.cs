@@ -11,8 +11,11 @@ namespace cfEngine.Rt
 
         protected RtCollection()
         {
-#if UNITY_EDITOR
-            _RtDebug.Instance.RecordCollection(this);
+#if CF_REACTIVE_DEBUG
+            if (UnityEditor.EditorApplication.isPlaying)
+            {
+                _RtDebug.Instance.RecordCollection(this);
+            }
 #endif
         }
 

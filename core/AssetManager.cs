@@ -84,7 +84,10 @@ namespace cfEngine.Asset
         {
             foreach (var task in _assetLoadingTasks.Values)
             {
-                task.Dispose();
+                if (task.IsCompleted)
+                {
+                    task.Dispose();
+                }
             }
             
             _assetLoadingTasks.Clear();
