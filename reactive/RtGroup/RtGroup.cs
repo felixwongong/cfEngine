@@ -5,14 +5,8 @@ using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
-    /// <summary>
-    /// Represents a group of items categorized by a key.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the group.</typeparam>
-    /// <typeparam name="TValue">The type of values in the group.</typeparam>
     public class RtGroup<TKey, TValue> : RtReadOnlyDictionary<TKey, RtReadOnlyList<TValue>>
     {
-        private readonly ICollectionEvents<(int index, TValue item)> _sourceEvent;
         private readonly Func<TValue, TKey> _keyFn;
         private readonly Dictionary<TKey, RtList<TValue>> _groups = new();
         
@@ -20,7 +14,7 @@ namespace cfEngine.Rt
 
         public RtGroup(RtReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
         {
-            _sourceEvent = source.Events;
+            var sourceEvent = source.Events;
             _keyFn = keyFn ?? throw new ArgumentNullException(nameof(keyFn));
 
             foreach (var item in source)
@@ -34,7 +28,7 @@ namespace cfEngine.Rt
                 group.Add(item);
             }
 
-            _sourceChangeSubscription = _sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
         }
 
         public override void Dispose()

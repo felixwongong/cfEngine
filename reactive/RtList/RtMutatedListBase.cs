@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
-using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
     public abstract class RtMutatedLocalListBase<TOrig, TNew> : RtReadOnlyList<TNew>
     {
-        private readonly ICollectionEvents<(int, TOrig)> _sourceEvents;
-        
         Subscription _sourceChangeSubscription;
 
-        protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents): base()
+        protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
-            _sourceEvents = sourceEvents;
-            _sourceChangeSubscription = _sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
+            
+#if CF_REACTIVE_DEBUG
+            __SetSourceCollectionId(sourceEvents);
+#endif
         }
 
         public override void Dispose()
@@ -31,16 +31,18 @@ namespace cfEngine.Rt
 
     public abstract class RtMutatedListBase<TOrig, TNew>: RtReadOnlyList<TNew>
     {
-        private readonly ICollectionEvents<(int, TOrig)> _sourceEvents;
         private readonly List<TNew> _mutated = new();
 
         private Subscription _sourceChangeSubscription;
-        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated): base()
+        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated)
         {
             mutated = _mutated;
-            
-            _sourceEvents = sourceEvents;
-            _sourceChangeSubscription = _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+            _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+#if CF_REACTIVE_DEBUG
+            __SetSourceCollectionId(sourceEvents);
+#endif
         }
         
         public override void Dispose()

@@ -13,16 +13,18 @@ namespace cfEngine.Rt
     /// <typeparam name="TValue">The type of values in the mutated dictionary.</typeparam>
     public abstract class RtMutatedDictionaryBase<TSourceKey, TSourceValue, TKey, TValue> : RtReadOnlyDictionary<TKey, TValue>
     {
-        private readonly ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> _sourceEvents;
         private readonly Dictionary<TKey, TValue> _mutated = new();
 
         Subscription _sourceChangeSubscription;
         
         protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents, out Dictionary<TKey, TValue> mutated): base()
         {
-            _sourceEvents = sourceEvents ?? throw new ArgumentNullException(nameof(sourceEvents));
             mutated = _mutated;
-            _sourceChangeSubscription = _sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+            _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+#if CF_REACTIVE_DEBUG
+            __SetSourceCollectionId(sourceEvents);
+#endif
         }
         
         public override void Dispose()

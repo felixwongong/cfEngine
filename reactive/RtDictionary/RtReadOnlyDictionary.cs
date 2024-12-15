@@ -5,12 +5,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
-    /// <summary>
-    /// Represents a read-only dictionary with event dispatching capabilities.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public abstract partial class RtReadOnlyDictionary<TKey, TValue> : RtCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, IDisposable
+    public abstract class RtReadOnlyDictionary<TKey, TValue> : RtCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>
     {
         public abstract int Count { get; }
 
