@@ -19,12 +19,12 @@ namespace cfEngine.Rt
             return __Id;
         }
 
-        public abstract string __GetDebugInfo();
+        public abstract string __GetDebugTitle();
     }
     
     public partial class SubscriptionBinding<TDelegate>
     {
-        public override string __GetDebugInfo()
+        public override string __GetDebugTitle()
         {
             if (ListenerRef.TryGetTarget(out var listener))
             {
@@ -39,12 +39,12 @@ namespace cfEngine.Rt
 
     public partial class SubscriptionGroup
     {
-        public override string __GetDebugInfo()
+        public override string __GetDebugTitle()
         {
             var sb = new StringBuilder("SubscriptionGroup:");
             foreach (var subscription in _subscriptions)
             {
-                sb.AppendLine(subscription.__GetDebugInfo());
+                sb.AppendLine(subscription.__GetDebugTitle());
             }
 
             return sb.ToString();

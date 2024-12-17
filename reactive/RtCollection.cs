@@ -13,10 +13,7 @@ namespace cfEngine.Rt
         protected RtCollection()
         {
 #if CF_REACTIVE_DEBUG
-            if (UnityEditor.EditorApplication.isPlaying)
-            {
-                _RtDebug.Instance.RecordCollection(this);
-            }
+            _RtDebug.Instance.RecordCollection(this);
 #endif
         }
 
@@ -28,6 +25,10 @@ namespace cfEngine.Rt
                 _collectionEvents.Dispose();
                 _collectionEvents = null;
             }
+
+#if CF_REACTIVE_DEBUG
+            _RtDebug.Instance.RemoveCollectionRecord(this);
+#endif
         }
 
         ~RtCollection()

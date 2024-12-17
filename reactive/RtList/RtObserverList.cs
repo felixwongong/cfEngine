@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
-using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
     public class RtObserverList<T>: RtReadOnlyList<T>
     {
         private readonly List<T> _list;
-        private readonly ICollectionEvents<T> _sourceEvents;
 
         Subscription _sourceChangeSubscription;
-        public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents): base()
+        public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents)
         {
             _list = new List<T>(sourceItems);
-            _sourceEvents = sourceEvents;
-            
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+#if CF_REACTIVE_DEBUG
+            __SetSourceCollectionId(sourceEvents);
+#endif
         }
 
         public override void Dispose()

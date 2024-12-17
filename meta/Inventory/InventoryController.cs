@@ -30,9 +30,9 @@ namespace cfEngine.Meta.Inventory
         //
         // private const int PAGE_SIZE = 16;
         //
-        // private RtDictionary<StackId, InventoryItemRecord> _stackMap = new();
-        // public RtReadOnlyDictionary<StackId, InventoryItemRecord> StackMap => _stackMap;
-        // public RtGroup<string, InventoryItemRecord> ItemGroup;
+        private RtDictionary<StackId, InventoryItemRecord> _stackMap = new();
+        public RtReadOnlyDictionary<StackId, InventoryItemRecord> StackMap => _stackMap;
+        public RtGroup<string, InventoryItemRecord> ItemGroup;
         // public RtGroup<string, InventoryItemRecord> VacantItemGroup;
         //
         // private RtList<PageRecord> _pages = new();
@@ -42,7 +42,7 @@ namespace cfEngine.Meta.Inventory
 
         public InventoryController()
         {
-            // ItemGroup = _stackMap.RtValues.groupBy(item => item.Id);
+            ItemGroup = _stackMap.RtValues.groupBy(item => item.Id);
             // VacantItemGroup = _stackMap
             //     .where(kvp => kvp.Value.GetVacancies() > 0).RtValues
             //     .groupBy(item => item.Id);
@@ -52,11 +52,12 @@ namespace cfEngine.Meta.Inventory
 
         public void Dispose()
         {
+            _stackMap.Dispose();
+            ItemGroup.Dispose();
+            
             // _stackItemChangeSub.UnsubscribeIfNotNull();
             //
-            // ItemGroup.Dispose();
             // VacantItemGroup.Dispose();
-            // _stackMap.Dispose();
             //
             // foreach (var pageRecord in _pages)
             // {

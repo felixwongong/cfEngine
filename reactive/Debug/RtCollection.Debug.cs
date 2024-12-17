@@ -1,6 +1,7 @@
 #if CF_REACTIVE_DEBUG
 
 using System;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
@@ -17,9 +18,9 @@ namespace cfEngine.Rt
             return _collectionId;
         }
 
-        public string __GetDebugInfo()
+        public string __GetDebugTitle()
         {
-            return string.Empty;
+            return GetType().GetTypeName();
         }
 
         public void __SetCollectionId(Guid collectionId)
@@ -28,7 +29,7 @@ namespace cfEngine.Rt
         }
     }
 
-    public abstract partial class RtCollection<TEventArgs>: IMarkedDebug
+    public abstract partial class RtCollection<TEventArgs>: ICollectionDebug
     {
         private Guid __sourceId = Guid.Empty;
             
@@ -45,14 +46,17 @@ namespace cfEngine.Rt
             return __id;
         }
 
-        public string __GetDebugInfo()
+        public Guid __GetSourceId() => __sourceId;
+
+        public string __GetDebugTitle()
         {
-            return string.Empty;
+            return GetType().GetTypeName();
         }
         
         public void __SetSourceCollectionId<TSource>(TSource source) where TSource: IMarkedDebug
         {
             __sourceId = source.__GetId();
+            _RtDebug.Instance.RecordMutatedReference(source.__GetId(), __id);
         }
     }
 }

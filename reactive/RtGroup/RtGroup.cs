@@ -29,6 +29,10 @@ namespace cfEngine.Rt
             }
 
             _sourceChangeSubscription = sourceEvent.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
+
+#if CF_REACTIVE_DEBUG
+            __SetSourceCollectionId(source);
+#endif
         }
 
         public override void Dispose()
