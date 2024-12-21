@@ -34,31 +34,23 @@ namespace cfEngine.Rt
     
     public partial class SubscriptionBinding<TDelegate>: Subscription where TDelegate: class
     {
-        public readonly WeakReference<TDelegate> ListenerRef;
+        public readonly TDelegate Listener;
         private readonly RelayBase<TDelegate> _relay;
         public SubscriptionBinding(TDelegate listener, RelayBase<TDelegate> relay)
         {
-            ListenerRef = new WeakReference<TDelegate>(listener);
+            Listener = listener;
             _relay = relay;
         }
 
-        public bool HasListener(TDelegate d)
+        public bool IsListener(TDelegate d)
         {
-            return HasListener(out var listener) && listener.Equals(d);
-        }
-        
-        public bool HasListener(out TDelegate listener)
-        {
-            return ListenerRef.TryGetTarget(out listener);
+            return Listener.Equals(d);
         }
         
         public override void Unsubscribe()
         {
             base.Unsubscribe();
-            if (_relay != null && ListenerRef.TryGetTarget(out var listener))
-            {
-                _relay.RemoveListener(listener);
-            }
+            _relay?.RemoveListener(Listener);
         }
     }
 
@@ -111,7 +103,7 @@ namespace cfEngine.Rt
             {
                 if (_subscriptionRefList[i] != null &&
                     _subscriptionRefList[i].TryGetTarget(out var subscription) &&
-                    subscription.HasListener(listener))
+                    subscription.IsListener(listener))
                 {
                     _subscriptionRefList[i] = null;
                     _count--;
@@ -147,7 +139,7 @@ namespace cfEngine.Rt
         {
             foreach (var bindingRef in bindings)
             {
-                if (bindingRef != null && bindingRef.TryGetTarget(out var binding) && binding.HasListener(target))
+                if (bindingRef != null && bindingRef.TryGetTarget(out var binding) && binding.IsListener(target))
                 {
                     return true;
                 }
@@ -164,7 +156,7 @@ namespace cfEngine.Rt
             var newCount = 0;
             for (var i = 0; i < bindings.Length; i++)
             {
-                if (bindings[i] != null && bindings[i].TryGetTarget(out var binding) && binding.HasListener(out _))
+                if (bindings[i] != null && bindings[i].TryGetTarget(out _))
                 {
                    newBindings[newCount++] = bindings[i]; 
                 }
@@ -183,7 +175,7 @@ namespace cfEngine.Rt
             int newCount = 0;
             for (int i = 0; i < _cap;)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription) || !subscription.HasListener(out var listener))
+                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                 {
                     _subscriptionRefList[i] = null;
                     if (i + 1 < _cap)
@@ -194,7 +186,7 @@ namespace cfEngine.Rt
                 }
                 else
                 {
-                    listener?.Invoke();
+                    subscription.Listener?.Invoke();
                     newCount++;
                 }
 
@@ -212,7 +204,7 @@ namespace cfEngine.Rt
             int newCount = 0;
             for (int i = 0; i < _cap;)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription) || !subscription.HasListener(out var listener))
+                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                 {
                     _subscriptionRefList[i] = null;
                     if (i + 1 < _cap)
@@ -223,7 +215,7 @@ namespace cfEngine.Rt
                 }
                 else
                 {
-                    listener?.Invoke(value1);
+                    subscription.Listener?.Invoke(value1);
                     newCount++;
                 }
 
@@ -241,7 +233,7 @@ namespace cfEngine.Rt
             int newCount = 0;
             for (int i = 0; i < _cap;)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription) || !subscription.HasListener(out var listener))
+                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                 {
                     _subscriptionRefList[i] = null;
                     if (i + 1 < _cap)
@@ -252,7 +244,7 @@ namespace cfEngine.Rt
                 }
                 else
                 {
-                    listener?.Invoke(value1, value2);
+                    subscription.Listener?.Invoke(value1, value2);
                     newCount++;
                 }
 
