@@ -17,6 +17,7 @@ namespace cfEngine.Rt
     {
         public Guid __GetSourceId();
         public bool __IsRoot() => __GetSourceId() == Guid.Empty;
+        public void Dispose();
     }
     
     public class _RtDebug
@@ -57,6 +58,8 @@ namespace cfEngine.Rt
         {
             var id = collection.__GetId();
             _collections.Remove(id);
+            _collectionMutatedReferenceMap.Remove(id);
+            _collectionSubs.Remove(id);
         }
         
         public void RecordSubscription<T, TArg>(T events, WeakReference<Subscription> subscriptionRef) where T: ICollectionEvents<TArg>
