@@ -26,14 +26,7 @@ namespace cfEngine.Rt
     {
         public override string __GetDebugTitle()
         {
-            if (ListenerRef.TryGetTarget(out var listener))
-            {
-                return listener is Delegate d ? $"{d.Method.Name}: {d.Target.GetType().GetTypeName()}" : listener.GetType().GetTypeName();
-            }
-            else
-            {
-                return "No listener in subscription";
-            }
+            return Listener is Delegate d ? $"{d.Target.GetType().GetTypeName()}.{d.Method.Name}" : Listener.GetType().GetTypeName();
         }
     }
 
