@@ -5,13 +5,13 @@ namespace cfEngine.Meta.Inventory
     public partial class InventoryController
     {
             [Serializable]
-            public class InventoryItemRecord
+            public class StackRecord
             {
                 public readonly Guid StackId;
                 public readonly string Id;
                 public readonly int ItemCount;
                 
-                public InventoryItemRecord(Guid stackId, string id, int itemCount)
+                public StackRecord(Guid stackId, string id, int itemCount)
                 {
                     StackId = stackId;
                     Id = id;
@@ -23,9 +23,9 @@ namespace cfEngine.Meta.Inventory
                     return Game.Info.Get<InventoryInfoManager>().GetOrDefault(Id).maxStackSize - ItemCount;
                 }
             
-                public InventoryItemRecord CloneNewCount(int itemCount)
+                public StackRecord CloneNewCount(int itemCount)
                 {
-                    return new InventoryItemRecord(StackId, Id, itemCount);
+                    return new StackRecord(StackId, Id, itemCount);
                 }
             }
     }

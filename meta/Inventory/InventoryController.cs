@@ -6,7 +6,6 @@ using cfEngine.Core;
 using cfEngine.Logging;
 using cfEngine.Rt;
 using cfEngine.Util;
-using UnityEngine;
 using ItemId = System.String;
 using StackId = System.Guid;
 
@@ -22,7 +21,7 @@ namespace cfEngine.Meta.Inventory
 {
     public partial class InventoryController : IRuntimeSavable, IDisposable
     {
-        public class UpdateInventoryRequest
+        public class UpdateRequest
         {
             public string ItemId;
             public int Count;
@@ -31,34 +30,31 @@ namespace cfEngine.Meta.Inventory
         
         private const int PAGE_SIZE = 16;
         
-        private RtDictionary<StackId, InventoryItemRecord> _stackMap = new();
-        public RtReadOnlyDictionary<StackId, InventoryItemRecord> StackMap => _stackMap;
-        public RtGroup<string, InventoryItemRecord> ItemGroup;
-        public RtGroup<string, InventoryItemRecord> VacantItemGroup;
+        private RtDictionary<StackId, StackRecord> _stackMap = new();
+        public RtReadOnlyDictionary<StackId, StackRecord> StackMap => _stackMap;
+        public RtGroup<string, StackRecord> ItemStackGroup;
+        public RtGroup<string, StackRecord> VacantItemStackGroup;
         
         private RtList<PageRecord> _pages = new();
         public RtReadOnlyList<PageRecord> Pages => _pages;
         
-        Subscription _stackItemChangeSub;
+        Subscription _stackMapChangeSub;
 
         public InventoryController()
         {
-            ItemGroup = _stackMap.RtValues.groupBy(item => item.Id);
-            VacantItemGroup = _stackMap
+            ItemStackGroup = _stackMap.RtValues.groupBy(item => item.Id);
+            VacantItemStackGroup = _stackMap
                 .where(kvp => kvp.Value.GetVacancies() > 0).RtValues
                 .groupBy(item => item.Id);
 
-            _stackItemChangeSub = _stackMap.Events.Subscribe(OnItemAdd, OnItemRemove, OnItemUpdate);
+            _stackMapChangeSub = _stackMap.Events.Subscribe(OnNewStackAdded, OnStackRemoved, OnStackUpdated);
         }
 
         public void Dispose()
         {
+            _stackMapChangeSub.UnsubscribeIfNotNull();
+            
             _stackMap.Dispose();
-            ItemGroup.Dispose();
-            
-            _stackItemChangeSub.UnsubscribeIfNotNull();
-            
-            VacantItemGroup.Dispose();
             
             foreach (var pageRecord in _pages)
             {
@@ -72,7 +68,7 @@ namespace cfEngine.Meta.Inventory
         {
             if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
             {
-                var saved = data.GetValue<Dictionary<StackId, InventoryItemRecord>>();
+                var saved = data.GetValue<Dictionary<StackId, StackRecord>>();
                 foreach (var kvp in saved)
                 {
                     _stackMap.Add(kvp);
@@ -90,7 +86,7 @@ namespace cfEngine.Meta.Inventory
             dataMap[UserDataKey.Inventory] = _stackMap;
         }
 
-        private void OnItemAdd(KeyValuePair<Guid, InventoryItemRecord> kvp)
+        private void OnNewStackAdded(KeyValuePair<Guid, StackRecord> kvp)
         {
             var stackId = kvp.Key;
             foreach (var page in _pages)
@@ -107,7 +103,7 @@ namespace cfEngine.Meta.Inventory
             _pages.Add(newPage);
         }
         
-        private void OnItemRemove(KeyValuePair<Guid, InventoryItemRecord> kvp)
+        private void OnStackRemoved(KeyValuePair<Guid, StackRecord> kvp)
         {
             var stackId = kvp.Key;
             foreach (var page in _pages)
@@ -122,7 +118,7 @@ namespace cfEngine.Meta.Inventory
             Log.LogError("StackId not found in any page, something went wrong.");
         }
         
-        private void OnItemUpdate(KeyValuePair<Guid, InventoryItemRecord> oldItem, KeyValuePair<Guid, InventoryItemRecord> newItem)
+        private void OnStackUpdated(KeyValuePair<Guid, StackRecord> oldItem, KeyValuePair<Guid, StackRecord> newItem)
         {
             if(oldItem.Key != newItem.Key)
             {
@@ -141,7 +137,7 @@ namespace cfEngine.Meta.Inventory
             }
         }
 
-        public void AddItem(UpdateInventoryRequest request)
+        public void AddItem(UpdateRequest request)
         {
             var itemCount = request.Count;
             if (request.StackId != Guid.Empty)
@@ -151,7 +147,7 @@ namespace cfEngine.Meta.Inventory
             
             if(itemCount <= 0) return;
         
-            if (VacantItemGroup.TryGetValue(request.ItemId, out var vacantItems))
+            if (VacantItemStackGroup.TryGetValue(request.ItemId, out var vacantItems))
             {
                 Span<(int, int)> itemAddCounts = stackalloc (int, int)[vacantItems.Count];
         
@@ -196,14 +192,14 @@ namespace cfEngine.Meta.Inventory
             {
                 var itemCount = Math.Min(count, maxStackSize);
                 var stackId = Guid.NewGuid();
-                _stackMap.Add(stackId, new InventoryItemRecord(stackId, itemId, itemCount));
+                _stackMap.Add(stackId, new StackRecord(stackId, itemId, itemCount));
                 count -= itemCount;
             }
         }
         
-        public Validation<bool> RemoveItem(UpdateInventoryRequest request)
+        public Validation<bool> RemoveItem(UpdateRequest request)
         {
-            if (!ItemGroup.TryGetValue(request.ItemId, out var group))
+            if (!ItemStackGroup.TryGetValue(request.ItemId, out var group))
             {
                 return Validation<bool>.Failure(new InvalidOperationException($"Item {request.ItemId} not found, cannot remove."));
             }
