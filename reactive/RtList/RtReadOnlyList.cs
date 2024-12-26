@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rt
 {
-    public abstract partial class RtReadOnlyList<T>: RtCollection<(int index, T item)>, IReadOnlyList<T>, IDisposable
+    public abstract partial class RtReadOnlyList<T>: RtCollection<(int index, T item)>, IReadOnlyList<T>
     {
         public abstract IEnumerator<T> GetEnumerator();
 

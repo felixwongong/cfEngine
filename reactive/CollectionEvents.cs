@@ -13,10 +13,24 @@ namespace cfEngine.Rt
     
     public partial class CollectionEvents<T>: ICollectionEvents<T>
     {
-        public readonly Relay<T> OnAddRelay = new();
-        public readonly Relay<T> OnRemoveRelay = new();
-        public readonly Relay<T, T> OnUpdateRelay = new();
-        public readonly Relay OnDisposeRelay = new();
+        public readonly Relay<T> OnAddRelay;
+        public readonly Relay<T> OnRemoveRelay;
+        public readonly Relay<T, T> OnUpdateRelay;
+        public readonly Relay OnDisposeRelay;
+
+#pragma warning disable 0414
+        private object _o;
+#pragma warning restore 0414
+        
+        public CollectionEvents(object owner)
+        {
+            _o = owner;
+
+            OnAddRelay = new Relay<T>(this);
+            OnRemoveRelay = new Relay<T>(this);
+            OnUpdateRelay = new Relay<T, T>(this);
+            OnDisposeRelay = new Relay(this);
+        }
 
         public Subscription SubscribeOnAdd(Action<T> onAdd)
         {

@@ -20,13 +20,13 @@ namespace cfEngine.Rt
         /// <param name="source">The source read-only dictionary.</param>
         /// <param name="selectFn">The function to select keys.</param>
         public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
-            : base(source.Events, out var mutated)
+            : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
-            mutated.EnsureCapacity(source.Count);
+            _mutated.EnsureCapacity(source.Count);
             foreach (var (origKey, value) in source)
             {
-                mutated[selectFn(origKey)] = value;
+                _mutated[selectFn(origKey)] = value;
             }
         }
 

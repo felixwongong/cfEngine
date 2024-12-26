@@ -31,13 +31,11 @@ namespace cfEngine.Rt
 
     public abstract class RtMutatedListBase<TOrig, TNew>: RtReadOnlyList<TNew>
     {
-        private readonly List<TNew> _mutated = new();
+        protected readonly List<TNew> _mutated = new();
 
         private Subscription _sourceChangeSubscription;
-        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents, out List<TNew> mutated)
+        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
-            mutated = _mutated;
-
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
 
 #if CF_REACTIVE_DEBUG

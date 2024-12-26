@@ -12,14 +12,14 @@ namespace cfEngine.Rt
     {
         private readonly Func<TOrig, TNew> _selectFn;
 
-        public RtSelectList(RtReadOnlyList<TOrig> source, Func<TOrig, TNew> selectFn) : base(source.Events, out var mutated)
+        public RtSelectList(RtReadOnlyList<TOrig> source, Func<TOrig, TNew> selectFn) : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
 
-            mutated.Capacity = source.Count;
+            _mutated.Capacity = source.Count;
             foreach (var item in source)
             {
-                mutated.Add(selectFn(item));
+                _mutated.Add(selectFn(item));
             }
         }
 

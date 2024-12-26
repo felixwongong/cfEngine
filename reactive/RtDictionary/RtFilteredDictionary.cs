@@ -12,7 +12,7 @@ namespace cfEngine.Rt
     {
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
-        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events, out var mutated)
+        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events)
         {
             _filterFn = filterFn ?? throw new ArgumentNullException(nameof(filterFn));
 
@@ -20,7 +20,7 @@ namespace cfEngine.Rt
             {
                 if (!filterFn(kvp)) continue;
 
-                mutated.Add(kvp.Key, kvp.Value);
+                _mutated.Add(kvp.Key, kvp.Value);
             }
         }
 

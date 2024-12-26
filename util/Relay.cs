@@ -6,9 +6,7 @@ namespace cfEngine.Rt
 {
     public abstract partial class Subscription
     {
-        public virtual void Unsubscribe()
-        {
-        }
+        public abstract void Unsubscribe();
     }
 
     public partial class SubscriptionGroup : Subscription
@@ -22,7 +20,6 @@ namespace cfEngine.Rt
         
         public override void Unsubscribe()
         {
-            base.Unsubscribe();
             foreach (var subscription in _subscriptions)
             {
                 subscription.UnsubscribeIfNotNull();
@@ -49,7 +46,6 @@ namespace cfEngine.Rt
         
         public override void Unsubscribe()
         {
-            base.Unsubscribe();
             _relay?.RemoveListener(Listener);
         }
     }
@@ -69,9 +65,14 @@ namespace cfEngine.Rt
         protected int _count;
 
         public int listenerCount => _count;
+        
+#pragma warning disable 0414
+        private readonly object _o;
+#pragma warning restore 0414
 
-        public RelayBase(int defaultSize = 1)
+        public RelayBase(object owner, int defaultSize = 1)
         {
+            _o = owner;
             _cap = defaultSize;
             _subscriptionRefList = new WeakReference<SubscriptionBinding<TDelegate>>[_cap];
         }
@@ -170,6 +171,9 @@ namespace cfEngine.Rt
     
     public class Relay: RelayBase<Action>
     {
+        public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
+        {
+        }
         public void Dispatch()
         {
             int newCount = 0;
@@ -199,6 +203,9 @@ namespace cfEngine.Rt
     
     public class Relay<T>: RelayBase<Action<T>>
     {
+        public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
+        {
+        }
         public void Dispatch(T value1)
         {
             int newCount = 0;
@@ -228,6 +235,9 @@ namespace cfEngine.Rt
 
     public class Relay<T1, T2> : RelayBase<Action<T1, T2>>
     {
+        public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
+        {
+        }
         public void Dispatch(T1 value1, T2 value2)
         { 
             int newCount = 0;

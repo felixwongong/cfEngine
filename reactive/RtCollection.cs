@@ -1,13 +1,14 @@
 using System;
 using System.Diagnostics;
 using cfEngine.Logging;
+using cfEngine.Util;
 
 namespace cfEngine.Rt
 {
     public abstract partial class RtCollection<TEventArgs>: IDisposable
     {
         private CollectionEvents<TEventArgs> _collectionEvents;
-        protected CollectionEvents<TEventArgs> CollectionEvents => _collectionEvents ??= new CollectionEvents<TEventArgs>();
+        protected CollectionEvents<TEventArgs> CollectionEvents => _collectionEvents ??= new CollectionEvents<TEventArgs>(this);
         public ICollectionEvents<TEventArgs> Events => CollectionEvents;
 
         protected RtCollection()
@@ -37,7 +38,7 @@ namespace cfEngine.Rt
                                               _collectionEvents.OnRemoveRelay.listenerCount > 0 ||
                                               _collectionEvents.OnUpdateRelay.listenerCount > 0))
             {
-                Log.LogError($"{this}.Finalizer, it was not disposed properly!");
+                Log.LogError($"{GetType().GetTypeName()}.Finalizer, it was not disposed properly!");
                 Dispose();
             }
         }
