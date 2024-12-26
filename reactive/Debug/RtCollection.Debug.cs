@@ -35,6 +35,8 @@ namespace cfEngine.Rt
             
         private Guid __id = Guid.Empty;
         
+        public string name { get; private set; }
+        
         public Guid __GetId()
         {
             if (__id.Equals(Guid.Empty))
@@ -50,13 +52,23 @@ namespace cfEngine.Rt
 
         public string __GetDebugTitle()
         {
-            return GetType().GetTypeName();
+            if (string.IsNullOrEmpty(name))
+            {
+                return GetType().GetTypeName();
+            } 
+            
+            return name;
         }
         
         public void __SetSourceCollectionId<TSource>(TSource source) where TSource: IMarkedDebug
         {
             __sourceId = source.__GetId();
             _RtDebug.Instance.RecordMutatedReference(source.__GetId(), __id);
+        }
+        
+        public void __SetDebugName(string name)
+        {
+            this.name = name;
         }
     }
 }

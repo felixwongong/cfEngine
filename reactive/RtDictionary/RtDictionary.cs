@@ -12,7 +12,7 @@ namespace cfEngine.Rt
     public class RtDictionary<TKey, TValue> : RtReadOnlyDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new();
-
+        
         public override void Dispose()
         {
             base.Dispose();

@@ -19,8 +19,7 @@ namespace cfEngine.Rt
         /// </summary>
         /// <param name="source">The source read-only dictionary.</param>
         /// <param name="selectFn">The function to select keys.</param>
-        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn)
-            : base(source.Events)
+        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn) : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
             _mutated.EnsureCapacity(source.Count);
