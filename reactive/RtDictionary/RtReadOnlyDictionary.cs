@@ -21,13 +21,55 @@ namespace cfEngine.Rt
 
         private RtReadOnlyList<KeyValuePair<TKey, TValue>> _rtPairs;
         
-        public RtReadOnlyList<KeyValuePair<TKey, TValue>> RtPairs => _rtPairs ??= new RtObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
+        public RtReadOnlyList<KeyValuePair<TKey, TValue>> RtPairs
+        {
+            get
+            {
+                if (_rtPairs == null)
+                {
+                    _rtPairs = new RtObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
+#if CF_REACTIVE_DEBUG
+                    _rtPairs.__SetDebugName(nameof(RtPairs));
+#endif
+                }
+
+                return _rtPairs;
+            }
+        }
 
         private RtReadOnlyList<TKey> _rtKeys;
-        public RtReadOnlyList<TKey> RtKeys => _rtKeys ??= RtPairs.select(kvp => kvp.Key);
+        public RtReadOnlyList<TKey> RtKeys
+        {
+            get
+            {
+                if (_rtKeys == null)
+                {
+                    _rtKeys = RtPairs.select(kvp => kvp.Key);
+#if CF_REACTIVE_DEBUG
+                    _rtKeys.__SetDebugName(nameof(RtKeys));
+#endif
+                }
+
+                return _rtKeys;
+            }
+        }
 
         private RtReadOnlyList<TValue> _rtValues;
-        public RtReadOnlyList<TValue> RtValues => _rtValues ??= RtPairs.select(kvp => kvp.Value);
+        public RtReadOnlyList<TValue> RtValues
+        {
+            get
+            {
+                if (_rtValues == null)
+                {
+                    _rtValues = RtPairs.select(kvp => kvp.Value);
+#if CF_REACTIVE_DEBUG
+                    _rtValues.__SetDebugName(nameof(RtValues));
+#endif
+                }
+
+                return _rtValues;
+            }
+        }
 
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
 

@@ -4,11 +4,6 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rt
 {
-    /// <summary>
-    /// Represents a dictionary that supports mutation and event dispatching.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
     public class RtDictionary<TKey, TValue> : RtReadOnlyDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new();
@@ -62,7 +57,7 @@ namespace cfEngine.Rt
         {
             var (key, value) = kvp;
             if (key == null) throw new ArgumentNullException(nameof(key));
-            if (_dictionary.TryGetValue(kvp.Key, out var v) && v.Equals(kvp.Value))
+            if (_dictionary.TryGetValue(kvp.Key, out var v) && v.Equals(value))
             {
                 _dictionary.Remove(key);
                 CollectionEvents.OnRemoveRelay.Dispatch(kvp);

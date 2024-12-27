@@ -29,13 +29,20 @@ namespace cfEngine.Rt
         }
     }
 
+    public interface ICollectionDebug : IMarkedDebug
+    {
+        public Guid __GetSourceId();
+        public bool __IsRoot() => __GetSourceId() == Guid.Empty;
+        public void Dispose();
+    }
+    
     public abstract partial class RtCollection<TEventArgs>: ICollectionDebug
     {
         private Guid __sourceId = Guid.Empty;
             
         private Guid __id = Guid.Empty;
         
-        public string name { get; private set; }
+        public string __name { get; private set; }
         
         public Guid __GetId()
         {
@@ -52,12 +59,12 @@ namespace cfEngine.Rt
 
         public string __GetDebugTitle()
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(__name))
             {
                 return GetType().GetTypeName();
             } 
             
-            return name;
+            return __name;
         }
         
         public void __SetSourceCollectionId<TSource>(TSource source) where TSource: IMarkedDebug
@@ -68,7 +75,7 @@ namespace cfEngine.Rt
         
         public void __SetDebugName(string name)
         {
-            this.name = name;
+            this.__name = name;
         }
     }
 }

@@ -48,6 +48,11 @@ namespace cfEngine.Meta.Inventory
                 .groupBy(item => item.Id);
 
             _stackMapChangeSub = _stackMap.Events.Subscribe(OnNewStackAdded, OnStackRemoved, OnStackUpdated);
+
+#if CF_REACTIVE_DEBUG
+            _stackMap.__SetDebugName(nameof(_stackMap));
+            _pages.__SetDebugName(nameof(_pages));
+#endif
         }
 
         public void Dispose()
@@ -77,13 +82,23 @@ namespace cfEngine.Meta.Inventory
             
             if (_pages.Count <= 0)
             {
-                _pages.Add(new PageRecord(PAGE_SIZE));
+                _pages.Add(CreatePage());
             }
         }
         
         public void Save(Dictionary<string, object> dataMap)
         {
             dataMap[UserDataKey.Inventory] = _stackMap;
+        }
+
+        private PageRecord CreatePage()
+        {
+            var page = new PageRecord(PAGE_SIZE);
+#if CF_REACTIVE_DEBUG
+            page.__SetDebugName($"{nameof(_pages)}/{_pages.Count}");
+            page.__SetSourceCollectionId(_pages);
+#endif
+            return page;
         }
 
         private void OnNewStackAdded(KeyValuePair<Guid, StackRecord> kvp)
@@ -96,8 +111,8 @@ namespace cfEngine.Meta.Inventory
                     return;
                 }
             }
-            
-            var newPage = new PageRecord(PAGE_SIZE);
+
+            var newPage = CreatePage();
             newPage.TryAddToEmptySlot(kvp.Key);
             
             _pages.Add(newPage);

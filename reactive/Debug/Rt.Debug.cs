@@ -13,13 +13,6 @@ namespace cfEngine.Rt
         public string __GetDebugTitle();
     }
 
-    public interface ICollectionDebug : IMarkedDebug
-    {
-        public Guid __GetSourceId();
-        public bool __IsRoot() => __GetSourceId() == Guid.Empty;
-        public void Dispose();
-    }
-    
     public class _RtDebug
     {
         private static _RtDebug _instance;
