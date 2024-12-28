@@ -31,16 +31,5 @@ namespace cfEngine.Rt
             _RtDebug.Instance.RemoveCollectionRecord(this);
 #endif
         }
-
-        ~RtCollection()
-        {
-            if (_collectionEvents != null && (_collectionEvents.OnAddRelay.listenerCount > 0 ||
-                                              _collectionEvents.OnRemoveRelay.listenerCount > 0 ||
-                                              _collectionEvents.OnUpdateRelay.listenerCount > 0))
-            {
-                Log.LogError($"{GetType().GetTypeName()}.Finalizer, it was not disposed properly!");
-                Dispose();
-            }
-        }
     }
 }
