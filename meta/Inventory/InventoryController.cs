@@ -96,7 +96,6 @@ namespace cfEngine.Meta.Inventory
             var page = new PageRecord(PAGE_SIZE);
 #if CF_REACTIVE_DEBUG
             page.__SetDebugName($"{nameof(_pages)}/{_pages.Count}");
-            page.__SetSourceCollectionId(_pages);
 #endif
             return page;
         }
