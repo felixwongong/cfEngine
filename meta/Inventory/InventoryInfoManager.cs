@@ -3,7 +3,7 @@ using cfEngine.Info;
 
 namespace cfEngine.Meta
 {
-    public class InventoryInfoManager: ExcelInfoManager<string, InventoryInfo>
+    public class InventoryInfoManager: ConfigInfoManager<string, InventoryInfo>
     {
         public override string InfoDirectory => nameof(InventoryInfo);
         protected override Func<InventoryInfo, string> KeyFn => info => info.itemId;

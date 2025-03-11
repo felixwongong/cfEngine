@@ -54,7 +54,7 @@ namespace cfEngine.Info
         }
     }
 
-    public abstract class ExcelInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
+    public abstract class ConfigInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
     {
         protected readonly Dictionary<TKey, TInfo> _valueMap = new();
         public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
@@ -64,7 +64,7 @@ namespace cfEngine.Info
 
         protected abstract Func<TInfo, TKey> KeyFn { get; }
 
-        protected ExcelInfoManager() : base()
+        protected ConfigInfoManager() : base()
         {
         }
 
