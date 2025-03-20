@@ -22,15 +22,15 @@ namespace cfEngine.Core
     
     public partial class UserDataManager
     {
-        private readonly Storage _storage;
-        private readonly Serializer _serializer;
+        private readonly IStorage _storage;
+        private readonly ISerializer _serializer;
 
         private readonly List<IRuntimeSavable> _savables = new();
 
         private const string dataFileName = "data";
         private const string backupFileName = dataFileName + ".backup";
 
-        public UserDataManager(Storage storage, Serializer serializer)
+        public UserDataManager(IStorage storage, ISerializer serializer)
         {
             _storage = storage;
             _serializer = serializer;

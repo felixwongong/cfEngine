@@ -3,57 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using cfEngine.IO;
 using cfEngine.Logging;
-using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
 
 namespace cfEngine.Info
 {
-    public abstract class InfoManager: IDisposable
-    {
-        private Serializer _serializer;
-
-        public Serializer Serializer
-        {
-            protected get => _serializer;
-            set => _serializer = value;
-        }
-
-        private DataObjectEncoder _encoder;
-
-        public DataObjectEncoder Encoder
-        {
-            protected get => _encoder;
-            set => _encoder = value;
-        }
-
-        private Storage _storage;
-
-        public Storage Storage
-        {
-            protected get => _storage;
-            set => _storage = value;
-        }
-
-        public abstract string InfoDirectory { get; }
-
-        public abstract void DirectlyLoadFromExcel();
-        public abstract void LoadSerialized();
-        public abstract Task LoadSerializedAsync(CancellationToken cancellationToken);
-        public abstract void SerializeIntoStorage();
-        public virtual void OnLoadCompleted() {}
-
-        public virtual void Dispose()
-        {
-            _serializer = null;
-            _encoder?.Dispose();
-            _encoder = null;
-            _storage?.Dispose();
-            _storage = null;
-        }
-    }
-
     public abstract class ConfigInfoManager<TKey, TInfo> : InfoManager where TKey : notnull
     {
         protected readonly Dictionary<TKey, TInfo> _valueMap = new();

@@ -9,19 +9,19 @@ namespace cfEngine.Core.Layer
 {
     public partial class InfoLayer: IDisposable
     {
-        private readonly Storage _storage;
-        private readonly Serializer _serializer;
+        private readonly IStorage _storage;
+        private readonly ISerializer _serializer;
 
-        private readonly Dictionary<Type, InfoManager> _infoMap = new();
-        public IReadOnlyDictionary<Type, InfoManager> InfoMap => _infoMap;
+        private readonly Dictionary<string, IInfoManager> _infoMap = new();
+        public IReadOnlyDictionary<string, IInfoManager> InfoMap => _infoMap;
 
-        public InfoLayer(Storage storage, Serializer serializer)
+        public InfoLayer(IStorage storage, ISerializer serializer)
         {
             _storage = storage;
             _serializer = serializer;
         }
 
-        public void RegisterInfo(InfoManager infoManager)
+        public void RegisterInfo(IInfoManager infoManager)
         {
             var infoKey = infoManager.InfoDirectory;
 
@@ -31,7 +31,7 @@ namespace cfEngine.Core.Layer
                     $"{nameof(infoManager)} ValueMap key is invalid.");
             }
 
-            if (!_infoMap.TryAdd(infoManager.GetType(), infoManager))
+            if (!_infoMap.TryAdd(infoManager.infoKey, infoManager))
             {
                 throw new ArgumentException(nameof(infoManager), $"Info key {infoKey} already exist");
             }
@@ -41,9 +41,9 @@ namespace cfEngine.Core.Layer
             infoManager.Encoder = new DataObjectEncoder();
         }
 
-        public bool TryGetInfo<TInfo>(out TInfo infoManager) where TInfo : InfoManager
+        public bool TryGetInfo<TInfo>(string infoKey, out TInfo infoManager) where TInfo : InfoManager
         {
-            if (_infoMap.TryGetValue(typeof(TInfo), out var info) && info is TInfo tInfo)
+            if (_infoMap.TryGetValue(infoKey, out var info) && info is TInfo tInfo)
             {
                 infoManager = tInfo;
                 return true;
@@ -53,9 +53,19 @@ namespace cfEngine.Core.Layer
             return false;
         }
 
+        public bool TryGetInfoByName<TInfo>(out TInfo infoManager) where TInfo : InfoManager
+        {
+            return TryGetInfo(nameof(TInfo), out infoManager);
+        }
+
+        public TInfo Get<TInfo>(string infoKey) where TInfo : InfoManager
+        {
+            return _infoMap[infoKey] as TInfo;
+        }
+
         public TInfo Get<TInfo>() where TInfo : InfoManager
         {
-            return _infoMap[typeof(TInfo)] as TInfo;
+            return Get<TInfo>(nameof(TInfo));
         }
 
         public void Dispose()

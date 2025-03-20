@@ -5,6 +5,7 @@ namespace cfEngine.Meta
 {
     public class InventoryInfoManager: ConfigInfoManager<string, InventoryInfo>
     {
+        public override string infoKey => nameof(InventoryInfoManager);
         public override string InfoDirectory => nameof(InventoryInfo);
         protected override Func<InventoryInfo, string> KeyFn => info => info.itemId;
 
