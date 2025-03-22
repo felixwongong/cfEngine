@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using cfEngine.Core;
 using cfEngine.Logging;
 using cfEngine.Rt;
+using cfEngine.Service.Inventory;
 using cfEngine.Util;
 using ItemId = System.String;
 using StackId = System.Guid;
@@ -14,6 +15,19 @@ namespace cfEngine.Core
     public partial class UserDataKey
     {
         public const string Inventory = "Inventory";
+    }
+    
+    public static partial class ServiceName
+    {
+        public const string Inventory = "Inventory";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static InventoryService GetInventory(this Game game)
+        {
+            return game.GetService<InventoryService>(ServiceName.Inventory);
+        }
     }
 }
 
@@ -206,7 +220,7 @@ namespace cfEngine.Service.Inventory
         
         public void AddAllToNewStacks(ItemId itemId, int count)
         {
-            var maxStackSize = InfoManager.GetOrDefault(itemId).maxStackSize;
+            var maxStackSize = Game.Current.GetInfo().Get<InventoryInfoManager>().GetOrDefault(itemId).maxStackSize;
             while (count > 0)
             {
                 var itemCount = Math.Min(count, maxStackSize);
