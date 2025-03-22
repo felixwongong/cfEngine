@@ -1,7 +1,7 @@
 using System;
 using cfEngine.Info;
 
-namespace cfEngine.Meta
+namespace cfEngine.Service
 {
     public class InventoryInfoManager: ConfigInfoManager<string, InventoryInfo>
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using cfEngine.Logging;
+using cfEngine.Service;
 
 namespace cfEngine.Asset
 {
@@ -24,7 +25,7 @@ namespace cfEngine.Asset
         }
     }
     
-    public abstract class AssetManager<TBaseObject>: IDisposable where TBaseObject: class
+    public abstract class AssetManager<TBaseObject>: IService where TBaseObject: class
     {
         private Dictionary<string, Task> _assetLoadingTasks = new();
         private Dictionary<string, AssetHandle> _assetMap = new();

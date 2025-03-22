@@ -3,17 +3,17 @@ using System;
 using NUnit.Framework;
 using cfEngine.Util;
 
-namespace cfEngine.Meta.Inventory
+namespace cfEngine.Service.Inventory
 {
     [TestFixture]
-    public partial class InventoryController
+    public partial class InventoryService
     {
-        private InventoryController _inventoryController;
+        private InventoryService _inventoryService;
     
         [SetUp]
         public void SetUp()
         {
-            _inventoryController = new InventoryController();
+            _inventoryService = new InventoryService();
         }
     
         [Test]
@@ -25,10 +25,10 @@ namespace cfEngine.Meta.Inventory
                 Count = 1
             };
     
-            _inventoryController.AddItem(request);
+            _inventoryService.AddItem(request);
     
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item1"));
-            Assert.AreEqual(1, _inventoryController.ItemStackGroup["item1"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item1"));
+            Assert.AreEqual(1, _inventoryService.ItemStackGroup["item1"][0].ItemCount);
         }
     
         [Test]
@@ -39,17 +39,17 @@ namespace cfEngine.Meta.Inventory
                 ItemId = "item1",
                 Count = 1
             };
-            _inventoryController.AddItem(addRequest);
+            _inventoryService.AddItem(addRequest);
     
             var removeRequest = new UpdateRequest
             {
                 ItemId = "item1",
                 Count = 1
             };
-            var result = _inventoryController.RemoveItem(removeRequest);
+            var result = _inventoryService.RemoveItem(removeRequest);
     
             Assert.IsTrue(result.State == ValidationState.Success);
-            Assert.IsFalse(_inventoryController.ItemStackGroup.ContainsKey("item1"));
+            Assert.IsFalse(_inventoryService.ItemStackGroup.ContainsKey("item1"));
         }
     
         [Test]
@@ -71,16 +71,16 @@ namespace cfEngine.Meta.Inventory
                 Count = 4
             };
     
-            _inventoryController.AddItem(request1);
-            _inventoryController.AddItem(request2);
-            _inventoryController.AddItem(request3);
+            _inventoryService.AddItem(request1);
+            _inventoryService.AddItem(request2);
+            _inventoryService.AddItem(request3);
     
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item1"));
-            Assert.AreEqual(2, _inventoryController.ItemStackGroup["item1"][0].ItemCount);
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item2"));
-            Assert.AreEqual(3, _inventoryController.ItemStackGroup["item2"][0].ItemCount);
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item3"));
-            Assert.AreEqual(4, _inventoryController.ItemStackGroup["item3"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item1"));
+            Assert.AreEqual(2, _inventoryService.ItemStackGroup["item1"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item2"));
+            Assert.AreEqual(3, _inventoryService.ItemStackGroup["item2"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item3"));
+            Assert.AreEqual(4, _inventoryService.ItemStackGroup["item3"][0].ItemCount);
         }
     
         [Test]
@@ -96,8 +96,8 @@ namespace cfEngine.Meta.Inventory
                 ItemId = "item2",
                 Count = 3
             };
-            _inventoryController.AddItem(addRequest1);
-            _inventoryController.AddItem(addRequest2);
+            _inventoryService.AddItem(addRequest1);
+            _inventoryService.AddItem(addRequest2);
     
             var removeRequest1 = new UpdateRequest
             {
@@ -109,13 +109,13 @@ namespace cfEngine.Meta.Inventory
                 ItemId = "item2",
                 Count = 1
             };
-            _inventoryController.RemoveItem(removeRequest1);
-            _inventoryController.RemoveItem(removeRequest2);
+            _inventoryService.RemoveItem(removeRequest1);
+            _inventoryService.RemoveItem(removeRequest2);
     
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item1"));
-            Assert.AreEqual(1, _inventoryController.ItemStackGroup["item1"][0].ItemCount);
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item2"));
-            Assert.AreEqual(2, _inventoryController.ItemStackGroup["item2"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item1"));
+            Assert.AreEqual(1, _inventoryService.ItemStackGroup["item1"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item2"));
+            Assert.AreEqual(2, _inventoryService.ItemStackGroup["item2"][0].ItemCount);
         }
     
         [Test]
@@ -123,7 +123,7 @@ namespace cfEngine.Meta.Inventory
         {
             var stackId = Guid.NewGuid();
             var item = new StackRecord(stackId, "item1", 1);
-            _inventoryController._stackMap.Add(stackId, item);
+            _inventoryService._stackMap.Add(stackId, item);
     
             var request = new UpdateRequest
             {
@@ -132,9 +132,9 @@ namespace cfEngine.Meta.Inventory
                 StackId = stackId
             };
     
-            _inventoryController.AddItem(request);
+            _inventoryService.AddItem(request);
     
-            Assert.AreEqual(2, _inventoryController._stackMap[stackId].ItemCount);
+            Assert.AreEqual(2, _inventoryService._stackMap[stackId].ItemCount);
         }
     
         [Test]
@@ -142,7 +142,7 @@ namespace cfEngine.Meta.Inventory
         {
             var stackId = Guid.NewGuid();
             var item = new StackRecord(stackId, "item1", 2);
-            _inventoryController._stackMap.Add(stackId, item);
+            _inventoryService._stackMap.Add(stackId, item);
     
             var request = new UpdateRequest
             {
@@ -151,10 +151,10 @@ namespace cfEngine.Meta.Inventory
                 StackId = stackId
             };
     
-            var result = _inventoryController.RemoveItem(request);
+            var result = _inventoryService.RemoveItem(request);
     
             Assert.IsTrue(result.State == ValidationState.Success);
-            Assert.AreEqual(1, _inventoryController._stackMap[stackId].ItemCount);
+            Assert.AreEqual(1, _inventoryService._stackMap[stackId].ItemCount);
         }
     
         [Test]
@@ -167,9 +167,9 @@ namespace cfEngine.Meta.Inventory
                 StackId = Guid.NewGuid()
             };
     
-            _inventoryController.AddItem(request);
+            _inventoryService.AddItem(request);
     
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item1"));
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item1"));
         }
     
         [Test]
@@ -182,7 +182,7 @@ namespace cfEngine.Meta.Inventory
                 StackId = Guid.NewGuid()
             };
     
-            var result = _inventoryController.RemoveItem(request);
+            var result = _inventoryService.RemoveItem(request);
     
             Assert.IsTrue(result.State == ValidationState.Failure);
         }
@@ -200,36 +200,36 @@ namespace cfEngine.Meta.Inventory
                 ItemId = "item2",
                 Count = 3
             };
-            _inventoryController.AddItem(addRequest1);
-            _inventoryController.AddItem(addRequest2);
+            _inventoryService.AddItem(addRequest1);
+            _inventoryService.AddItem(addRequest2);
     
             var removeRequest1 = new UpdateRequest
             {
                 ItemId = "item1",
                 Count = 1
             };
-            _inventoryController.RemoveItem(removeRequest1);
+            _inventoryService.RemoveItem(removeRequest1);
     
             var addRequest3 = new UpdateRequest
             {
                 ItemId = "item3",
                 Count = 4
             };
-            _inventoryController.AddItem(addRequest3);
+            _inventoryService.AddItem(addRequest3);
     
             var removeRequest2 = new UpdateRequest
             {
                 ItemId = "item2",
                 Count = 1
             };
-            _inventoryController.RemoveItem(removeRequest2);
+            _inventoryService.RemoveItem(removeRequest2);
     
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item1"));
-            Assert.AreEqual(1, _inventoryController.ItemStackGroup["item1"][0].ItemCount);
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item2"));
-            Assert.AreEqual(2, _inventoryController.ItemStackGroup["item2"][0].ItemCount);
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item3"));
-            Assert.AreEqual(4, _inventoryController.ItemStackGroup["item3"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item1"));
+            Assert.AreEqual(1, _inventoryService.ItemStackGroup["item1"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item2"));
+            Assert.AreEqual(2, _inventoryService.ItemStackGroup["item2"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item3"));
+            Assert.AreEqual(4, _inventoryService.ItemStackGroup["item3"][0].ItemCount);
         }
     
         [Test]
@@ -241,11 +241,10 @@ namespace cfEngine.Meta.Inventory
                 Count = 1
             };
     
-            _inventoryController.AddItem(request);
+            _inventoryService.AddItem(request);
     
-            var defaultMaxStackSize = Game.Info.Get<InventoryInfoManager>().GetOrDefault("item6").maxStackSize;
-            Assert.IsTrue(_inventoryController.ItemStackGroup.ContainsKey("item6"));
-            Assert.AreEqual(1, _inventoryController.ItemStackGroup["item6"][0].ItemCount);
+            Assert.IsTrue(_inventoryService.ItemStackGroup.ContainsKey("item6"));
+            Assert.AreEqual(1, _inventoryService.ItemStackGroup["item6"][0].ItemCount);
         }
     }
 }

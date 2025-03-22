@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace cfEngine.Meta.Inventory
+namespace cfEngine.Service.Inventory
 {
-    public partial class InventoryController
+    public partial class InventoryService
     {
             [Serializable]
             public class StackRecord
@@ -20,7 +20,7 @@ namespace cfEngine.Meta.Inventory
             
                 public int GetVacancies()
                 {
-                    return Game.Info.Get<InventoryInfoManager>().GetOrDefault(Id).maxStackSize - ItemCount;
+                    return int.MaxValue;
                 }
             
                 public StackRecord CloneNewCount(int itemCount)

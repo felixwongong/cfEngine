@@ -6,6 +6,7 @@ using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
 using System.Text.Json.Nodes;
+using cfEngine.Service;
 
 namespace cfEngine.Core
 {
@@ -20,7 +21,7 @@ namespace cfEngine.Core
         public const string SaveVersion = "SaveVersion";
     }
     
-    public partial class UserDataManager
+    public class UserDataManager: IService
     {
         private readonly IStorage _storage;
         private readonly ISerializer _serializer;
@@ -94,6 +95,11 @@ namespace cfEngine.Core
             {
                 savable.Initialize(dataMap);
             }
+        }
+
+        public void Dispose()
+        {
+            _storage?.Dispose();
         }
     }
 }

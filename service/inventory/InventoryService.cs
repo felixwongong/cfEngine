@@ -17,9 +17,14 @@ namespace cfEngine.Core
     }
 }
 
-namespace cfEngine.Meta.Inventory
+namespace cfEngine.Service.Inventory
 {
-    public partial class InventoryController : IRuntimeSavable, IDisposable
+    public interface IInventoryService : IService
+    {
+        
+    } 
+    
+    public partial class InventoryService : IRuntimeSavable, IInventoryService
     {
         public class UpdateRequest
         {
@@ -40,7 +45,7 @@ namespace cfEngine.Meta.Inventory
         
         Subscription _stackMapChangeSub;
 
-        public InventoryController()
+        public InventoryService()
         {
             ItemStackGroup = _stackMap.RtValues.groupBy(item => item.Id);
             VacantItemStackGroup = _stackMap
@@ -201,7 +206,7 @@ namespace cfEngine.Meta.Inventory
         
         public void AddAllToNewStacks(ItemId itemId, int count)
         {
-            var maxStackSize = Game.Info.Get<InventoryInfoManager>().GetOrDefault(itemId).maxStackSize;
+            var maxStackSize = InfoManager.GetOrDefault(itemId).maxStackSize;
             while (count > 0)
             {
                 var itemCount = Math.Min(count, maxStackSize);

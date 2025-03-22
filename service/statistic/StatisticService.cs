@@ -16,7 +16,7 @@ namespace cfEngine.Core
     }
 }
 
-namespace cfEngine.Meta
+namespace cfEngine.Service.Statistic
 {
     public class Statistic
     {
@@ -30,19 +30,22 @@ namespace cfEngine.Meta
             OnUpdate?.Invoke(_value);
         }
     }
-
-    public partial class StatisticKey
-    {
-        
-    }
     
-    public class StatisticController: IDisposable, IRuntimeSavable
+    public interface IStatisticService: IService {
+        public Dictionary<string, Statistic> StatisticMap { get; }
+        public void Record(string statisticKey);
+        public StatisticObjective CreateObjective(string regex, double start, double target = -1);
+        public StatisticObjective CreateForwardObjective(string regex, double target = -1);
+        
+        public event Action<string> OnNewStatisticRecorded;
+    }
+
+    public class StatisticService: IStatisticService, IRuntimeSavable
     {
         private Dictionary<string, Statistic> _statisticMap = new();
         public Dictionary<string, Statistic> StatisticMap => _statisticMap;
-
         public event Action<string> OnNewStatisticRecorded;
-
+        
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
         {
             if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
@@ -70,7 +73,7 @@ namespace cfEngine.Meta
 
         public StatisticObjective CreateObjective(string regex, double start, double target = -1)
         {
-            return new StatisticObjective(regex, start, target);
+            return new StatisticObjective(this, regex, start, target);
         }
 
         public StatisticObjective CreateForwardObjective(string regex, double target = -1)

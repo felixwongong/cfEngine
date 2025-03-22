@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using cfEngine.Logging;
+using cfEngine.Service;
 
 namespace cfEngine.Pooling
 {
-    public class PoolManager: IDisposable
+    public class PoolManager: IService 
     {
         private readonly Dictionary<string, IObjectPool> _poolMap = new();
 

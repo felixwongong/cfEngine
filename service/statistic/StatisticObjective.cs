@@ -4,16 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using cfEngine.Logging;
+using cfEngine.Service.Statistic;
 
-namespace cfEngine.Meta
+namespace cfEngine.Service.Statistic
 {
     [Serializable]
     public class StatisticObjective: IDisposable
     {
-        /// <summary>
-        /// default to Game Statistic, create a Controller property with new keyword if want custom statistic controller
-        /// </summary>
-        protected StatisticController Controller => Game.Meta?.Statistic;
+        private readonly IStatisticService _service;
         
         public readonly string Regex;
         public readonly double Start;
@@ -28,20 +26,20 @@ namespace cfEngine.Meta
 
         private HashSet<WeakReference<Statistic>> _statisticsRegistered = new();
 
-        public StatisticObjective(string regex, double start, double target = -1)
+        public StatisticObjective(IStatisticService service, string regex, double start, double target = -1)
         {
             this.Regex = regex;
             this.Target = target;
             this.Start = start;
             this._value = 0;
 
-            if (Controller == null)
+            if (service == null)
             {
                 Log.LogError("Statistic Controller is null");
                 return;
             }
 
-            Controller.OnNewStatisticRecorded += OnNewStatisticRecorded;
+            service.OnNewStatisticRecorded += OnNewStatisticRecorded;
         }
 
         ~StatisticObjective()
@@ -55,7 +53,7 @@ namespace cfEngine.Meta
             if (!System.Text.RegularExpressions.Regex.IsMatch(statisticKey, Regex))
                 return;
                 
-            var statistic = Controller.StatisticMap[statisticKey];
+            var statistic = _service.StatisticMap[statisticKey];
             var wr = new WeakReference<Statistic>(statistic);
             if (_statisticsRegistered.Contains(wr))
             {
@@ -101,9 +99,9 @@ namespace cfEngine.Meta
         
         public void Dispose()
         {
-            if (Controller != null)
+            if (_service != null)
             {
-                Controller.OnNewStatisticRecorded -= OnNewStatisticRecorded;
+                _service.OnNewStatisticRecorded -= OnNewStatisticRecorded;
             }
 
             if (_statisticsRegistered != null)

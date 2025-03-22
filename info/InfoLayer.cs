@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using cfEngine.Info;
 using cfEngine.IO;
 using cfEngine.Serialize;
+using cfEngine.Service;
 using CofyDev.Xml.Doc;
 
-namespace cfEngine.Core.Layer
+namespace cfEngine.Info
 {
-    public partial class InfoLayer: IDisposable
+    public class InfoLayer: IService
     {
         private readonly IStorage _storage;
         private readonly ISerializer _serializer;

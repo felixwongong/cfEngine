@@ -2,9 +2,9 @@ using System;
 using cfEngine.Rt;
 using StackId = System.Guid;
 
-namespace cfEngine.Meta.Inventory
+namespace cfEngine.Service.Inventory
 {
-    public partial class InventoryController
+    public partial class InventoryService
     {
         public class PageRecord: RtList<StackId>
         {
