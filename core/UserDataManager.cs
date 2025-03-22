@@ -10,6 +10,22 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
+    public static partial class ServiceName
+    {
+        public const string UserData = "UserDataManager";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static UserDataManager GetUserData(this Game game)
+        {
+            return game.GetService<UserDataManager>(ServiceName.UserData);
+        }
+    }
+}
+
+namespace cfEngine.Core
+{
     public interface IRuntimeSavable
     {
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap);

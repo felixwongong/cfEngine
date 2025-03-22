@@ -1,10 +1,10 @@
-using System;
 using System.Threading;
-using cfEngine.Logging;
 using cfEngine.Service;
 
 namespace cfEngine.Core
 {
+    public partial class ServiceName { }
+    
     public class Game: ServiceLocator
     {
         private static Game _current;
@@ -15,17 +15,6 @@ namespace cfEngine.Core
         {
             _current?.Dispose();
             _current = game;
-        }
-        
-        public static T Get<T>() where T: IService
-        {
-            if (_current == null)
-            {
-                Log.LogException(new NullReferenceException("Game instance not set"));
-                return default;
-            }
-
-            return _current.GetService<T>();
         }
     }
 }

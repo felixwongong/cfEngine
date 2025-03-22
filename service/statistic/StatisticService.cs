@@ -3,16 +3,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using cfEngine.Core;
 
 namespace cfEngine.Core
 {
+    using Service.Statistic;
+    
     public partial class UserDataKey
     {
         public const string Statistic = "Statistic";
+    }
+    
+    public static partial class ServiceName
+    {
+        public const string Statistic = "Statistic";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static StatisticService GetStatistic(this Game game)
+        {
+            return game.GetService<StatisticService>(ServiceName.Statistic);
+        }
     }
 }
 

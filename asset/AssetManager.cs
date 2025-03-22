@@ -5,6 +5,24 @@ using System.Threading.Tasks;
 using cfEngine.Logging;
 using cfEngine.Service;
 
+namespace cfEngine.Core
+{
+    using Asset;
+    
+    public static partial class ServiceName
+    {
+        public const string Asset = "Asset";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static AssetManager<T> GetAsset<T>(this Game game) where T: class
+        {
+            return game.GetService<AssetManager<T>>(ServiceName.Asset);
+        }
+    }
+}
+
 namespace cfEngine.Asset
 {
     public abstract class AssetHandle

@@ -1,9 +1,26 @@
 using System;
 using System.Collections.Generic;
+using cfEngine.Info;
 using cfEngine.IO;
 using cfEngine.Serialize;
 using cfEngine.Service;
 using CofyDev.Xml.Doc;
+
+namespace cfEngine.Core
+{
+    public static partial class ServiceName
+    {
+        public const string Info = "Info";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static InfoLayer GetInfo(this Game game)
+        {
+            return game.GetService<InfoLayer>(ServiceName.Info);
+        }
+    }
+}
 
 namespace cfEngine.Info
 {
