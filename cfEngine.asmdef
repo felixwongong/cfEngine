@@ -1,3 +1,14 @@
 {
-	"name": "cfEngine"
+    "name": "cfEngine",
+    "rootNamespace": "cfEngine",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
 }
