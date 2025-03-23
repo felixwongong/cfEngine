@@ -24,10 +24,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static InventoryService GetInventory(this Game game)
+        public static Game WithInventory(this Game game, IInventoryService service)
         {
-            return game.GetService<InventoryService>(ServiceName.Inventory);
+            game.Register(service, ServiceName.Inventory);
+            return game;
         }
+        
+        public static InventoryService GetInventory(this Game game) => game.GetService<InventoryService>(ServiceName.Inventory);
     }
 }
 

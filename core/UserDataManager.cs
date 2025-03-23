@@ -10,17 +10,25 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
+    public partial class UserDataKey
+    {
+        public const string SaveVersion = "SaveVersion";
+    }
+    
     public static partial class ServiceName
     {
-        public const string UserData = "UserDataManager";
+        public const string UserDataManager = "UserDataManager";
     }
     
     public static partial class GameExtension
     {
-        public static UserDataManager GetUserData(this Game game)
+        public static Game WithUserData(this Game game, UserDataManager service)
         {
-            return game.GetService<UserDataManager>(ServiceName.UserData);
+            game.Register(service, ServiceName.UserDataManager);
+            return game;
         }
+        
+        public static UserDataManager GetUserData(this Game game) => game.GetService<UserDataManager>(ServiceName.UserDataManager);
     }
 }
 
@@ -30,11 +38,6 @@ namespace cfEngine.Core
     {
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap);
         public void Save(Dictionary<string, object> dataMap);
-    }
-
-    public partial class UserDataKey
-    {
-        public const string SaveVersion = "SaveVersion";
     }
     
     public class UserDataManager: IService

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using cfEngine.Info;
 using cfEngine.IO;
 using cfEngine.Serialize;
 using cfEngine.Service;
@@ -8,6 +7,7 @@ using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core
 {
+    using Info;
     public static partial class ServiceName
     {
         public const string Info = "Info";
@@ -15,10 +15,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static InfoLayer GetInfo(this Game game)
+        public static Game WithInfo(this Game game, InfoLayer service)
         {
-            return game.GetService<InfoLayer>(ServiceName.Info);
+            game.Register(service, ServiceName.Info);
+            return game;
         }
+        
+        public static InfoLayer GetInfo(this Game game) => game.GetService<InfoLayer>(ServiceName.Info);
     }
 }
 

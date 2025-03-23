@@ -3,8 +3,6 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
-    public partial class ServiceName { }
-    
     public class Game: ServiceLocator
     {
         private static Game _current;

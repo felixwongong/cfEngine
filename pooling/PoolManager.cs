@@ -2,7 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using cfEngine.Logging;
+using cfEngine.Pooling;
 using cfEngine.Service;
+
+namespace cfEngine.Core
+{
+    public static partial class ServiceName
+    {
+        public const string Pool = "Pool";
+    }
+    
+    public static partial class GameExtension
+    {
+        public static Game WithPoolManager(this Game game, PoolManager service)
+        {
+            game.Register(service, ServiceName.Pool);
+            return game;
+        }
+        
+        public static PoolManager GetPoolManager(this Game game) => game.GetService<PoolManager>(ServiceName.Pool);
+    }
+}
 
 namespace cfEngine.Pooling
 {

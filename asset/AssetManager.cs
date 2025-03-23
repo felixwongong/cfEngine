@@ -8,7 +8,6 @@ using cfEngine.Service;
 namespace cfEngine.Core
 {
     using Asset;
-    
     public static partial class ServiceName
     {
         public const string Asset = "Asset";
@@ -16,10 +15,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static AssetManager<T> GetAsset<T>(this Game game) where T: class
+        public static Game WithAsset<T>(this Game game, AssetManager<T> service) where T: class
         {
-            return game.GetService<AssetManager<T>>(ServiceName.Asset);
+            game.Register(service, ServiceName.Asset);
+            return game;
         }
+        
+        public static AssetManager<T> GetAsset<T>(this Game game) where T: class => game.GetService<AssetManager<T>>(ServiceName.Asset);
     }
 }
 
