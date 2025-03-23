@@ -43,11 +43,11 @@ namespace cfEngine.Info
 
         public void RegisterInfo(IInfoManager infoManager)
         {
-            var infoKey = infoManager.InfoDirectory;
+            var infoKey = infoManager.infoDirectory;
 
             if (string.IsNullOrEmpty(infoKey))
             {
-                throw new ArgumentNullException(nameof(infoManager.InfoDirectory),
+                throw new ArgumentNullException(nameof(infoManager.infoDirectory),
                     $"{nameof(infoManager)} ValueMap key is invalid.");
             }
 

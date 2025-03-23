@@ -16,7 +16,7 @@ namespace cfEngine.Info
         private List<TInfo> _allValues;
         public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
 
-        protected abstract Func<TInfo, TKey> KeyFn { get; }
+        protected abstract Func<TInfo, TKey> keyFn { get; }
 
         protected ConfigInfoManager() : base()
         {
@@ -24,17 +24,17 @@ namespace cfEngine.Info
 
         public override void DirectlyLoadFromExcel()
         {
-            if (string.IsNullOrEmpty(InfoDirectory))
+            if (string.IsNullOrEmpty(infoDirectory))
             {
-                throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
+                throw new ArgumentNullException(nameof(infoDirectory), "info key is unset");
             }
 
-            var files = Storage.GetFiles(InfoDirectory, "*.xlsx");
+            var files = Storage.GetFiles(infoDirectory, "*.xlsx");
 
             var excelData = new CofyXmlDocParser.DataContainer();
             foreach (var file in files)
             {
-                var fileExcelData = CofyXmlDocParser.ParseExcel(Storage.LoadBytes(InfoDirectory, file));
+                var fileExcelData = CofyXmlDocParser.ParseExcel(Storage.LoadBytes(infoDirectory, file));
                 excelData.AddRange(fileExcelData);
             }
 
@@ -48,7 +48,7 @@ namespace cfEngine.Info
             foreach (var dataObject in excelData)
             {
                 var decoded = Encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
-                _valueMap.Add(KeyFn(decoded), decoded);
+                _valueMap.Add(keyFn(decoded), decoded);
             }
             
             OnLoadCompleted();
@@ -56,19 +56,19 @@ namespace cfEngine.Info
 
         public override void LoadSerialized()
         {
-            if (string.IsNullOrEmpty(InfoDirectory))
+            if (string.IsNullOrEmpty(infoDirectory))
             {
-                throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
+                throw new ArgumentNullException(nameof(infoDirectory), "info key is unset");
             }
 
-            var files = Storage.GetFiles(string.Empty, InfoDirectory);
+            var files = Storage.GetFiles(string.Empty, infoDirectory);
             if (files.Length <= 0)
             {
-                throw new ArgumentException($"serialized file ({InfoDirectory}) not found in Info Directory",
-                    nameof(InfoDirectory));
+                throw new ArgumentException($"serialized file ({infoDirectory}) not found in Info Directory",
+                    nameof(infoDirectory));
             }
 
-            var byteLoaded = Storage.LoadBytes(string.Empty, InfoDirectory);
+            var byteLoaded = Storage.LoadBytes(string.Empty, infoDirectory);
             var deserialized = Serializer.DeserializeAs<Dictionary<TKey, TInfo>>(byteLoaded);
             _valueMap.EnsureCapacity(deserialized.Count);
             foreach (var kvp in deserialized)
@@ -78,24 +78,24 @@ namespace cfEngine.Info
             
             OnLoadCompleted();
             
-            Log.LogDebug($"{InfoDirectory} loaded from serialized, value count: {_valueMap.Count}");
+            Log.LogDebug($"{infoDirectory} loaded from serialized, value count: {_valueMap.Count}");
         }
 
         public override async Task LoadSerializedAsync(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(InfoDirectory))
+            if (string.IsNullOrEmpty(infoDirectory))
             {
-                throw new ArgumentNullException(nameof(InfoDirectory), "info key is unset");
+                throw new ArgumentNullException(nameof(infoDirectory), "info key is unset");
             }
 
-            var files = Storage.GetFiles(string.Empty, InfoDirectory);
+            var files = Storage.GetFiles(string.Empty, infoDirectory);
             if (files.Length <= 0)
             {
-                throw new ArgumentException($"serialized file ({InfoDirectory}) not found in Info Directory",
-                    nameof(InfoDirectory));
+                throw new ArgumentException($"serialized file ({infoDirectory}) not found in Info Directory",
+                    nameof(infoDirectory));
             }
 
-            var byteLoaded = await Storage.LoadBytesAsync(string.Empty, InfoDirectory, cancellationToken).ConfigureAwait(false);
+            var byteLoaded = await Storage.LoadBytesAsync(string.Empty, infoDirectory, cancellationToken).ConfigureAwait(false);
             var deserialized = await Serializer.DeserializeAsAsync<Dictionary<TKey, TInfo>>(byteLoaded, token:cancellationToken)
                 .ConfigureAwait(false);
             
@@ -111,7 +111,7 @@ namespace cfEngine.Info
         public override void SerializeIntoStorage()
         {
             var serialized = Serializer.Serialize(ValueMap);
-            Storage.Save(InfoDirectory, serialized);
+            Storage.Save(infoDirectory, serialized);
         }
 
         public override void Dispose()

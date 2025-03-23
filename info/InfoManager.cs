@@ -10,7 +10,7 @@ namespace cfEngine.Info
     public interface IInfoManager: IDisposable
     {
         public string infoKey {get;}
-        string InfoDirectory { get; }
+        string infoDirectory { get; }
         public ISerializer Serializer { set; }
         public DataObjectEncoder Encoder { set; }
         public IStorage Storage { set; }
@@ -49,7 +49,7 @@ namespace cfEngine.Info
             set => _storage = value;
         }
 
-        public abstract string InfoDirectory { get; }
+        public abstract string infoDirectory { get; }
         public abstract void DirectlyLoadFromExcel();
         public abstract void LoadSerialized();
         public abstract Task LoadSerializedAsync(CancellationToken cancellationToken);
