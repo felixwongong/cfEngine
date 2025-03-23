@@ -85,7 +85,7 @@ namespace cfEngine.Info
 
         public TInfo Get<TInfo>() where TInfo : InfoManager
         {
-            return Get<TInfo>(nameof(TInfo));
+            return Get<TInfo>(typeof(TInfo).Name);
         }
 
         public void Dispose()

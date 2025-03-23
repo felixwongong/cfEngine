@@ -7,7 +7,7 @@ namespace cfEngine.Service
     public interface IService: IDisposable { }
     public interface IServiceLocator: IDisposable
     {
-        void Register<T>(T service, string serviceName = nameof(T)) where T: IService;
+        void Register<T>(T service, string serviceName) where T: IService;
         void Unregister<T>(T service) where T: IService;
         void Unregister(string serviceName);
         T GetService<T>() where T: IService;
@@ -17,7 +17,7 @@ namespace cfEngine.Service
     public class ServiceLocator : IServiceLocator
     {
         private Dictionary<string, IService> _serviceMap = new();
-        public void Register<T>(T service, string serviceName = nameof(T)) where T : IService
+        public void Register<T>(T service, string serviceName) where T : IService
         {
             if (!_serviceMap.TryAdd(serviceName, service))
             {
