@@ -17,11 +17,11 @@ namespace cfEngine.Core
     {
         public static Game WithAsset<T>(this Game game, AssetManager<T> service) where T: class
         {
-            game.Register(service, ServiceName.Asset);
+            game.Register(service, $"{typeof(T).Name}_{ServiceName.Asset}");
             return game;
         }
         
-        public static AssetManager<T> GetAsset<T>(this Game game) where T: class => game.GetService<AssetManager<T>>(ServiceName.Asset);
+        public static AssetManager<T> GetAsset<T>(this Game game) where T: class => game.GetService<AssetManager<T>>($"{typeof(T).Name}_{ServiceName.Asset}");
     }
 }
 
