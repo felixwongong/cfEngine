@@ -1,7 +1,7 @@
 using System;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public static class CollectionEventExtension
     {

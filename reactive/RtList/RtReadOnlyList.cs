@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public abstract partial class RtReadOnlyList<T>: RtCollection<(int index, T item)>, IReadOnlyList<T>
     {

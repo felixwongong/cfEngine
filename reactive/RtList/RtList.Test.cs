@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace cfEngine.Rt.Test
+namespace cfEngine.Rx.Test
 {
     [TestFixture]
     public class RtList_Test

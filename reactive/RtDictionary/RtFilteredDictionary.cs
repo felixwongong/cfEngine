@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     /// <summary>
     /// Represents a dictionary that filters its elements based on a provided function.

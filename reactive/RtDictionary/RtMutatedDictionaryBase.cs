@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     /// <summary>
     /// Represents a base class for dictionaries that support mutation and event dispatching.

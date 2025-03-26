@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public abstract class RtMutatedSingleBase<TOrig, TNew>: RtMutatedLocalListBase<TOrig, TNew>
     {

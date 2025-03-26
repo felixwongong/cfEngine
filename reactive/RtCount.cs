@@ -1,4 +1,4 @@
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public class RtCount<T>: RtMutatedSingleBase<T, int>
     {

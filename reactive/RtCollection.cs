@@ -3,7 +3,7 @@ using System.Diagnostics;
 using cfEngine.Logging;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public abstract partial class RtCollection<TEventArgs>: IDisposable
     {

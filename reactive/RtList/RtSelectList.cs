@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     /// <summary>
     /// Represents a list that projects each element of a source list into a new form.

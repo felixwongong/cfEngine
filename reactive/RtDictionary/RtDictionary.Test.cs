@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace cfEngine.Rt.Test
+namespace cfEngine.Rx.Test
 {
     [TestFixture]
     public class RtDictionary_Test 

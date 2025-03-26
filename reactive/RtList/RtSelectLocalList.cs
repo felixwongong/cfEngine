@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     // Select suppose not for creating new objects, but for selecting from existing
     public class RtSelectLocalList<T, TSelect>: RtMutatedLocalListBase<T, TSelect>

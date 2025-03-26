@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using cfEngine.Logging;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public class RtGroup<TKey, TValue> : RtReadOnlyDictionary<TKey, RtReadOnlyList<TValue>>
     {

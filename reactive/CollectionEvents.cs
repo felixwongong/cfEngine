@@ -1,6 +1,6 @@
 using System;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public partial interface ICollectionEvents<out T>
     {

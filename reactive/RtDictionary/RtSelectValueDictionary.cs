@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using cfEngine.Logging;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     /// <summary>
     /// Represents a dictionary that selects values based on a provided function.

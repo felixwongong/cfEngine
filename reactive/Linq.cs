@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public static class Linq
     {
