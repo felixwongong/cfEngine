@@ -58,7 +58,15 @@ namespace cfEngine.Rx
         }
     }
     
-    public abstract class RelayBase<TDelegate> where TDelegate : class
+    public interface IRelay<TDelegate> where TDelegate : class
+    {
+        Subscription AddListener(TDelegate listener);
+        bool RemoveListener(TDelegate listener);
+        void RemoveAll();
+        bool Contains(TDelegate d);
+    }
+    
+    public abstract class RelayBase<TDelegate>: IRelay<TDelegate> where TDelegate : class
     {
         protected WeakReference<SubscriptionBinding<TDelegate>>[] _subscriptionRefList;
         protected int _cap;
