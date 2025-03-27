@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace cfEngine.DataStructure
 {
-    public class ReadOnlyMemoryCharComparer<T> : IEqualityComparer<ReadOnlyMemory<T>>
+    public class ReadOnlyMemoryComparer<T> : IEqualityComparer<ReadOnlyMemory<T>>
     {
-        private static ReadOnlyMemoryCharComparer<T> _instance;
-        public static ReadOnlyMemoryCharComparer<T> Instance => _instance ??= new ReadOnlyMemoryCharComparer<T>();
+        private static ReadOnlyMemoryComparer<T> _instance;
+        public static ReadOnlyMemoryComparer<T> Instance => _instance ??= new ReadOnlyMemoryComparer<T>();
 
         public bool Equals(ReadOnlyMemory<T> x, ReadOnlyMemory<T> y) => x.Span == y.Span;
 
@@ -19,7 +19,7 @@ namespace cfEngine.DataStructure
         //Add object pooling
         public static MemoryDictionary<TMemoryKey, TValue> Create() => new MemoryDictionary<TMemoryKey, TValue>();
         
-        public MemoryDictionary() : base(ReadOnlyMemoryCharComparer<TMemoryKey>.Instance)
+        public MemoryDictionary() : base(ReadOnlyMemoryComparer<TMemoryKey>.Instance)
         {
         }
     }
