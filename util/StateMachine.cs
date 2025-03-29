@@ -16,11 +16,11 @@ namespace cfEngine.Util
     {
         public TStateId LastStateId { get; }
         public TStateId CurrentStateId { get; }
-        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange;
-        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange;
         public bool CanGoToState(TStateId id);
         public bool TryGoToState(TStateId nextStateId, in StateParam param = null);
         public void ForceGoToState(TStateId nextStateId, in StateParam param = null);
+        public Subscription SubscribeBeforeStateChange(Action<StateChangeRecord<TStateId>> listener);
+        public Subscription SubscribeAfterStateChange(Action<StateChangeRecord<TStateId>> listener);
     }
     
     public class StateExecutionException<TStateId> : Exception
@@ -48,26 +48,18 @@ namespace cfEngine.Util
         #region Relay & Events (OnBeforeStateChange[Once], OnAfterStateChange[Once]);
 
         private Relay<StateChangeRecord<TStateId>> _beforeStateChangeRelay;
-        private Relay<StateChangeRecord<TStateId>> _afterStateChangeRelay;
-        
-        public event Action<StateChangeRecord<TStateId>> OnBeforeStateChange
+        public Subscription SubscribeBeforeStateChange(Action<StateChangeRecord<TStateId>> listener)
         {
-            add
-            {
-                _beforeStateChangeRelay ??= new Relay<StateChangeRecord<TStateId>>(this);
-                _beforeStateChangeRelay.AddListener(value);
-            }
-            remove => _beforeStateChangeRelay.RemoveListener(value);
+            _beforeStateChangeRelay ??= new Relay<StateChangeRecord<TStateId>>(this);
+            return _beforeStateChangeRelay.AddListener(listener);
         }
+        
+        private Relay<StateChangeRecord<TStateId>> _afterStateChangeRelay;
 
-        public event Action<StateChangeRecord<TStateId>> OnAfterStateChange
+        public Subscription SubscribeAfterStateChange(Action<StateChangeRecord<TStateId>> listener)
         {
-            add
-            {
-                _afterStateChangeRelay ??= new Relay<StateChangeRecord<TStateId>>(this);
-                _afterStateChangeRelay.AddListener(value);
-            }
-            remove => _afterStateChangeRelay.RemoveListener(value);
+            _afterStateChangeRelay ??= new Relay<StateChangeRecord<TStateId>>(this);
+            return _afterStateChangeRelay.AddListener(listener);
         }
 
         #endregion
