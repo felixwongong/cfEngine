@@ -7,13 +7,13 @@ namespace cfEngine.IO
 {
     public interface IStorage : IDisposable 
     {
-        public string[] GetFiles(string subDirectory, string regex);
+        public string[] GetFiles(string regex);
         public bool IsFileExist(string relativePath);
-        public void CopyFile(string from, string to, bool overwrite = false);
+        public void CopyFile(string relativeFrom, string relativeTo, bool overwrite = false);
         public void DeleteFile(string relativePath);
-        public byte[] LoadBytes(string subDirectory, string fileName);
-        public Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken token = default);
-        public Stream CreateStream(string subDirectory, string fileName, bool useAsync);
+        public byte[] LoadBytes(string relativePath);
+        public Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken token = default);
+        public Stream CreateStream(string relativePath, bool useAsync);
         public void Save(string relativePath, byte[] data);
         public Task SaveAsync(string relativePath, byte[] data, CancellationToken token = default);
         public bool IsStorageExist();
@@ -21,28 +21,28 @@ namespace cfEngine.IO
     
     public abstract class Storage: IStorage
     {
-        public readonly string StoragePath;
+        public readonly string storagePath;
         
         protected Storage(string storagePath)
         {
-            this.StoragePath = storagePath;
+            this.storagePath = storagePath;
         }
 
         public void Validate()
         {
             if (!IsStorageExist())
             {
-                throw new ArgumentException($"Storage ({StoragePath}) not valid.");
+                throw new ArgumentException($"Storage ({storagePath}) not valid.");
             }
         }
 
-        public abstract string[] GetFiles(string subDirectory, string regex);
+        public abstract string[] GetFiles(string regex);
         public abstract bool IsFileExist(string relativePath);
-        public abstract void CopyFile(string from, string to, bool overwrite = false);
+        public abstract void CopyFile(string relativeFrom, string relativeTo, bool overwrite = false);
         public abstract void DeleteFile(string relativePath);
-        public abstract byte[] LoadBytes(string subDirectory, string fileName);
-        public abstract Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken token = default);
-        public abstract Stream CreateStream(string subDirectory, string fileName, bool useAsync);
+        public abstract byte[] LoadBytes(string relativePath);
+        public abstract Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken token = default);
+        public abstract Stream CreateStream(string relativePath, bool useAsync);
         public abstract void Save(string relativePath, byte[] data);
         public abstract Task SaveAsync(string relativePath, byte[] data, CancellationToken token = default);
         public abstract bool IsStorageExist();

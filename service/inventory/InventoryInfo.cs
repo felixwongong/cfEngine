@@ -5,7 +5,6 @@ namespace cfEngine.Service
 {
     public class InventoryInfoManager: ConfigInfoManager<string, InventoryInfo>
     {
-        public override string infoKey => nameof(InventoryInfoManager);
         public override string infoDirectory => nameof(InventoryInfo);
         protected override Func<InventoryInfo, string> keyFn => info => info.itemId;
 
@@ -23,6 +22,8 @@ namespace cfEngine.Service
                 iconKey = string.Empty
             };
         }
+
+        public InventoryInfoManager(IValueLoader<InventoryInfo> loader) : base(loader) { }
     }
 
     public class InventoryInfo

@@ -12,47 +12,45 @@ namespace cfEngine.IO
         {
         }
         
-        public override string[] GetFiles(string subDirectory, string searchPattern)
+        public override string[] GetFiles(string searchPattern)
         {
-            return Directory.GetFiles(Path.Combine(StoragePath, subDirectory), searchPattern);
+            return Directory.GetFiles(storagePath, searchPattern, SearchOption.AllDirectories);
         }
 
         public override bool IsFileExist(string relativePath)
         {
-            return File.Exists(Path.Combine(StoragePath, relativePath));
+            return File.Exists(Path.Combine(storagePath, relativePath));
         }
 
-        public override void CopyFile(string from, string to, bool overwrite = false)
+        public override void CopyFile(string relativeFrom, string relativeTo, bool overwrite = false)
         {
-            File.Copy(Path.Combine(StoragePath, from), Path.Combine(StoragePath, to), overwrite);
+            File.Copy(Path.Combine(storagePath, relativeFrom), Path.Combine(storagePath, relativeTo), overwrite);
         }
 
         public override void DeleteFile(string relativePath)
         {
-            File.Delete(Path.Combine(StoragePath, relativePath));
+            File.Delete(Path.Combine(storagePath, relativePath));
         }
 
-        public override byte[] LoadBytes(string subDirectory, string fileName)
+        public override byte[] LoadBytes(string relativePath)
         {
-            var absPath = GetFilePath(subDirectory, fileName);
+            var absPath = Path.Combine(storagePath, relativePath);
 
-            using var fileStream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite,
-                1024, false);
+            using var fileStream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite, 1024, false);
 
             var fileBytes = new byte[fileStream.Length];
             var byteLoaded = fileStream.Read(fileBytes, 0, (int)fileStream.Length);
             if (byteLoaded > fileStream.Length)
             {
-                throw new InvalidOperationException(
-                    $"Detect fileStream read size ({fileStream.Length} differ from byte load ({byteLoaded}))");
+                throw new InvalidOperationException($"Detect fileStream read size ({fileStream.Length} differ from byte load ({byteLoaded}))");
             }
 
             return fileBytes;       
         }
 
-        public override async Task<byte[]> LoadBytesAsync(string subDirectory, string fileName, CancellationToken cancellationToken = default)
+        public override async Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken cancellationToken = default)
         {
-            var absPath = GetFilePath(subDirectory, fileName);
+            var absPath = Path.Combine(storagePath, relativePath);
 
             var fileStream = new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite,
                 1024, true);
@@ -72,57 +70,39 @@ namespace cfEngine.IO
             return fileBytes;       
         }
 
-        public override Stream CreateStream(string subDirectory, string fileName, bool useAsync)
+        public override Stream CreateStream(string relativePath, bool useAsync)
         {
-            var absPath = GetFilePath(subDirectory, fileName);
-
+            var absPath = Path.Combine(storagePath, relativePath);
             return new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite, 1024, useAsync);
         }
 
         public override void Save(string fileName, byte[] data)
         {
-            if (!Directory.Exists(StoragePath))
+            var filePath = Path.Combine(storagePath, fileName); 
+            var directoryPath = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
-                Directory.CreateDirectory(StoragePath);
-                Log.LogInfo($"Directory created for storage: {StoragePath}");
+                Directory.CreateDirectory(directoryPath);
+                Log.LogInfo($"Directory created for storage: {directoryPath}");
             }
-
-            var filePath = Path.Combine(StoragePath, fileName); 
             File.WriteAllBytes(filePath, data);    
         }
 
         public override Task SaveAsync(string fileName, byte[] data, CancellationToken token = default)
         {
-            if (!Directory.Exists(StoragePath))
+            if (!Directory.Exists(storagePath))
             {
-                Directory.CreateDirectory(StoragePath);
-                Log.LogInfo($"Directory created for storage: {StoragePath}");
+                Directory.CreateDirectory(storagePath);
+                Log.LogInfo($"Directory created for storage: {storagePath}");
             }
             
-            var filePath = Path.Combine(StoragePath, fileName);
+            var filePath = Path.Combine(storagePath, fileName);
             return File.WriteAllBytesAsync(filePath, data, token);
         }
 
         public override bool IsStorageExist()
         {
-            return Directory.Exists(StoragePath);
-        }
-
-        private string GetFilePath(string subDirectory, string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                throw new ArgumentNullException(nameof(fileName), "filename is empty");
-            }
-
-            var absPath = Path.Combine(StoragePath, subDirectory, fileName);
-
-            if (!File.Exists(absPath))
-            {
-                throw new ArgumentNullException(nameof(fileName), "file does not exist");
-            }
-
-            return absPath;
+            return Directory.Exists(storagePath);
         }
     }
 }

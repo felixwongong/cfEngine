@@ -70,7 +70,7 @@ namespace cfEngine.Core
                     return new Dictionary<string, JsonObject>();
                 }
                 
-                var userDataBytes = await _storage.LoadBytesAsync(string.Empty, dataFileName, token);
+                var userDataBytes = await _storage.LoadBytesAsync(dataFileName, token);
                 return await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
             }
             catch (Exception ex)

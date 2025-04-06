@@ -10,6 +10,23 @@ namespace cfEngine.Pooling
     
     public class ObjectPool<T>: IObjectPool where T: class
     {
+        public struct Handle : IDisposable
+        {
+            public static Handle Empty => new Handle(null, null);
+            private readonly Action<T> _releaseAction;
+            private readonly T _obj;
+
+            public Handle(Action<T> releaseAction, T obj)
+            {
+                _releaseAction = releaseAction;
+                _obj = obj;
+            }
+            public void Dispose()
+            {
+                _releaseAction?.Invoke(_obj);
+            }
+        }
+        
         private readonly Func<T> _createMethod;
         private readonly Action<T> _releaseAction;
 
@@ -29,6 +46,12 @@ namespace cfEngine.Pooling
             }
 
             return result;
+        }
+
+        public virtual Handle Get(out T value)
+        {
+            value = Get();
+            return new Handle(_releaseAction, value);
         }
 
         public virtual void Release(T obj)

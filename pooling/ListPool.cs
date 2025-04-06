@@ -4,6 +4,9 @@ namespace cfEngine.Pooling
 {
     public class ListPool<T>: ObjectPool<List<T>>
     {
+        private static ListPool<T> _default;
+        public static ListPool<T> Default => _default ??= new ListPool<T>();
+
         public ListPool() : base(CreateList, ReleaseList)
         {
         }
