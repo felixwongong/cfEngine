@@ -65,7 +65,7 @@ namespace cfEngine.Pooling
             _poolMap[key] = pool;
         }
 
-        public T GetOrCreatPool<T>(string key, [NotNull] Func<T> createFunc) where T: class, IObjectPool
+        public T GetOrCreatePool<T>(string key, [NotNull] Func<T> createFunc) where T: class, IObjectPool
         {
             if (TryGetPool<T>(key, out var pool)) return pool;
 
