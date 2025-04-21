@@ -37,7 +37,7 @@ namespace cfEngine.Core
     public interface IRuntimeSavable
     {
         public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap);
-        public void Save(Dictionary<string, object> dataMap);
+        public void SetSaveData(Dictionary<string, object> dataMap);
     }
     
     public class UserDataManager: IService
@@ -49,6 +49,8 @@ namespace cfEngine.Core
 
         private const string dataFileName = "data";
         private const string backupFileName = dataFileName + ".backup";
+        
+        private IReadOnlyDictionary<string, JsonObject> _cachedDataMap;
 
         public UserDataManager(IStorage storage, ISerializer serializer)
         {
@@ -59,6 +61,12 @@ namespace cfEngine.Core
         public void Register(IRuntimeSavable savable)
         {
             _savables.Add(savable);
+        }
+        
+        public void RegisterAndInitialize(IRuntimeSavable savable)
+        {
+            Register(savable);
+            savable.Initialize(_cachedDataMap);
         }
 
         public async Task<IReadOnlyDictionary<string, JsonObject>> LoadDataMap(CancellationToken token = default)
@@ -71,7 +79,8 @@ namespace cfEngine.Core
                 }
                 
                 var userDataBytes = await _storage.LoadBytesAsync(dataFileName, token);
-                return await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
+                _cachedDataMap = await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
+                return _cachedDataMap;
             }
             catch (Exception ex)
             {
@@ -88,7 +97,7 @@ namespace cfEngine.Core
             {
                 foreach (var savable in _savables)
                 {
-                    savable.Save(dataMap);
+                    savable.SetSaveData(dataMap);
                 }
 
                 if (_storage.IsFileExist(dataFileName))

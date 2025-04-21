@@ -108,7 +108,7 @@ namespace cfEngine.Service.Inventory
             }
         }
         
-        public void Save(Dictionary<string, object> dataMap)
+        public void SetSaveData(Dictionary<string, object> dataMap)
         {
             dataMap[UserDataKey.Inventory] = _stackMap;
         }

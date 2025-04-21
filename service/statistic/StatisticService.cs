@@ -71,7 +71,7 @@ namespace cfEngine.Service.Statistic
             }
         }
 
-        public void Save(Dictionary<string, object> dataMap)
+        public void SetSaveData(Dictionary<string, object> dataMap)
         {
             dataMap[UserDataKey.Statistic] = _statisticMap;
         }
