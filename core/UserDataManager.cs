@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using cfEngine.IO;
@@ -36,22 +37,26 @@ namespace cfEngine.Core
 {
     public interface IRuntimeSavable
     {
-        public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap);
+        public void Initialize(IUserData userData);
         public void SetSaveData(Dictionary<string, object> dataMap);
     }
     
-    public class UserDataManager: IService
+    public interface IUserData {
+        public bool TryGetContext<T>(string contextKey, out T context);
+        public T GetContext<T>(string contextKey);
+    }
+
+    public partial class UserDataManager: IService
     {
         private readonly IStorage _storage;
         private readonly ISerializer _serializer;
-
         private readonly List<IRuntimeSavable> _savables = new();
 
         private const string dataFileName = "data";
         private const string backupFileName = dataFileName + ".backup";
-        
-        private IReadOnlyDictionary<string, JsonObject> _cachedDataMap;
 
+        private IUserData _userData = JsonContextMap.Empty;
+        
         public UserDataManager(IStorage storage, ISerializer serializer)
         {
             _storage = storage;
@@ -63,36 +68,28 @@ namespace cfEngine.Core
             _savables.Add(savable);
         }
         
-        public void RegisterAndInitialize(IRuntimeSavable savable)
-        {
-            Register(savable);
-            savable.Initialize(_cachedDataMap);
-        }
-
-        public async Task<IReadOnlyDictionary<string, JsonObject>> LoadDataMap(CancellationToken token = default)
+        public async Task<IUserData> LoadDataMap(CancellationToken token = default)
         {
             try
             {
-                if (!_storage.IsFileExist(dataFileName))
+                if (_storage.IsFileExist(dataFileName))
                 {
-                    return new Dictionary<string, JsonObject>();
+                    var userDataBytes = await _storage.LoadBytesAsync(dataFileName, token);
+                    var _cachedDataMap = await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
+                    _userData = new JsonContextMap(_cachedDataMap);
                 }
-                
-                var userDataBytes = await _storage.LoadBytesAsync(dataFileName, token);
-                _cachedDataMap = await _serializer.DeserializeAsAsync<Dictionary<string, JsonObject>>(userDataBytes, token: token);
-                return _cachedDataMap;
             }
             catch (Exception ex)
             {
                 Log.LogException(ex, "Exception occurs saving, Loading cancelled.");
-                return new Dictionary<string, JsonObject>();
             }
+            
+            return _userData;
         }
 
         public async Task SaveAsync(CancellationToken token = default)
         {
-            Dictionary<string, object> dataMap = new();
-
+            var dataMap = new Dictionary<string, object>();
             try
             {
                 foreach (var savable in _savables)
@@ -117,11 +114,11 @@ namespace cfEngine.Core
             }
         }
 
-        public void InitializeSavables(IReadOnlyDictionary<string, JsonObject> dataMap)
+        public void InitializeSavables()
         {
             foreach (var savable in _savables)
             {
-                savable.Initialize(dataMap);
+                savable.Initialize(_userData);
             }
         }
 

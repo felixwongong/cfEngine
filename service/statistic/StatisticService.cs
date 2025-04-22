@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using cfEngine.Core;
 
@@ -63,11 +62,12 @@ namespace cfEngine.Service.Statistic
         public Dictionary<string, Statistic> StatisticMap => _statisticMap;
         public event Action<string> OnNewStatisticRecorded;
         
-        public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
+        public void Initialize(IUserData userData)
         {
-            if (dataMap.TryGetValue(UserDataKey.Statistic, out var data))
+            
+            if (!userData.TryGetContext(UserDataKey.Statistic, out _statisticMap))
             {
-                _statisticMap =  data.GetValue<Dictionary<string, Statistic>>();
+                _statisticMap = new Dictionary<string, Statistic>();
             }
         }
 

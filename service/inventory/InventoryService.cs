@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Nodes;
 using cfEngine.Core;
 using cfEngine.Logging;
 using cfEngine.Rx;
@@ -91,12 +90,11 @@ namespace cfEngine.Service.Inventory
             _pages.Clear();
         }
 
-        public void Initialize(IReadOnlyDictionary<string, JsonObject> dataMap)
+        public void Initialize(IUserData userData)
         {
-            if (dataMap.TryGetValue(UserDataKey.Inventory, out var data))
+            if (userData.TryGetContext<Dictionary<StackId, StackRecord>>(UserDataKey.Inventory, out var data))
             {
-                var saved = data.GetValue<Dictionary<StackId, StackRecord>>();
-                foreach (var kvp in saved)
+                foreach (var kvp in data)
                 {
                     _stackMap.Add(kvp);
                 }
@@ -107,7 +105,7 @@ namespace cfEngine.Service.Inventory
                 _pages.Add(CreatePage());
             }
         }
-        
+
         public void SetSaveData(Dictionary<string, object> dataMap)
         {
             dataMap[UserDataKey.Inventory] = _stackMap;
