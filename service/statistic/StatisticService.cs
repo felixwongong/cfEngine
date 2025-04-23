@@ -23,7 +23,7 @@ namespace cfEngine.Core
             return game;
         }
         
-        public static StatisticService GetStatistic(this Game game) => game.GetService<StatisticService>(ServiceName.Statistic);
+        public static IStatisticService GetStatistic(this Game game) => game.GetService<IStatisticService>(ServiceName.Statistic);
     }
 }
 
@@ -32,12 +32,13 @@ namespace cfEngine.Service.Statistic
     public class StatisticService: IStatisticService
     {
         private readonly StatisticModel _model;
-        
+        IServiceModel IModelService.GetModel => _model;
+
         public StatisticService(StatisticModel model)
         {
             _model = model;
         }
-        
+
         public void Record(string statisticKey)
         {
             var statistic = _model.GetOrCreateStatistic(statisticKey);

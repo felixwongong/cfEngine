@@ -1,11 +1,25 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using cfEngine.Core;
 using cfEngine.Logging;
 
 namespace cfEngine.Service
 {
-    public interface IService: IDisposable { }
-    public interface IServiceLocator: IDisposable
+    public interface IServiceModel : IRuntimeSavable
+    {
+    }
+    
+    public interface IService : IDisposable
+    {
+    }
+
+    public interface IModelService : IService
+    {
+        public IServiceModel GetModel { get; }
+    }
+    
+    public interface IServiceLocator: IEnumerable<IService>, IDisposable
     {
         void Register<T>(T service, string serviceName) where T: IService;
         void Unregister<T>(T service) where T: IService;
@@ -88,6 +102,16 @@ namespace cfEngine.Service
             }
             
             _serviceMap.Clear();
+        }
+
+        public IEnumerator<IService> GetEnumerator()
+        {
+            return _serviceMap.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

@@ -27,7 +27,7 @@ namespace cfEngine.Service.Statistic
         }
     }
 
-    public class StatisticModel: IRuntimeSavable
+    public class StatisticModel: IServiceModel
     {
         private Dictionary<string, Statistic> _statisticMap = new();
         public Dictionary<string, Statistic> StatisticMap => _statisticMap;
