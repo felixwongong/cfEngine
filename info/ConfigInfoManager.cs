@@ -33,13 +33,11 @@ namespace cfEngine.Info
             foreach (var value in values)
             {
                 var key = keyFn(value);
-                if (_valueMap.ContainsKey(key))
+                if (!_valueMap.TryAdd(key, value))
                 {
                     Log.LogError($"Duplicate key {key} in {infoDirectory}");
                     continue;
                 }
-
-                _valueMap.Add(key, value);
             }
 
             OnLoadCompleted();
