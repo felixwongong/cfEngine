@@ -56,7 +56,7 @@ namespace cfEngine.Core
         private const string backupFileName = dataFileName + ".backup";
 
         private IUserData _userData = JsonContextMap.Empty;
-        
+
         public UserDataManager(IStorage storage, ISerializer serializer)
         {
             _storage = storage;

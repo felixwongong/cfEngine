@@ -11,7 +11,7 @@ namespace cfEngine.Service.Statistic
     [Serializable]
     public class StatisticObjective: IDisposable
     {
-        private readonly IStatisticService _service;
+        private readonly StatisticModel _model;
         
         public readonly string Regex;
         public readonly double Start;
@@ -26,20 +26,21 @@ namespace cfEngine.Service.Statistic
 
         private HashSet<WeakReference<Statistic>> _statisticsRegistered = new();
 
-        public StatisticObjective(IStatisticService service, string regex, double start, double target = -1)
+        public StatisticObjective(StatisticModel model, string regex, double start, double target = -1)
         {
             this.Regex = regex;
             this.Target = target;
             this.Start = start;
             this._value = 0;
+            _model = model;
 
-            if (service == null)
+            if (model == null)
             {
                 Log.LogError("Statistic Controller is null");
                 return;
             }
 
-            service.OnNewStatisticRecorded += OnNewStatisticRecorded;
+            model.OnNewStatisticRecorded += OnNewStatisticRecorded;
         }
 
         ~StatisticObjective()
@@ -52,15 +53,14 @@ namespace cfEngine.Service.Statistic
         {
             if (!System.Text.RegularExpressions.Regex.IsMatch(statisticKey, Regex))
                 return;
-                
-            var statistic = _service.StatisticMap[statisticKey];
+
+            var statistic = _model.GetOrCreateStatistic(statisticKey);
             var wr = new WeakReference<Statistic>(statistic);
-            if (_statisticsRegistered.Contains(wr))
+            if (!_statisticsRegistered.Add(wr))
             {
                 throw new ArgumentException("Statistic already in objective.");
             }
-            
-            _statisticsRegistered.Add(wr);
+
             statistic.OnUpdate += OnStatisticUpdate;
         }
 
@@ -99,9 +99,9 @@ namespace cfEngine.Service.Statistic
         
         public void Dispose()
         {
-            if (_service != null)
+            if (_model != null)
             {
-                _service.OnNewStatisticRecorded -= OnNewStatisticRecorded;
+                _model.OnNewStatisticRecorded -= OnNewStatisticRecorded;
             }
 
             if (_statisticsRegistered != null)

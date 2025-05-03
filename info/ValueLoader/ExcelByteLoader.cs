@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,17 +6,10 @@ using cfEngine.Extension;
 using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Pooling;
-using cfEngine.Serialize;
 using CofyDev.Xml.Doc;
 
 namespace cfEngine.Info
 {
-    public interface IValueLoader<TInfo>
-    {
-        public ListPool<TInfo>.Handle Load(out List<TInfo> values);
-        public Task<List<TInfo>> LoadAsync(CancellationToken cancellationToken);
-    }
-    
     public class ExcelByteLoader<TInfo> : IValueLoader<TInfo>
     {
         private readonly IStorage _storage;
@@ -98,69 +91,6 @@ namespace cfEngine.Info
                 {
                     var decoded = _encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
                     values.Add(decoded);
-                }
-
-                return values;
-            }, cancellationToken);
-        }
-    }
-
-    public class SerializationLoader<TInfo> : IValueLoader<TInfo>
-    {
-        private readonly IStorage _storage;
-        private readonly ISerializer _serializer;
-        
-        public SerializationLoader(IStorage storage, ISerializer serializer)
-        {
-            _storage = storage;
-            _serializer = serializer;
-        }
-        
-        public ListPool<TInfo>.Handle Load(out List<TInfo> values)
-        {
-            var files = _storage.GetFiles("*");
-            if (files.Length <= 0)
-            {
-                Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");
-                values = null;
-                return ListPool<TInfo>.Handle.Empty;
-            }
-
-            var handle = ListPool<TInfo>.Default.Get(out values);
-            foreach (var file in files)
-            {
-                var byteLoaded = _storage.LoadBytes(file);
-                values.AddRange(_serializer.DeserializeAs<List<TInfo>>(byteLoaded));
-            }
-            
-            return handle;
-        }
-
-        public Task<List<TInfo>> LoadAsync(CancellationToken cancellationToken)
-        {
-            var files = _storage.GetFiles("*");
-            if (files.Length <= 0)
-            {
-                Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");
-                return Task.FromResult<List<TInfo>>(new List<TInfo>(0));
-            }
-
-            using var handle = ListPool<Task<byte[]>>.Default.Get(out var byteLoadTasks);
-            byteLoadTasks.EnsureCapacity(files.Length);
-            
-            foreach (var file in files)
-            {
-                byteLoadTasks.Add(_storage.LoadBytesAsync(file, cancellationToken));
-            }
-
-            var byteLoadResult = Task.WhenAll(byteLoadTasks);
-            
-            return byteLoadResult.ContinueWith(task =>
-            {
-                var values = new List<TInfo>(task.Result.Length);
-                foreach (var bytes in task.Result)
-                {
-                    values.AddRange(_serializer.DeserializeAs<List<TInfo>>(bytes));
                 }
 
                 return values;

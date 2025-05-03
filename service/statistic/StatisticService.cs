@@ -10,11 +10,6 @@ namespace cfEngine.Core
 {
     using Service.Statistic;
     
-    public partial class UserDataKey
-    {
-        public const string Statistic = "Statistic";
-    }
-    
     public static partial class ServiceName
     {
         public const string Statistic = "Statistic";
@@ -28,75 +23,36 @@ namespace cfEngine.Core
             return game;
         }
         
-        public static StatisticService GetStatistic(this Game game) => game.GetService<StatisticService>(ServiceName.Statistic);
+        public static IStatisticService GetStatistic(this Game game) => game.GetService<IStatisticService>(ServiceName.Statistic);
     }
 }
 
 namespace cfEngine.Service.Statistic
 {
-    public class Statistic
+    public class StatisticService: IStatisticService
     {
-        private double _value;
-        public double Value => _value;
-        public event Action<double> OnUpdate;
+        private readonly StatisticModel _model;
+        IServiceModel IModelService.GetModel => _model;
 
-        public void RecordOnce()
+        public StatisticService(StatisticModel model)
         {
-            _value += 1;
-            OnUpdate?.Invoke(_value);
-        }
-    }
-    
-    public interface IStatisticService: IService {
-        public Dictionary<string, Statistic> StatisticMap { get; }
-        public void Record(string statisticKey);
-        public StatisticObjective CreateObjective(string regex, double start, double target = -1);
-        public StatisticObjective CreateForwardObjective(string regex, double target = -1);
-        
-        public event Action<string> OnNewStatisticRecorded;
-    }
-
-    public class StatisticService: IStatisticService, IRuntimeSavable
-    {
-        private Dictionary<string, Statistic> _statisticMap = new();
-        public Dictionary<string, Statistic> StatisticMap => _statisticMap;
-        public event Action<string> OnNewStatisticRecorded;
-        
-        public void Initialize(IUserData userData)
-        {
-            
-            if (!userData.TryGetContext(UserDataKey.Statistic, out _statisticMap))
-            {
-                _statisticMap = new Dictionary<string, Statistic>();
-            }
+            _model = model;
         }
 
-        public void SetSaveData(Dictionary<string, object> dataMap)
-        {
-            dataMap[UserDataKey.Statistic] = _statisticMap;
-        }
-        
         public void Record(string statisticKey)
         {
-            if (!_statisticMap.TryGetValue(statisticKey, out var statistic))
-            {
-                statistic = new Statistic();
-                _statisticMap[statisticKey] = statistic;
-                OnNewStatisticRecorded?.Invoke(statisticKey);
-            }
-            
+            var statistic = _model.GetOrCreateStatistic(statisticKey);
             statistic.RecordOnce();
         }
 
         public StatisticObjective CreateObjective(string regex, double start, double target = -1)
         {
-            return new StatisticObjective(this, regex, start, target);
+            return new StatisticObjective(_model, regex, start, target);
         }
 
         public StatisticObjective CreateForwardObjective(string regex, double target = -1)
         {
-            var matched = _statisticMap
-                .Where(kvp => Regex.IsMatch(kvp.Key, regex));
+            var matched = _model.GetMatchedStatistic(regex);
 
             double start = 0d;
             foreach (var (_, statistic) in matched)
@@ -109,7 +65,7 @@ namespace cfEngine.Service.Statistic
 
         public void Dispose()
         {
-            _statisticMap.Clear();
+            _model.Dispose();
         }
     }
 }
