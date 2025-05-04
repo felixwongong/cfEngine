@@ -19,6 +19,7 @@ namespace cfEngine.Info
         public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
 
         protected abstract Func<TInfo, TKey> keyFn { get; }
+        public override Type infoType => typeof(TInfo);
 
         protected ConfigInfoManager(IValueLoader<TInfo> loader) : base()
         {
@@ -35,7 +36,7 @@ namespace cfEngine.Info
                 var key = keyFn(value);
                 if (!_valueMap.TryAdd(key, value))
                 {
-                    Log.LogError($"Duplicate key {key} in {infoDirectory}");
+                    Log.LogError($"Duplicate key {key} in {GetType().Name}");
                     continue;
                 }
             }
@@ -45,11 +46,6 @@ namespace cfEngine.Info
 
         public override async Task LoadInfoAsync(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(infoDirectory))
-            {
-                throw new ArgumentNullException(nameof(infoDirectory), "info key is unset");
-            }
-
             var values = await _loader.LoadAsync(cancellationToken);
             
             _valueMap.EnsureCapacity(values.Count);
@@ -58,7 +54,7 @@ namespace cfEngine.Info
                 var key = keyFn(value);
                 if (_valueMap.ContainsKey(key))
                 {
-                    Log.LogError($"Duplicate key {key} in {infoDirectory}");
+                    Log.LogError($"Duplicate key {key} in {GetType().Name}");
                     continue;
                 }
 

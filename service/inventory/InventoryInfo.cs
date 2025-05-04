@@ -5,7 +5,6 @@ namespace cfEngine.Service
 {
     public class InventoryInfoManager: ConfigInfoManager<string, InventoryInfo>
     {
-        public override string infoDirectory => nameof(InventoryInfo);
         protected override Func<InventoryInfo, string> keyFn => info => info.itemId;
 
         public InventoryInfo GetOrDefault(string itemId)

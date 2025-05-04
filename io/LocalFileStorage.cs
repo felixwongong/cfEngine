@@ -6,33 +6,42 @@ using cfEngine.Logging;
 
 namespace cfEngine.IO
 {
-    public class LocalFileStorage: Storage
+    public class LocalFileStorage: IStorage
     {
-        public LocalFileStorage(string storagePath): base(storagePath)
+        private readonly string storagePath;
+        
+        public LocalFileStorage(string storagePath)
         {
+            this.storagePath = storagePath;
         }
         
-        public override string[] GetFiles(string searchPattern)
+        public string[] GetFiles(string searchPattern)
         {
             return Directory.GetFiles(storagePath, searchPattern, SearchOption.AllDirectories);
         }
 
-        public override bool IsFileExist(string relativePath)
+        public string[] GetFiles(string directory, string searchPattern)
+        {
+            var directoryPath = Path.Combine(storagePath, directory);
+            return Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
+        }
+
+        public bool IsFileExist(string relativePath)
         {
             return File.Exists(Path.Combine(storagePath, relativePath));
         }
 
-        public override void CopyFile(string relativeFrom, string relativeTo, bool overwrite = false)
+        public void CopyFile(string relativeFrom, string relativeTo, bool overwrite = false)
         {
             File.Copy(Path.Combine(storagePath, relativeFrom), Path.Combine(storagePath, relativeTo), overwrite);
         }
 
-        public override void DeleteFile(string relativePath)
+        public void DeleteFile(string relativePath)
         {
             File.Delete(Path.Combine(storagePath, relativePath));
         }
 
-        public override byte[] LoadBytes(string relativePath)
+        public byte[] LoadBytes(string relativePath)
         {
             var absPath = Path.Combine(storagePath, relativePath);
 
@@ -48,7 +57,7 @@ namespace cfEngine.IO
             return fileBytes;       
         }
 
-        public override async Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken cancellationToken = default)
+        public async Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken cancellationToken = default)
         {
             var absPath = Path.Combine(storagePath, relativePath);
 
@@ -70,15 +79,15 @@ namespace cfEngine.IO
             return fileBytes;       
         }
 
-        public override Stream CreateStream(string relativePath, bool useAsync)
+        public Stream CreateStream(string relativePath, bool useAsync)
         {
             var absPath = Path.Combine(storagePath, relativePath);
             return new FileStream(absPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite, 1024, useAsync);
         }
 
-        public override void Save(string fileName, byte[] data)
+        public void Save(string relativeFilePath, byte[] data)
         {
-            var filePath = Path.Combine(storagePath, fileName); 
+            var filePath = Path.Combine(storagePath, relativeFilePath); 
             var directoryPath = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
@@ -88,7 +97,7 @@ namespace cfEngine.IO
             File.WriteAllBytes(filePath, data);    
         }
 
-        public override Task SaveAsync(string fileName, byte[] data, CancellationToken token = default)
+        public Task SaveAsync(string relativeFilePath, byte[] data, CancellationToken token = default)
         {
             if (!Directory.Exists(storagePath))
             {
@@ -96,13 +105,17 @@ namespace cfEngine.IO
                 Log.LogInfo($"Directory created for storage: {storagePath}");
             }
             
-            var filePath = Path.Combine(storagePath, fileName);
+            var filePath = Path.Combine(storagePath, relativeFilePath);
             return File.WriteAllBytesAsync(filePath, data, token);
         }
 
-        public override bool IsStorageExist()
+        public bool IsStorageExist()
         {
             return Directory.Exists(storagePath);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

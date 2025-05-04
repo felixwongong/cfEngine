@@ -29,17 +29,8 @@ namespace cfEngine.Info
 {
     public class InfoLayer: IService
     {
-        private readonly IStorage _storage;
-        private readonly ISerializer _serializer;
-
         private readonly Dictionary<Type, IInfoManager> _infoMap = new();
         public IReadOnlyDictionary<Type, IInfoManager> InfoMap => _infoMap;
-
-        public InfoLayer(IStorage storage, ISerializer serializer)
-        {
-            _storage = storage;
-            _serializer = serializer;
-        }
 
         public void RegisterInfo(IInfoManager infoManager)
         {
@@ -68,7 +59,6 @@ namespace cfEngine.Info
 
         public void Dispose()
         {
-            _storage.Dispose();
             foreach (var infoManager in _infoMap.Values)
             {
                 infoManager.Dispose();

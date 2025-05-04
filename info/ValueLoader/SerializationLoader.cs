@@ -25,7 +25,7 @@ namespace cfEngine.Info
             var files = _storage.GetFiles("*");
             if (files.Length <= 0)
             {
-                Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");
+                Log.LogWarning($"serialized file not found in loader of type: {typeof(TInfo).Name}, please check the file name and path.");
                 values = null;
                 return ListPool<TInfo>.Handle.Empty;
             }
@@ -42,10 +42,10 @@ namespace cfEngine.Info
 
         public Task<List<TInfo>> LoadAsync(CancellationToken cancellationToken)
         {
-            var files = _storage.GetFiles("*");
+            var files = _storage.GetFiles("*.json");
             if (files.Length <= 0)
             {
-                Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");
+                Log.LogWarning($"serialized file not found in loader of type: {typeof(TInfo).Name}, please check the file name and path.");
                 return Task.FromResult<List<TInfo>>(new List<TInfo>(0));
             }
 

@@ -10,7 +10,7 @@ namespace cfEngine.Info
 {
     public interface IInfoManager: IDisposable
     {
-        string infoDirectory { get; }
+        Type infoType { get; }
         IEnumerable<object> GetAllValue();
         void LoadInfo();
         Task LoadInfoAsync(CancellationToken cancellationToken);
@@ -18,7 +18,7 @@ namespace cfEngine.Info
     
     public abstract class InfoManager: IInfoManager
     {
-        public abstract string infoDirectory { get; }
+        public abstract Type infoType { get; }
         public abstract IEnumerable<object> GetAllValue();
         public abstract void LoadInfo();
         public abstract Task LoadInfoAsync(CancellationToken cancellationToken);
