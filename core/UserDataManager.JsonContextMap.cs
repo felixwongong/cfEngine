@@ -8,7 +8,7 @@ namespace cfEngine.Core
 {
     public partial class UserDataManager
     {
-        class JsonContextMap : IUserData
+        public class JsonContextMap : IUserData
         {
             public static JsonContextMap Empty = new(new Dictionary<string, JsonObject>());
             

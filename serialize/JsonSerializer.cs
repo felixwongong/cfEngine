@@ -18,19 +18,22 @@ namespace cfEngine.Serialize
         private static JsonSerializer _instance;
         public static JsonSerializer Instance => _instance ??= new JsonSerializer();
 
-        public override byte[] Serialize(object obj, ISerializer.ISerializeParam param = null)
+        public override string Serialize(object obj, ISerializer.ISerializeParam param = null)
         {
-            return JSON.SerializeToUtf8Bytes(obj, OPTIONS);
+            return JSON.Serialize(obj, OPTIONS);
         }
 
-        public override async Task<byte[]> SerializeAsync(object obj, ISerializer.ISerializeParam param = null, CancellationToken token = default)
+        public override async Task<string> SerializeAsync(object obj, ISerializer.ISerializeParam param = null, CancellationToken token = default)
         {
             using var ms = new MemoryStream();
-            await JSON.SerializeAsync(ms, obj, OPTIONS,cancellationToken:token).ConfigureAwait(false);
+            await JSON.SerializeAsync(ms, obj, OPTIONS, token).ConfigureAwait(false);
 
-            var loadedByte = new byte[ms.Length];
-            await ms.WriteAsync(loadedByte, 0, loadedByte.Length, token).ConfigureAwait(false);
-            return loadedByte;
+            ms.Position = 0;
+
+            using var reader = new StreamReader(ms);
+            var jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
+            
+            return jsonString;
         }
 
         public override object Deserialize(byte[] byteLoaded, ISerializer.IDeserializeParam param = null)

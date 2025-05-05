@@ -13,8 +13,8 @@ namespace cfEngine.Serialize
         {
         }
 
-        public byte[] Serialize(object obj, ISerializeParam param = null);
-        public Task<byte[]> SerializeAsync(object obj, ISerializeParam param = null, CancellationToken token = default);
+        public string Serialize(object obj, ISerializeParam param = null);
+        public Task<string> SerializeAsync(object obj, ISerializeParam param = null, CancellationToken token = default);
         public object Deserialize(byte[] byteLoaded, IDeserializeParam param = null);
         public Task<object> DeserializeAsync(byte[] byteLoaded, IDeserializeParam param = null, CancellationToken token = default);
         public T DeserializeAs<T>(byte[] byteLoaded, IDeserializeParam param = null);
@@ -23,8 +23,8 @@ namespace cfEngine.Serialize
     
     public abstract class Serializer: ISerializer
     {
-        public abstract byte[] Serialize(object obj, ISerializer.ISerializeParam param = null);
-        public abstract Task<byte[]> SerializeAsync(object obj, ISerializer.ISerializeParam param = null, CancellationToken token = default);
+        public abstract string Serialize(object obj, ISerializer.ISerializeParam param = null);
+        public abstract Task<string> SerializeAsync(object obj, ISerializer.ISerializeParam param = null, CancellationToken token = default);
         public abstract object Deserialize(byte[] byteLoaded, ISerializer.IDeserializeParam param = null);
         public abstract Task<object> DeserializeAsync(byte[] byteLoaded, ISerializer.IDeserializeParam param = null, CancellationToken token = default);
         public abstract T DeserializeAs<T>(byte[] byteLoaded, ISerializer.IDeserializeParam param = null);

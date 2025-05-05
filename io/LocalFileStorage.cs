@@ -97,6 +97,18 @@ namespace cfEngine.IO
             File.WriteAllBytes(filePath, data);    
         }
 
+        public void Save(string relativeFilePath, string data)
+        {
+            var filePath = Path.Combine(storagePath, relativeFilePath); 
+            var directoryPath = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+                Log.LogInfo($"Directory created for storage: {directoryPath}");
+            }
+            File.WriteAllText(filePath, data);    
+        }
+
         public Task SaveAsync(string relativeFilePath, byte[] data, CancellationToken token = default)
         {
             if (!Directory.Exists(storagePath))
@@ -107,6 +119,18 @@ namespace cfEngine.IO
             
             var filePath = Path.Combine(storagePath, relativeFilePath);
             return File.WriteAllBytesAsync(filePath, data, token);
+        }
+
+        public Task SaveAsync(string relativeFilePath, string data, CancellationToken token = default)
+        {
+            if (!Directory.Exists(storagePath))
+            {
+                Directory.CreateDirectory(storagePath);
+                Log.LogInfo($"Directory created for storage: {storagePath}");
+            }
+            
+            var filePath = Path.Combine(storagePath, relativeFilePath);
+            return File.WriteAllTextAsync(filePath, data, token);
         }
 
         public bool IsStorageExist()

@@ -16,7 +16,9 @@ namespace cfEngine.IO
         public Task<byte[]> LoadBytesAsync(string relativePath, CancellationToken token = default);
         public Stream CreateStream(string relativePath, bool useAsync);
         public void Save(string relativeFilePath, byte[] data);
+        public void Save(string relativeFilePath, string data);
         public Task SaveAsync(string relativeFilePath, byte[] data, CancellationToken token = default);
+        public Task SaveAsync(string relativeFilePath, string data, CancellationToken token = default);
         public bool IsStorageExist();
     }
 }
