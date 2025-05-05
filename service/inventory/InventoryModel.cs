@@ -21,5 +21,10 @@ namespace cfEngine.Service.Inventory
         public void SetSaveData(Dictionary<string, object> dataMap)
         {
         }
+
+        public void Dispose()
+        {
+            // TODO release managed resources here
+        }
     }
 }

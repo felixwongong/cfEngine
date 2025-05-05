@@ -7,6 +7,7 @@ using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Serialize;
 using System.Text.Json.Nodes;
+using cfEngine.Extension;
 using cfEngine.Service;
 
 namespace cfEngine.Core
@@ -35,7 +36,7 @@ namespace cfEngine.Core
 
 namespace cfEngine.Core
 {
-    public interface IRuntimeSavable
+    public interface IRuntimeSavable: IDisposable
     {
         public void Initialize(IUserData userData);
         public void SetSaveData(Dictionary<string, object> dataMap);
@@ -120,6 +121,21 @@ namespace cfEngine.Core
             {
                 savable.Initialize(_userData);
             }
+        }
+
+        public void TriggerSave()
+        {
+            SaveAsync().ContinueWithSynchronized(result =>
+            {
+                if (result.IsCompletedSuccessfully)
+                {
+                    Log.LogInfo("[UserDataManager] Save succeed.");
+                }
+                else
+                {
+                    Log.LogException(result.Exception, "[UserDataManager] Saved failed");
+                }
+            });
         }
 
         public void Dispose()
