@@ -130,6 +130,10 @@ namespace cfEngine.Rx
             }
         }
 
+        public void EnsureCapacity(int capacity)
+        {
+            _dictionary.EnsureCapacity(capacity);
+        }
         #endregion
     }
 }
