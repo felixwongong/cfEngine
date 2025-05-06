@@ -27,8 +27,8 @@ namespace cfEngine.Service
 
     public class InventoryInfo
     {
-        public string itemId;
-        public int maxStackSize;
-        public string iconKey;
+        public string itemId { get; set; }
+        public int maxStackSize { get; set; }
+        public string iconKey { get; set; }
     }
 }
