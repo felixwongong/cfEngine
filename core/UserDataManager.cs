@@ -88,7 +88,7 @@ namespace cfEngine.Core
             return _userData;
         }
 
-        public async Task SaveAsync(CancellationToken token = default)
+        public Task SaveAsync(CancellationToken token = default)
         {
             var dataMap = new Dictionary<string, object>();
             try
@@ -98,21 +98,26 @@ namespace cfEngine.Core
                     savable.SetSaveData(dataMap);
                 }
 
-                if (_storage.IsFileExist(dataFileName))
-                {
-                    _storage.CopyFile(dataFileName, backupFileName);
-                }
-
-                var data = await _serializer.SerializeAsync(dataMap, token: token);
-                await _storage.SaveAsync(dataFileName, data, token);
-
-                _storage.DeleteFile(backupFileName);
+                return SaveAsync(dataMap, token);
             }
             catch (Exception ex)
             {
                 Log.LogException(ex, "Exception occurs saving, Saving cancelled.");
-                return;
+                return Task.FromException(ex);
             }
+        }
+
+        public async Task SaveAsync(IReadOnlyDictionary<string, object> dataMap, CancellationToken token = default)
+        {
+            if (_storage.IsFileExist(dataFileName))
+            {
+                _storage.CopyFile(dataFileName, backupFileName);
+            }
+
+            var data = await _serializer.SerializeAsync(dataMap, token: token);
+            await _storage.SaveAsync(dataFileName, data, token);
+
+            _storage.DeleteFile(backupFileName);
         }
 
         public void InitializeSavables()
@@ -125,7 +130,7 @@ namespace cfEngine.Core
 
         public void TriggerSave()
         {
-            SaveAsync().ContinueWithSynchronized(result =>
+            SaveAsync().ContinueWith(result =>
             {
                 if (result.IsCompletedSuccessfully)
                 {
