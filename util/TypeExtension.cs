@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -34,6 +35,11 @@ namespace cfEngine.Util
                 return string.Empty;
             
             return null;
+        }
+
+        public static IEnumerable<Type> FindDerivedTypes(Assembly assembly, Type baseType)
+        {
+            return assembly.GetTypes().Where(baseType.IsAssignableFrom);
         }
     }
 }
