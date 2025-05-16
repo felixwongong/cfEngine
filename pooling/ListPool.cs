@@ -18,7 +18,7 @@ namespace cfEngine.Pooling
 
         private static void ReleaseList(List<T> list)
         {
-            list.Clear();
+            list?.Clear();
         }
     }
 }
