@@ -14,8 +14,8 @@ namespace cfEngine.Util
 
     public interface IStateMachine<TStateId>
     {
-        public TStateId LastStateId { get; }
-        public TStateId CurrentStateId { get; }
+        public TStateId lastStateId { get; }
+        public TStateId currentStateId { get; }
         public bool CanGoToState(TStateId id);
         public bool TryGoToState(TStateId nextStateId, in StateParam param = null);
         public void ForceGoToState(TStateId nextStateId, in StateParam param = null);
@@ -40,8 +40,8 @@ namespace cfEngine.Util
     {
         private TState _lastState;
         private TState _currentState;
-        public TStateId LastStateId => _lastState.Id;
-        public TStateId CurrentStateId => _currentState.Id;
+        public TStateId lastStateId => _lastState.Id;
+        public TStateId currentStateId => _currentState.Id;
         
         private readonly Dictionary<TStateId, TState> _stateDictionary = new();
 
