@@ -26,7 +26,7 @@ namespace cfEngine.Info
             var files = _storage.GetFiles("*.xlsx");
             if (files.Length <= 0)
             {
-                Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");
+                Log.LogInfo($"{typeof(TInfo)} infoCount: 0");
                 values = new List<TInfo>(0);
                 return ListPool<TInfo>.Handle.Empty;
             }
@@ -50,7 +50,8 @@ namespace cfEngine.Info
                 var decoded = _encoder.DecodeAs<TInfo>(dataObject, DataObjectExtension.SetDecodePropertyValue);
                 values.Add(decoded);
             }
-
+            
+            Log.LogInfo($"{typeof(TInfo)} infoCount: {values.Count}");
             return handle;
         }
 
