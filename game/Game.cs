@@ -1,4 +1,5 @@
 using System.Threading;
+using cfEngine.Logging;
 using cfEngine.Service;
 
 namespace cfEngine.Core
