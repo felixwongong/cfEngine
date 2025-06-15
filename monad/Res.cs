@@ -26,18 +26,10 @@ namespace cfEngine
         public bool IsOk => _isOk;
         public bool IsErr => !_isOk;
 
-        public T Value => _isOk
-            ? _value
-            : throw new InvalidOperationException("Attempted to access Ok value when Result is Err.");
-
-        public TE Error => !_isOk
-            ? _error
-            : throw new InvalidOperationException("Attempted to access Err value when Result is Ok.");
-
         public bool TryGetValue(out T value)
         {
             value = _value;
-            return _isOk;
+            return _isOk && _value != null;
         }
 
         public bool TryGetError(out TE error)

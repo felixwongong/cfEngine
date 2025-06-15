@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace cfEngine
@@ -25,8 +26,15 @@ namespace cfEngine
             return _isOk ? ok(_value) : err(_error);
         }
         
+        /// <summary>
+        /// Setting Ok with a NULL value will return isOk as true, but the value will be null.
+        /// Null value will fail the TryGetValue method.
+        /// (Assume setting NULL value to Ok is a valid operation, like setting a default value or a placeholder.)
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Res<T, TE> Ok(T value) => new(value);
+        public static Res<T, TE> Ok([AllowNull] T value) => new(value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Res<T, TE> Err(TE error) => new(error);
