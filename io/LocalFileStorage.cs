@@ -17,12 +17,22 @@ namespace cfEngine.IO
         
         public string[] GetFiles(string searchPattern)
         {
+            if(!Directory.Exists(storagePath))
+            {
+                Log.LogError($"Storage path does not exist: {storagePath}");
+                return Array.Empty<string>();
+            }
             return Directory.GetFiles(storagePath, searchPattern, SearchOption.AllDirectories);
         }
 
         public string[] GetFiles(string directory, string searchPattern)
         {
             var directoryPath = Path.Combine(storagePath, directory);
+            if (!Directory.Exists(directoryPath))
+            {
+                Log.LogError($"Directory does not exist: {directoryPath}");
+                return Array.Empty<string>();
+            }
             return Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using cfEngine.Extension;
@@ -7,6 +8,7 @@ using cfEngine.IO;
 using cfEngine.Logging;
 using cfEngine.Pooling;
 using CofyDev.Xml.Doc;
+using JsonSerializer = cfEngine.Serialize.JsonSerializer;
 
 namespace cfEngine.Info
 {
@@ -14,6 +16,8 @@ namespace cfEngine.Info
     {
         private readonly IStorage _storage;
         private readonly DataObjectEncoder _encoder;
+        
+        private const string SEARCH_PATTERN = "*.json";
         
         public ExcelByteLoader(IStorage storage, DataObjectEncoder encoder)
         {
@@ -23,7 +27,7 @@ namespace cfEngine.Info
 
         public ListPool<TInfo>.Handle Load(out List<TInfo> values)
         {
-            var files = _storage.GetFiles("*.xlsx");
+            var files = _storage.GetFiles(SEARCH_PATTERN);
             if (files.Length <= 0)
             {
                 Log.LogInfo($"{typeof(TInfo)} infoCount: 0");
@@ -34,7 +38,8 @@ namespace cfEngine.Info
             var excelData = new DataContainer();
             foreach (var file in files)
             {
-                var fileExcelData = CofyXmlDocParser.ParseExcel(_storage.LoadBytes(file));
+                var fileByte = _storage.LoadBytes(file);
+                var fileExcelData = JsonSerializer.Instance.DeserializeAs<DataContainer>(fileByte);
                 excelData.AddRange(fileExcelData);
             }
 
@@ -57,7 +62,7 @@ namespace cfEngine.Info
 
         public Task<List<TInfo>> LoadAsync(CancellationToken cancellationToken)
         {
-            var files = _storage.GetFiles("*.xlsx");
+            var files = _storage.GetFiles(SEARCH_PATTERN);
             if (files.Length <= 0)
             {
                 Log.LogWarning("serialized file ({infoDirectory}) not found in Info Directory, please check the file name and path.");

@@ -25,6 +25,8 @@ namespace cfEngine
             _hasValue = true;
         }
 
+        public static implicit operator Optional<T>(T value) => Optional<T>.Some(value);
+
         public static Optional<T> Some([DisallowNull] T value) => new(value);
         public static Optional<T> None() => default;
 
