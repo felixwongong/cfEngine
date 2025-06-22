@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using cfEngine.Pooling;
 
-namespace cfEngine.Modules.cfEngine.util
+namespace cfEngine.Util
 {
     public struct PathSegment
     {
@@ -59,22 +59,22 @@ namespace cfEngine.Modules.cfEngine.util
         public override string ToString() => GetPath();
     }
     
-    public class CustomPathBuilder: IDisposable
+    public class PathSegmentBuilder: IDisposable
     {
         private List<string> sb;
 
-        public CustomPathBuilder()
+        public PathSegmentBuilder()
         {
             sb = ListPool<string>.Default.Get();
         }
 
-        public CustomPathBuilder AppendPath(string path)
+        public PathSegmentBuilder AppendPath(string path)
         {
             sb.Add(path);
             return this;
         }
 
-        public CustomPathBuilder AppendPath(PathSegment pathSegment)
+        public PathSegmentBuilder AppendPath(PathSegment pathSegment)
         {
             foreach (var segment in pathSegment.GetSegments().Span)
             {
