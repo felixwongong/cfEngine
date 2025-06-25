@@ -1,6 +1,8 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using cfEngine.Logging;
 
 namespace cfEngine.Extension
 {
@@ -32,6 +34,31 @@ namespace cfEngine.Extension
             {
                 t.Dispose();
             }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Task LogIfFaulted(this Task t)
+        {
+            return t.ContinueWith(result =>
+            {
+                if (result.IsFaulted)
+                {
+                    Log.LogException(result.Exception);
+                }
+            });
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Task<T> LogIfFaulted<T>(this Task<T> t)
+        {
+            return t.ContinueWith(result =>
+            {
+                if (result.IsFaulted)
+                {
+                    Log.LogException(result.Exception);
+                }
+                return result.Result;
+            });
         }
     }
 }
