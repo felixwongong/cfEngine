@@ -32,10 +32,16 @@ namespace cfEngine.Pooling
 
         protected readonly Queue<T> Queue = new();
 
-        public ObjectPool(Func<T> createMethod, Action<T> releaseAction)
+        public ObjectPool(Func<T> createMethod, Action<T> releaseAction, int warmupSize = 0)
         {
             this._createMethod = createMethod;
             this._releaseAction = releaseAction;
+
+            for (int i = 0; i < warmupSize; i++)
+            {
+                var instance = _createMethod();
+                releaseAction(instance);
+            }
         }
 
         public virtual T Get()
