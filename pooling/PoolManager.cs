@@ -21,6 +21,21 @@ namespace cfEngine.Core
         }
         
         public static PoolManager GetPoolManager(this Game game) => game.GetService<PoolManager>(ServiceName.Pool);
+
+        public static Res<T, Exception> GetPool<T>(this Game game, string poolKey) where T: IObjectPool
+        {
+            var poolManager = game.GetPoolManager();
+            if (poolManager == null)
+                return Res.Err<T>(new Exception("PoolManager is not registered in the game. Please call WithPoolManager() to register it."));
+            
+            if(!poolManager.TryGetPool(poolKey, out var pool))
+                return Res.Err<T>(new KeyNotFoundException($"Pool with key '{poolKey}' not found."));
+
+            if (pool is not T t)
+                return Res.Err<T>(new InvalidCastException($"Pool with key '{poolKey}' is not of type {typeof(T)}. Found: {pool.GetType()}"));
+            
+            return Res.Ok(t);
+        }
     }
 }
 
@@ -32,7 +47,8 @@ namespace cfEngine.Pooling
 
         public bool TryGetPool(string key, out IObjectPool pool)
         {
-            return _poolMap.TryGetValue(key, out pool);
+            pool = null;
+            return !string.IsNullOrEmpty(key) && _poolMap.TryGetValue(key, out pool);
         }
 
         public bool TryGetPool<T>(string key, out T pool) where T : class, IObjectPool 

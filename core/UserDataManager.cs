@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using cfEngine.Serialize;
 using System.Text.Json.Nodes;
 using cfEngine.Extension;
 using cfEngine.Service;
+using cfEngine.Util;
 
 namespace cfEngine.Core
 {
@@ -141,6 +143,19 @@ namespace cfEngine.Core
                     Log.LogException(result.Exception, "[UserDataManager] Saved failed");
                 }
             });
+        }
+
+        public void DeleteSave()
+        {
+            try
+            {
+                _storage.DeleteFile(dataFileName);
+                Log.LogInfo("[UserDataManager] Save file deleted successfully.");
+            }
+            catch (Exception e)
+            {
+                Log.LogException(new IOException("Failed to delete save file.", e));
+            }
         }
 
         public void Dispose()
