@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using cfEngine.IO;
-using cfEngine.Serialize;
+using System.Linq;
+using System.Threading.Tasks;
+using cfEngine.Core;
 using cfEngine.Service;
-using CofyDev.Xml.Doc;
 
 namespace cfEngine.Core
 {
@@ -38,6 +38,11 @@ namespace cfEngine.Info
             {
                 throw new ArgumentException(nameof(infoManager), $"Info type {infoManager.GetType()} already exist");
             }
+        }
+
+        public IEnumerable<Task> LoadInfoAsync()
+        {
+            return InfoMap.Values.Select(info => info.LoadInfoAsync(Game.TaskToken));
         }
 
         public bool TryGetInfo<TInfo>(out TInfo infoManager) where TInfo : InfoManager
