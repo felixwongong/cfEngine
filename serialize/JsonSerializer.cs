@@ -10,7 +10,8 @@ namespace cfEngine.Serialize
     {
         private JsonSerializerOptions OPTIONS = new()
         {
-            IgnoreReadOnlyProperties = false
+            IgnoreReadOnlyProperties = false,
+            IncludeFields = true
         };
         
         private static JsonSerializer _instance;
