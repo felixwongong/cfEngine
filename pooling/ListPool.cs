@@ -7,7 +7,7 @@ namespace cfEngine.Pooling
         private static ListPool<T> _default;
         public static ListPool<T> Default => _default ??= new ListPool<T>();
 
-        public ListPool() : base(CreateList, ReleaseList)
+        public ListPool() : base(CreateList, null, ReleaseList)
         {
         }
 

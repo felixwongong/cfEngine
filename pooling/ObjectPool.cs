@@ -29,13 +29,15 @@ namespace cfEngine.Pooling
         
         private readonly Func<T> _createMethod;
         private readonly Action<T> _releaseAction;
+        private readonly Action<T> _getAction;
 
         protected readonly Queue<T> Queue = new();
 
-        public ObjectPool(Func<T> createMethod, Action<T> releaseAction, int warmupSize = 0)
+        public ObjectPool(Func<T> createMethod, Action<T> getAction, Action<T> releaseAction, int warmupSize = 0)
         {
             this._createMethod = createMethod;
             this._releaseAction = releaseAction;
+            this._getAction = getAction;
 
             for (int i = 0; i < warmupSize; i++)
             {
@@ -51,6 +53,7 @@ namespace cfEngine.Pooling
                 return _createMethod();
             }
 
+            _getAction?.Invoke(result);
             return result;
         }
 

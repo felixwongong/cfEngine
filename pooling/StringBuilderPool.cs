@@ -7,7 +7,7 @@ namespace cfEngine.Pooling
     {
         public static StringBuilderPool Default { get; } = new();
         
-        public StringBuilderPool() : base(_create, _release)
+        public StringBuilderPool() : base(_create, null, _release)
         {
         }
 

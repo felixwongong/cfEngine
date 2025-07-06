@@ -16,7 +16,7 @@ namespace cfEngine.DataStructure
             list.Clear();
         }
         
-        public WeakReferenceListPool() : base(createMethod, releaseAction)
+        public WeakReferenceListPool() : base(createMethod, null, releaseAction)
         {
         }
     }
