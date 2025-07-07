@@ -46,7 +46,16 @@ namespace cfEngine.Info
 
         public override async Task LoadInfoAsync(CancellationToken cancellationToken)
         {
-            var values = await _loader.LoadAsync(cancellationToken);
+            List<TInfo> values = null;
+            try
+            {
+                values = await _loader.LoadAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Log.LogException(e);
+                throw;
+            }
             
             _valueMap.EnsureCapacity(values.Count);
             foreach (var value in values)
