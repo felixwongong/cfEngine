@@ -30,6 +30,7 @@ namespace cfEngine.Info
         {
             using var handle = _loader.Load(out var values);
             _valueMap.EnsureCapacity(values.Count);
+            Log.LogInfo($"{typeof(TInfo).Name} infoCount: {values.Count}");
             
             foreach (var value in values)
             {
@@ -71,6 +72,17 @@ namespace cfEngine.Info
             }
             
             OnLoadCompleted();
+        }
+        
+        public bool TryGetValue(TKey key, out TInfo value)
+        {
+            value = null;
+            if (key == null)
+            {
+                Log.LogError($"Key is null in {GetType().Name} for {typeof(TInfo).Name}");
+                return false;
+            }
+            return _valueMap.TryGetValue(key, out value);
         }
 
         public override void Dispose()

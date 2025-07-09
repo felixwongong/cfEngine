@@ -25,7 +25,7 @@ namespace cfEngine
             return new Pending<T>(value);
         }
 
-        public static Task<Validation<T>> VContinuedWith<T>(this Task<Validation<T>> task, Action<Validation<T>> continuation)
+        public static Task<Validation<T>> ContinueWith<T>(this Task<Validation<T>> task, Action<Validation<T>> continuation)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
             if (continuation == null) throw new ArgumentNullException(nameof(continuation));

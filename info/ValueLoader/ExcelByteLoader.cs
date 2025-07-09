@@ -56,7 +56,6 @@ namespace cfEngine.Info
                 values.Add(decoded);
             }
             
-            Log.LogInfo($"{typeof(TInfo)} infoCount: {values.Count}");
             return handle;
         }
 
