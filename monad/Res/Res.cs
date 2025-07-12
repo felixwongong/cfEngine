@@ -25,6 +25,25 @@ namespace cfEngine
 
         public bool IsOk => _isOk;
         public bool IsErr => !_isOk;
+        public TOk value
+        {
+            get
+            {
+                if (!_isOk)
+                    throw new InvalidOperationException("Cannot access Value on an Err result.");
+                return _value;
+            }
+        }
+        
+        public TErr error
+        {
+            get
+            {
+                if (_isOk)
+                    throw new InvalidOperationException("Cannot access Error on an Ok result.");
+                return _error;
+            }
+        }
 
         public bool TryGetValue(out TOk value)
         {
