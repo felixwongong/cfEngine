@@ -16,9 +16,9 @@ namespace cfEngine.Util
     {
         public TStateId lastStateId { get; }
         public TStateId currentStateId { get; }
-        public bool CanGoToState(TStateId id);
-        public bool TryGoToState(TStateId nextStateId, in StateParam param = null);
-        public void ForceGoToState(TStateId nextStateId, in StateParam param = null);
+        public bool CanGoToState(TStateId id, StateParam param = null);
+        public bool TryGoToState(TStateId nextStateId, StateParam param = null);
+        public void ForceGoToState(TStateId nextStateId, StateParam param = null);
         public Subscription SubscribeBeforeStateChange(Action<StateChangeRecord<TStateId>> listener);
         public Subscription SubscribeAfterStateChange(Action<StateChangeRecord<TStateId>> listener);
     }
@@ -79,12 +79,12 @@ namespace cfEngine.Util
             state.StateMachine = (TStateMachine)this;
         }
         
-        public bool CanGoToState(TStateId id)
+        public bool CanGoToState(TStateId id, StateParam param)
         {
             return TryGetState(id, out var nextState) && nextState.IsReady() && (_currentState == null || _currentState.Whitelist.Contains(id));
         }
 
-        public bool TryGoToState(TStateId nextStateId, in StateParam param = null)
+        public bool TryGoToState(TStateId nextStateId, StateParam param = null)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace cfEngine.Util
                     return false;
                 }
 
-                if (!CanGoToState(nextState.Id))
+                if (!CanGoToState(nextState.Id, param))
                 {
                     Log.LogException(new ArgumentException(
                         $"Cannot go to state {nextState.Id}, not in current state {_currentState.Id} whitelist"));
@@ -127,7 +127,7 @@ namespace cfEngine.Util
             }
         }
 
-        public void ForceGoToState(TStateId nextStateId, in StateParam param = null)
+        public void ForceGoToState(TStateId nextStateId, StateParam param = null)
         {
             try
             {
