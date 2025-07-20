@@ -5,3 +5,7 @@ obj/
 
 *.meta
 
+
+*.uid
+
+*.import

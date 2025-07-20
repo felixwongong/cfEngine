@@ -19,12 +19,12 @@ namespace cfEngine.Rx.Test
             
             rtDictionary.Add(1, "one");
             rtDictionary.Add(2, "two");
-            Assert.IsTrue(rtDictionary.ContainsKey(1));
-            Assert.IsTrue(rtDictionary.ContainsKey(2));
-            Assert.AreEqual(rtDictionary[1], "one");
-            Assert.AreEqual(rtDictionary[2], "two");
-            Assert.AreEqual(added[0], "one");
-            Assert.AreEqual(added[1], "two");
+            Assert.Equals(rtDictionary.ContainsKey(1), true);
+            Assert.Equals(rtDictionary.ContainsKey(2), true);
+            Assert.Equals(rtDictionary[1], "one");
+            Assert.Equals(rtDictionary[2], "two");
+            Assert.Equals(added[0], "one");
+            Assert.Equals(added[1], "two");
         }
 
         [Test]
@@ -42,10 +42,10 @@ namespace cfEngine.Rx.Test
 
             rtDictionary.Remove(1);
             rtDictionary.Remove(new KeyValuePair<int, string>(2, "two"));
-            Assert.IsFalse(rtDictionary.ContainsKey(1));
-            Assert.IsFalse(rtDictionary.ContainsKey(2));   
-            Assert.AreEqual(removed[0], "one");
-            Assert.AreEqual(removed[1], "two");
+            Assert.Equals(rtDictionary.ContainsKey(1), false);
+            Assert.Equals(rtDictionary.ContainsKey(2), false);   
+            Assert.Equals(removed[0], "one");
+            Assert.Equals(removed[1], "two");
         }
 
         [Test]
@@ -61,8 +61,8 @@ namespace cfEngine.Rx.Test
             
             rtDictionary.Upsert(1, "one");
             rtDictionary.Upsert(1, "new one");
-            Assert.AreEqual(added, "one");
-            Assert.AreEqual(updated, "new one");
+            Assert.Equals(added, "one");
+            Assert.Equals(updated, "new one");
         }
 
         [Test]
@@ -80,8 +80,8 @@ namespace cfEngine.Rx.Test
             
             rtDictionary.Dispose();
             
-            Assert.IsTrue(disposed);
-            Assert.IsTrue(rtDictionary.Count == 0);
+            Assert.Equals(disposed, true);
+            Assert.Equals(rtDictionary.Count, 0);
         }
 
         [Test]
@@ -98,8 +98,8 @@ namespace cfEngine.Rx.Test
             
             rtDictionary.Add(1, "one");
             rtDictionary.Add(2, "two");
-            Assert.AreNotEqual(added[0], "one");
-            Assert.AreNotEqual(added[1], "two");
+            Assert.Equals(added[0], "one");
+            Assert.Equals(added[1], "two");
         }
 
         [Test]
@@ -110,9 +110,9 @@ namespace cfEngine.Rx.Test
             var rtPairs = rtDictionary.RtPairs;
             rtDictionary.Add(2, "two");
             
-            Assert.IsTrue(rtPairs.Count >= 2);
-            Assert.IsTrue(rtPairs[0].Equals(new KeyValuePair<int,string>(1, "one")));
-            Assert.IsTrue(rtPairs[1].Equals(new KeyValuePair<int,string>(2, "two")));
+            Assert.Equals(rtPairs.Count >= 2, true);
+            Assert.Equals(rtPairs[0].Equals(new KeyValuePair<int,string>(1, "one")), true);
+            Assert.Equals(rtPairs[1].Equals(new KeyValuePair<int,string>(2, "two")), true);
         }
 
         [Test]
@@ -123,9 +123,9 @@ namespace cfEngine.Rx.Test
             var rtKeys = rtDictionary.RtKeys;
             rtDictionary.Add(2, "two");
             
-            Assert.IsTrue(rtKeys.Count >= 2);
-            Assert.IsTrue(rtKeys[0].Equals(1));
-            Assert.IsTrue(rtKeys[1].Equals(2));
+            Assert.Equals(rtKeys.Count >= 2, true);
+            Assert.Equals(rtKeys[0].Equals(1), true);
+            Assert.Equals(rtKeys[1].Equals(2), true);
         }
 
         [Test]
@@ -136,9 +136,9 @@ namespace cfEngine.Rx.Test
             var rtValues = rtDictionary.RtValues;
             rtDictionary.Add(2, "two");
             
-            Assert.IsTrue(rtValues.Count >= 2);
-            Assert.IsTrue(rtValues[0].Equals("one"));
-            Assert.IsTrue(rtValues[1].Equals("two"));
+            Assert.Equals(rtValues.Count >= 2, true);
+            Assert.Equals(rtValues[0].Equals("one"), true);
+            Assert.Equals(rtValues[1].Equals("two"), true);
         }
     }
 }
