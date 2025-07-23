@@ -16,8 +16,8 @@ namespace cfEngine.Util
         {
             return true;
         }
-        
-        protected internal abstract void StartContext(StateParam param);
+
+        public abstract void StartContext(StateParam param);
 
         protected internal virtual void OnEndContext()
         {
