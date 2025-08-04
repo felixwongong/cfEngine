@@ -10,14 +10,14 @@ using JsonSerializer = cfEngine.Serialize.JsonSerializer;
 
 namespace cfEngine.Info
 {
-    public class ExcelByteLoader<TInfo> : IValueLoader<TInfo>
+    public class ExcelJsonLoader<TInfo> : IValueLoader<TInfo>
     {
         private readonly IStorage _storage;
         private readonly DataObjectEncoder _encoder;
         
         private const string SEARCH_PATTERN = "*.json";
         
-        public ExcelByteLoader(IStorage storage, DataObjectEncoder encoder)
+        public ExcelJsonLoader(IStorage storage, DataObjectEncoder encoder)
         {
             _storage = storage;
             _encoder = encoder;
