@@ -81,7 +81,7 @@ namespace cfEngine.Util
         
         public bool CanGoToState(TStateId id, StateParam param)
         {
-            return TryGetState(id, out var nextState) && nextState.IsReady() && (_currentState == null || _currentState.Whitelist.Contains(id));
+            return TryGetState(id, out var nextState) && (nextState.IsReady() || _currentState == null);
         }
 
         public bool TryGoToState(TStateId nextStateId, StateParam param = null)
@@ -96,8 +96,7 @@ namespace cfEngine.Util
 
                 if (!CanGoToState(nextState.Id, param))
                 {
-                    Log.LogException(new ArgumentException(
-                        $"Cannot go to state {nextState.Id}, not in current state {_currentState.Id} whitelist"));
+                    Log.LogException(new ArgumentException($"Cannot go to state {nextState.Id}"));
                     return false;
                 }
 

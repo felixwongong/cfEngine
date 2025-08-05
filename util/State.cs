@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace cfEngine.Util
 {
@@ -8,8 +7,7 @@ namespace cfEngine.Util
         where TState : State<TStateId, TState, TStateMachine>
     {
         public abstract TStateId Id { get; }
-        public virtual HashSet<TStateId> Whitelist { get; } = new();
-        
+
         public TStateMachine StateMachine { get; internal set; }
 
         public virtual bool IsReady()
