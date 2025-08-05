@@ -30,7 +30,7 @@ namespace cfEngine
             get
             {
                 if (!_isOk)
-                    throw new InvalidOperationException("Cannot access Value on an Err result.");
+                    throw new InvalidOperationException($"Cannot access Value on an Err result. error: {_error.ToString()}");
                 return _value;
             }
         }
@@ -40,7 +40,7 @@ namespace cfEngine
             get
             {
                 if (_isOk)
-                    throw new InvalidOperationException("Cannot access Error on an Ok result.");
+                    throw new InvalidOperationException($"Cannot access Error on an Ok result. result: {_value.ToString()}");
                 return _error;
             }
         }
