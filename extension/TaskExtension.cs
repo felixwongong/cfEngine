@@ -41,10 +41,8 @@ namespace cfEngine.Extension
         {
             return t.ContinueWith(result =>
             {
-                if (result.IsFaulted)
-                {
-                    Log.LogException(result.Exception);
-                }
+                if (result.IsFaulted && result.Exception != null)
+                    LogAggregateException(result.Exception);
             });
         }
         
@@ -53,12 +51,27 @@ namespace cfEngine.Extension
         {
             return t.ContinueWith(result =>
             {
-                if (result.IsFaulted)
+                if (result.IsFaulted && result.Exception != null)
                 {
-                    Log.LogException(result.Exception);
+                    LogAggregateException(result.Exception);
                 }
                 return result.Result;
             });
+        }
+        
+        public static void LogAggregateException(this AggregateException ex)
+        {
+            foreach (var innerException in ex.InnerExceptions)
+            {
+                if (innerException is AggregateException aggregateException)
+                {
+                    LogAggregateException(aggregateException);
+                }
+                else
+                {
+                    Log.LogException(innerException);
+                } 
+            }
         }
     }
 }
