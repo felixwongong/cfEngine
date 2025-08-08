@@ -14,10 +14,7 @@ namespace cfEngine.Info
         private readonly Dictionary<TKey, TInfo> _valueMap = new();
         public IReadOnlyDictionary<TKey, TInfo> valueMap => _valueMap;
         public override IEnumerable<object> GetAllValue() => valueMap.Values;
-
-        private List<TInfo> _allValues;
-        public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
-
+        
         #endregion
 
         protected abstract Func<TInfo, TKey> keyFn { get; }
@@ -29,7 +26,7 @@ namespace cfEngine.Info
         {
             _loader = loader;
         }
-
+        
         public override void LoadInfo()
         {
             using var handle = _loader.Load(out var values);
@@ -78,6 +75,21 @@ namespace cfEngine.Info
             OnLoadCompleted();
         }
         
+        public void AddValue(TInfo value)
+        {
+            if (value == null)
+            {
+                Log.LogError($"Value is null in {GetType().Name} for {typeof(TInfo).Name}");
+                return;
+            }
+            
+            var key = keyFn(value);
+            if (!_valueMap.TryAdd(key, value))
+            {
+                Log.LogError($"Duplicate key {key} in {GetType().Name}");
+            }
+        }
+        
         public bool TryGetValue(TKey key, out TInfo value)
         {
             value = null;
@@ -87,19 +99,6 @@ namespace cfEngine.Info
                 return false;
             }
             return _valueMap.TryGetValue(key, out value);
-        }
-
-        /*
-         TODO:
-         Current No Implementation of Select
-         Wish To Implement Select Method like
-            StageInfo(stage_1)
-            StageInfo(NOT(stage_1))
-            StageInfo(OR(stage_1, stage_2))
-         */
-        public virtual IEnumerable<TInfo> Select(IReadOnlyList<string> args)
-        {
-            throw new NotImplementedException();
         }
 
         public override void Dispose()
