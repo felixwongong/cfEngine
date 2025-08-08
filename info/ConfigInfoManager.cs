@@ -12,8 +12,8 @@ namespace cfEngine.Info
         #region Get Values 
 
         private readonly Dictionary<TKey, TInfo> _valueMap = new();
-        public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
-        public override IEnumerable<object> GetAllValue() => ValueMap.Values;
+        public IReadOnlyDictionary<TKey, TInfo> valueMap => _valueMap;
+        public override IEnumerable<object> GetAllValue() => valueMap.Values;
 
         private List<TInfo> _allValues;
         public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
@@ -24,7 +24,6 @@ namespace cfEngine.Info
         public override Type infoType => typeof(TInfo);
         
         private readonly IValueLoader<TInfo> _loader;
-        private static readonly Dictionary<string, Func<string, TKey>> keyDecoder = new();
 
         protected ConfigInfoManager(IValueLoader<TInfo> loader) : base()
         {

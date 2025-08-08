@@ -9,7 +9,7 @@ namespace cfEngine.Service
 
         public InventoryInfo GetOrDefault(string itemId)
         {
-            if (_valueMap.TryGetValue(itemId, out var info))
+            if (valueMap.TryGetValue(itemId, out var info))
             {
                 return info;
             }
