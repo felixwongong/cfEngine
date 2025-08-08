@@ -9,17 +9,22 @@ namespace cfEngine.Info
 {
     public abstract class ConfigInfoManager<TKey, TInfo> : InfoManager where TKey : notnull where TInfo: class
     {
-        private readonly IValueLoader<TInfo> _loader;
+        #region Get Values 
 
-        protected readonly Dictionary<TKey, TInfo> _valueMap = new();
+        private readonly Dictionary<TKey, TInfo> _valueMap = new();
         public IReadOnlyDictionary<TKey, TInfo> ValueMap => _valueMap;
         public override IEnumerable<object> GetAllValue() => ValueMap.Values;
 
         private List<TInfo> _allValues;
         public IReadOnlyList<TInfo> allValues => _allValues ??= _valueMap.Values.ToList();
 
+        #endregion
+
         protected abstract Func<TInfo, TKey> keyFn { get; }
         public override Type infoType => typeof(TInfo);
+        
+        private readonly IValueLoader<TInfo> _loader;
+        private static readonly Dictionary<string, Func<string, TKey>> keyDecoder = new();
 
         protected ConfigInfoManager(IValueLoader<TInfo> loader) : base()
         {
@@ -83,6 +88,19 @@ namespace cfEngine.Info
                 return false;
             }
             return _valueMap.TryGetValue(key, out value);
+        }
+
+        /*
+         TODO:
+         Current No Implementation of Select
+         Wish To Implement Select Method like
+            StageInfo(stage_1)
+            StageInfo(NOT(stage_1))
+            StageInfo(OR(stage_1, stage_2))
+         */
+        public virtual IEnumerable<TInfo> Select(IReadOnlyList<string> args)
+        {
+            throw new NotImplementedException();
         }
 
         public override void Dispose()
