@@ -4,55 +4,44 @@ using cfEngine.Pooling;
 
 namespace cfEngine.DataStructure
 {
-    public class WeakReferenceListPool<T> : ObjectPool<WeakReferenceList<T>> where T : class
-    {
-        private static WeakReferenceList<T> createMethod()
-        {
-            return new WeakReferenceList<T>();
-        }
-        
-        private static void releaseAction(WeakReferenceList<T> list)
-        {
-            list.Clear();
-        }
-        
-        public WeakReferenceListPool() : base(createMethod, null, releaseAction)
-        {
-        }
-    }
-    
     public class WeakReferenceList<T> : List<WeakReference<T>> where T : class
     {
-        private static WeakReferenceListPool<T> _pool;
-        private static WeakReferenceListPool<T> GetPool => _pool ??= new WeakReferenceListPool<T>();
-        
-        public static WeakReferenceList<T> Create()
-        {
-            return GetPool.Get();
-        }
-        
+        private static ObjectPool<WeakReference<T>> _pool = new ObjectPool<WeakReference<T>>(Create, Get, Release);
+
+        private static WeakReference<T> Create() => new WeakReference<T>(null);
+        private static void Get(WeakReference<T> @ref) => @ref.SetTarget(null);
+        private static void Release(WeakReference<T> @ref) => @ref.SetTarget(null);
+
         public void Add(T item)
         {
-            Add(new WeakReference<T>(item));
+            var weakRef = _pool.Get();
+            weakRef.SetTarget(item);
+            Add(weakRef);
         }
 
         public void Remove(T item)
         {
-            RemoveAll(weakRef =>
+            int write = 0;
+            for (int read = 0; read < Count; read++)
             {
-                if (weakRef.TryGetTarget(out var target))
+                if (this[read].TryGetTarget(out var target) && !ReferenceEquals(target, item))
                 {
-                    return target == item;
+                    this[write] = this[read];
+                    write++;
                 }
+            }
 
-                return true;
-            });
+            if (write < Count)
+            {
+                for (int i = write; i < Count; i++)
+                {
+                    _pool.Release(this[i]);
+                }
+                
+                RemoveRange(write, Count - write);
+            }
 
             TrimExcess();
-            if (Count == 0)
-            {
-                GetPool.Release(this);
-            }
         }
     }
 }
