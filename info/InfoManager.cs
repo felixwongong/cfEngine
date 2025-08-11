@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using cfEngine.IO;
 using cfEngine.Serialize;
-using CofyDev.Xml.Doc;
 
 namespace cfEngine.Info
 {

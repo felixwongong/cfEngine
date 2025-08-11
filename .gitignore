@@ -9,3 +9,5 @@ obj/
 *.uid
 
 *.import
+
+.idea/

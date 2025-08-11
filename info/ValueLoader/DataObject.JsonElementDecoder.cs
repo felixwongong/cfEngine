@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Text.Json;
 using cfEngine.Logging;
@@ -26,3 +27,4 @@ namespace cfEngine.Info
         }
     }
 }
+*/
