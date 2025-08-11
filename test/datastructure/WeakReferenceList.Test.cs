@@ -31,10 +31,10 @@ public class WeakReferenceListTest
         list.Add(b);
 
         Assert.That(list.Count, Is.EqualTo(2));
-        Assert.That(list.All(wr => wr.TryGetTarget(out _)), Is.True);
+        Assert.That(list.refItems.All(wr => wr.TryGetTarget(out _)), Is.True);
 
-        Assert.That(list[0].TryGetTarget(out var t0) && ReferenceEquals(t0, a), Is.True);
-        Assert.That(list[1].TryGetTarget(out var t1) && ReferenceEquals(t1, b), Is.True);
+        Assert.That(list.refItems[0].TryGetTarget(out var t0) && ReferenceEquals(t0, a), Is.True);
+        Assert.That(list.refItems[1].TryGetTarget(out var t1) && ReferenceEquals(t1, b), Is.True);
     }
 
     [Test]
@@ -52,11 +52,11 @@ public class WeakReferenceListTest
         list.Remove(a1);
 
         Assert.That(list.Count, Is.EqualTo(2));
-        Assert.That(list.All(wr => wr.TryGetTarget(out _)), Is.True);
+        Assert.That(list.refItems.All(wr => wr.TryGetTarget(out _)), Is.True);
 
-        Assert.That(list.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, a2)), Is.True);
-        Assert.That(list.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, b)), Is.True);
-        Assert.That(list.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, a1)), Is.False);
+        Assert.That(list.refItems.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, a2)), Is.True);
+        Assert.That(list.refItems.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, b)), Is.True);
+        Assert.That(list.refItems.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, a1)), Is.False);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -87,7 +87,7 @@ public class WeakReferenceListTest
         list.Remove(item: null);
 
         Assert.That(list.Count, Is.EqualTo(1));
-        Assert.That(list[0].TryGetTarget(out var survivor), Is.True);
+        Assert.That(list.refItems[0].TryGetTarget(out var survivor), Is.True);
         Assert.That(ReferenceEquals(survivor, live), Is.True);
     }
 
@@ -113,7 +113,7 @@ public class WeakReferenceListTest
         list.Remove(new Dummy(999));
 
         Assert.That(list.Count, Is.EqualTo(2));
-        Assert.That(list.All(wr => wr.TryGetTarget(out _)), Is.True);
+        Assert.That(list.refItems.All(wr => wr.TryGetTarget(out _)), Is.True);
     }
 
     [Test]
@@ -123,7 +123,7 @@ public class WeakReferenceListTest
 
         list.Add(item: null);
         Assert.That(list.Count, Is.EqualTo(1));
-        Assert.That(list[0].TryGetTarget(out _), Is.False);
+        Assert.That(list.refItems[0].TryGetTarget(out _), Is.False);
 
         list.Remove(item: null); // sweep
         Assert.That(list, Is.Empty);
@@ -145,9 +145,9 @@ public class WeakReferenceListTest
 
         list.Remove(removed); // also sweeps dead refs
 
-        Assert.That(list.All(wr => wr.TryGetTarget(out var t) && !ReferenceEquals(t, removed)), Is.True);
+        Assert.That(list.refItems.All(wr => wr.TryGetTarget(out var t) && !ReferenceEquals(t, removed)), Is.True);
         Assert.That(list.Count, Is.EqualTo(1));
-        Assert.That(list[0].TryGetTarget(out var survivor), Is.True);
+        Assert.That(list.refItems[0].TryGetTarget(out var survivor), Is.True);
         Assert.That(ReferenceEquals(survivor, keep), Is.True);
     }
 }
