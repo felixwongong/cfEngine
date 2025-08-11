@@ -17,12 +17,12 @@ namespace cfEngine.Serialize
         private static JsonSerializer _instance;
         public static JsonSerializer Instance => _instance ??= new JsonSerializer();
 
-        public override string Serialize(object obj, ISerializer.ISerializeParam param = null)
+        public override string Serialize(object obj, ISerializer.ISerializeParam? param = null)
         {
             return JSON.Serialize(obj, OPTIONS);
         }
 
-        public override async Task<string> SerializeAsync(object obj, ISerializer.ISerializeParam param = null, CancellationToken token = default)
+        public override async Task<string> SerializeAsync(object obj, ISerializer.ISerializeParam? param = null, CancellationToken token = default)
         {
             using var ms = new MemoryStream();
             await JSON.SerializeAsync(ms, obj, OPTIONS, token).ConfigureAwait(false);
@@ -35,12 +35,12 @@ namespace cfEngine.Serialize
             return jsonString;
         }
 
-        public override object Deserialize(byte[] byteLoaded, ISerializer.IDeserializeParam param = null)
+        public override object Deserialize(byte[] byteLoaded, ISerializer.IDeserializeParam? param = null)
         {
             return JSON.Deserialize<object>(byteLoaded, OPTIONS);
         }
 
-        public override async Task<object> DeserializeAsync(byte[] byteLoaded, ISerializer.IDeserializeParam deserializeParam = null,
+        public override async Task<object> DeserializeAsync(byte[] byteLoaded, ISerializer.IDeserializeParam? deserializeParam = null,
             CancellationToken token = default)
         {
             using var ms = new MemoryStream(byteLoaded, false);
@@ -48,12 +48,12 @@ namespace cfEngine.Serialize
             return result;
         }
 
-        public override T DeserializeAs<T>(byte[] byteLoaded, ISerializer.IDeserializeParam param = null) where T : default
+        public override T DeserializeAs<T>(byte[] byteLoaded, ISerializer.IDeserializeParam? param = null) where T : default
         {
             return JSON.Deserialize<T>(byteLoaded, OPTIONS);
         }
 
-        public override async Task<T> DeserializeAsAsync<T>(byte[] byteLoaded, ISerializer.IDeserializeParam deserializeParam = null,
+        public override async Task<T> DeserializeAsAsync<T>(byte[] byteLoaded, ISerializer.IDeserializeParam? deserializeParam = null,
             CancellationToken token = default)
         {
              using var ms = new MemoryStream(byteLoaded, false);

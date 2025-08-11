@@ -24,11 +24,11 @@ namespace cfEngine.Logging
     
     public interface ILogger
     {
-        void LogDebug(string message, object context = null);
-        void LogInfo(string message, object context = null);
-        void Asset(bool condition, object context = null);
-        void LogWarning(string message, object context = null);
-        void LogException(Exception ex, object message = null);
-        void LogError(string message, object context = null);
+        void LogDebug(string message, object? context = null);
+        void LogInfo(string message, object? context = null);
+        void Asset(bool condition, object? context = null);
+        void LogWarning(string message, object? context = null);
+        void LogException(Exception ex, object? message = null);
+        void LogError(string message, object? context = null);
     }
 }

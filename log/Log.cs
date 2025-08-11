@@ -18,7 +18,7 @@ namespace cfEngine.Logging
             _logLevel = logLevel;
         }
 
-        public static void LogDebug(string message, object context = null)
+        public static void LogDebug(string message, object? context = null)
         {
             if (_logLevel.hasFlag(LogType.Debug))
             {
@@ -26,7 +26,7 @@ namespace cfEngine.Logging
             }
         }
 
-        public static void LogInfo(string message, object context = null)
+        public static void LogInfo(string message, object? context = null)
         {
             if (_logLevel.hasFlag(LogType.Info))
             {
@@ -34,7 +34,7 @@ namespace cfEngine.Logging
             }
         }
 
-        public static void Asset(bool condition, object context = null)
+        public static void Asset(bool condition, object? context = null)
         {
             if (_logLevel.hasFlag(LogType.Assert))
             {
@@ -42,7 +42,7 @@ namespace cfEngine.Logging
             }
         }
 
-        public static void LogWarning(string message, object context = null)
+        public static void LogWarning(string message, object? context = null)
         {
             if (_logLevel.hasFlag(LogType.Warning))
             {
@@ -50,7 +50,7 @@ namespace cfEngine.Logging
             }
         }
 
-        public static void LogException(Exception ex, string message = null)
+        public static void LogException(Exception ex, string? message = null)
         {
             if (_logLevel.hasFlag(LogType.Exception))
             {
@@ -58,7 +58,7 @@ namespace cfEngine.Logging
             }
         }
 
-        public static void LogError(string message, object context = null)
+        public static void LogError(string message, object? context = null)
         {
             if (_logLevel.hasFlag(LogType.Error))
             {
