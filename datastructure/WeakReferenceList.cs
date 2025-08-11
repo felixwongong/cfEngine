@@ -1,33 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections;
 using cfEngine.Pooling;
 
 namespace cfEngine.DataStructure
 {
-    public class WeakReferenceList<T> : List<WeakReference<T>> where T : class
+    public class WeakReferenceList<T>: IEnumerable<T> where T : class
     {
-        private static ObjectPool<WeakReference<T>> _pool = new ObjectPool<WeakReference<T>>(Create, Get, Release);
-
+        private static readonly ObjectPool<WeakReference<T>> _pool = new(Create, Get, Release);
         private static WeakReference<T> Create() => new WeakReference<T>(null);
         private static void Get(WeakReference<T> @ref) => @ref.SetTarget(null);
         private static void Release(WeakReference<T> @ref) => @ref.SetTarget(null);
+
+        private readonly List<WeakReference<T>> _items = new();
 
         public void Add(T item)
         {
             var weakRef = _pool.Get();
             weakRef.SetTarget(item);
-            Add(weakRef);
+            _items.Add(weakRef);
         }
 
-        public void Remove(T item)
+        public void Flush()
         {
             int write = 0;
-            for (int read = 0; read < Count; read++)
+            for (int read = 0; read < _items.Count; read++)
             {
-                var weakRef = this[read];
-                if (weakRef.TryGetTarget(out var target) && !ReferenceEquals(target, item))
+                var weakRef = _items[read];
+                if (weakRef.TryGetTarget(out var target))
                 {
-                    this[write] = weakRef;
+                    _items[write] = weakRef;
                     write++;
                 }
                 else {
@@ -35,11 +35,50 @@ namespace cfEngine.DataStructure
                 }
             }
 
-            if (write < Count)
-                RemoveRange(write, Count - write);
+            if (write < _items.Count)
+                _items.RemoveRange(write, _items.Count - write);
 
-            if(Count < Capacity / 2)
-                TrimExcess();
+            if(_items.Count < _items.Capacity / 2)
+                _items.TrimExcess();
+        }
+
+        public void Remove(T item)
+        {
+            int write = 0;
+            for (int read = 0; read < _items.Count; read++)
+            {
+                var weakRef = _items[read];
+                if (weakRef.TryGetTarget(out var target) && !ReferenceEquals(target, item))
+                {
+                    _items[write] = weakRef;
+                    write++;
+                }
+                else {
+                    _pool.Release(weakRef);
+                }
+            }
+
+            if (write < _items.Count)
+                _items.RemoveRange(write, _items.Count - write);
+
+            if(_items.Count < _items.Capacity / 2)
+                _items.TrimExcess();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var wr in _items)
+            {
+                if (wr.TryGetTarget(out var t))
+                {
+                    yield return t;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
