@@ -24,24 +24,22 @@ namespace cfEngine.DataStructure
             int write = 0;
             for (int read = 0; read < Count; read++)
             {
-                if (this[read].TryGetTarget(out var target) && !ReferenceEquals(target, item))
+                var weakRef = this[read];
+                if (weakRef.TryGetTarget(out var target) && !ReferenceEquals(target, item))
                 {
-                    this[write] = this[read];
+                    this[write] = weakRef;
                     write++;
+                }
+                else {
+                    _pool.Release(weakRef);
                 }
             }
 
             if (write < Count)
-            {
-                for (int i = write; i < Count; i++)
-                {
-                    _pool.Release(this[i]);
-                }
-                
                 RemoveRange(write, Count - write);
-            }
 
-            TrimExcess();
+            if(Count < Capacity / 2)
+                TrimExcess();
         }
     }
 }

@@ -9,5 +9,10 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <Compile Remove="test\**\*.cs"/>
+        <Compile Remove="test\**\obj\**\*.cs"/>
+        <Compile Remove="test\**\bin\**\*.cs"/>
+    </ItemGroup>
 </Project>
