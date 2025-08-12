@@ -4,7 +4,17 @@ using System.Runtime.CompilerServices;
 
 namespace cfEngine.DataStructure;
 
-public class GridMap<T> : IEnumerable<(Vector3 position, T item)>
+public interface IReadOnlyGridMap<T>: IEnumerable<(Vector3 position, T item)>
+{
+    Vector3 dimensions { get; }
+    Vector3 startPosition { get; }
+    T this[Vector3 worldPosition] { get; }
+    bool IsOutOfBounds(Vector3 worldPosition);
+    int GetIndexUnsafe(Vector3 worldPosition);
+    int GetIndex(Vector3 worldPosition);
+}
+
+public class GridMap<T> : IReadOnlyGridMap<T>
 {
     private readonly Vector3 _dimensions;
     private readonly Vector3 _startPosition;
