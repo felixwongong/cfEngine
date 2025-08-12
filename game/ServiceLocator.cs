@@ -24,7 +24,6 @@ namespace cfEngine.Service
         void Register<T>(T service, string serviceName) where T: IService;
         void Unregister<T>(T service) where T: IService;
         void Unregister(string serviceName);
-        T GetService<T>() where T: IService;
         T GetService<T>(string serviceName) where T: IService;
     }
 
@@ -69,26 +68,17 @@ namespace cfEngine.Service
             
             removedService.Dispose();
         }
-
-        public T GetService<T>() where T : IService
+        
+        public bool HasService(string serviceName)
         {
-            foreach (var service in _serviceMap.Values)
-            {
-                if (service is T t)
-                {
-                    return t;
-                }
-            }
-
-            return default;
+            return _serviceMap.ContainsKey(serviceName);
         }
 
         public T GetService<T>(string serviceName) where T : IService
         {
             if(!_serviceMap.TryGetValue(serviceName, out var service))
             {
-                Log.LogException(new ArgumentException($"Service not found, serviceName: {serviceName}"));
-                return default;
+                throw new KeyNotFoundException($"Service not found, serviceName: {serviceName}");
             }
 
             return (T)service;

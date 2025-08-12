@@ -6,7 +6,7 @@ namespace cfEngine.Util
     public static class SanityCheck
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WhenNull<T>(T target, string message = "") where T: class
+        public static bool WhenNull<T>(T? target, string message = "") where T: class
         {
             if (target == null)
             {
