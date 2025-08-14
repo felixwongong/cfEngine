@@ -20,7 +20,7 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     private readonly Vector3 _startPosition;
     private readonly List<T> _list;
     private readonly Func<T> _createFn;
-
+    
     public Vector3 dimensions => _dimensions;
     public Vector3 startPosition => _startPosition;
 
@@ -64,7 +64,6 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         return worldPosition.X < 0 || worldPosition.Y < 0 || worldPosition.Z < 0 ||
                worldPosition.X >= _dimensions.X || worldPosition.Y >= _dimensions.Y || worldPosition.Z >= _dimensions.Z;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetIndexUnsafe(Vector3 worldPosition)
     {
@@ -72,7 +71,6 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         return (int)(worldPosition.X + worldPosition.Y * _dimensions.X + worldPosition.Z * _dimensions.X * _dimensions.Y);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetIndex(Vector3 worldPosition)
     {
         if (IsOutOfBounds(worldPosition)) {
@@ -83,7 +81,6 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         return GetIndexUnsafe(worldPosition);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Vector3 GetPositionUnsafe(int index)
     {
         int z = (int)(index / (_dimensions.X * _dimensions.Y));
@@ -92,17 +89,8 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         return ToWorld(new Vector3(x, y, z));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Vector3 ToLocal(Vector3 position)
-    {
-        return position - _startPosition;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Vector3 ToWorld(Vector3 position)
-    {
-        return position + _startPosition;
-    }
+    private Vector3 ToLocal(Vector3 position) => position - _startPosition;
+    private Vector3 ToWorld(Vector3 position) => position + _startPosition;
 
     public IEnumerator<(Vector3 position, T item)> GetEnumerator()
     {
