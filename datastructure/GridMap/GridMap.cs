@@ -104,4 +104,9 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     {
         return GetEnumerator();
     }
+
+    public void Clear()
+    {
+        _list.Clear();
+    }
 }
