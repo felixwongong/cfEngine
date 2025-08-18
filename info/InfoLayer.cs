@@ -15,13 +15,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static Game WithInfo(this Game game, InfoLayer service)
+        public static Domain WithInfo(this Domain domain, InfoLayer service)
         {
-            game.Register(service, ServiceName.Info);
-            return game;
+            domain.Register(service, ServiceName.Info);
+            return domain;
         }
         
-        public static InfoLayer GetInfo(this Game game) => game.GetService<InfoLayer>(ServiceName.Info);
+        public static InfoLayer GetInfo(this Domain domain) => domain.GetService<InfoLayer>(ServiceName.Info);
     }
 }
 
@@ -42,7 +42,7 @@ namespace cfEngine.Info
 
         public IEnumerable<Task> LoadInfoAsync()
         {
-            return InfoMap.Values.Select(info => info.LoadInfoAsync(Game.TaskToken));
+            return InfoMap.Values.Select(info => info.LoadInfoAsync(Domain.TaskToken));
         }
 
         public bool TryGetInfo<TInfo>(out TInfo infoManager) where TInfo : InfoManager

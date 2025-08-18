@@ -11,7 +11,7 @@ namespace cfEngine.Core
 			public static void Register() => CommandService.RegisterCommand(new DeleteSaveCommand(), "userdata", "delete");
 			public void Execute(IReadOnlyDictionary<string, string> args)
 			{
-				Game.Current.GetUserData().DeleteSave();
+				Domain.Current.GetUserData().DeleteSave();
 			}
 		}
 	}

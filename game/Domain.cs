@@ -4,16 +4,16 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
-    public class Game: ServiceLocator
+    public class Domain: ServiceLocator
     {
-        private static Game _current;
-        public static Game Current => _current;
+        private static Domain _current;
+        public static Domain Current => _current;
         public static CancellationToken TaskToken { get; private set; } = CancellationToken.None;
         
-        public static void SetCurrent(Game game)
+        public static void SetCurrent(Domain domain)
         {
             _current?.Dispose();
-            _current = game;
+            _current = domain;
         }
     }
 }

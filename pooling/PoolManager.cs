@@ -14,17 +14,17 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static Game WithPoolManager(this Game game, PoolManager service)
+        public static Domain WithPoolManager(this Domain domain, PoolManager service)
         {
-            game.Register(service, ServiceName.Pool);
-            return game;
+            domain.Register(service, ServiceName.Pool);
+            return domain;
         }
         
-        public static PoolManager GetPoolManager(this Game game) => game.GetService<PoolManager>(ServiceName.Pool);
+        public static PoolManager GetPoolManager(this Domain domain) => domain.GetService<PoolManager>(ServiceName.Pool);
 
-        public static Res<T, Exception> GetPool<T>(this Game game, string poolKey) where T: IObjectPool
+        public static Res<T, Exception> GetPool<T>(this Domain domain, string poolKey) where T: IObjectPool
         {
-            var poolManager = game.GetPoolManager();
+            var poolManager = domain.GetPoolManager();
             if (poolManager == null)
                 return Res.Err<T>(new Exception("PoolManager is not registered in the game. Please call WithPoolManager() to register it."));
             

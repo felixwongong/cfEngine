@@ -24,13 +24,13 @@ namespace cfEngine.Core
 	
 	public static partial class GameExtension
 	{
-		public static Game WithUserData(this Game game, UserDataManager service)
+		public static Domain WithUserData(this Domain domain, UserDataManager service)
 		{
-			game.Register(service, ServiceName.UserDataManager);
-			return game;
+			domain.Register(service, ServiceName.UserDataManager);
+			return domain;
 		}
 		
-		public static UserDataManager GetUserData(this Game game) => game.GetService<UserDataManager>(ServiceName.UserDataManager);
+		public static UserDataManager GetUserData(this Domain domain) => domain.GetService<UserDataManager>(ServiceName.UserDataManager);
 	}
 }
 

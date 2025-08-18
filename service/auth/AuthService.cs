@@ -13,12 +13,12 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static Game WithAuthService(this Game game, IAuthService service)
+        public static Domain WithAuthService(this Domain domain, IAuthService service)
         {
-            game.Register(service, ServiceName.Auth);
-            return game;
+            domain.Register(service, ServiceName.Auth);
+            return domain;
         }
-        public static IAuthService GetAuth(this Game game) => game.GetService<IAuthService>(ServiceName.Auth);
+        public static IAuthService GetAuth(this Domain domain) => domain.GetService<IAuthService>(ServiceName.Auth);
     }
 }
 

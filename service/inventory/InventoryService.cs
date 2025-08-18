@@ -14,13 +14,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static Game WithInventory(this Game game, IInventoryService service)
+        public static Domain WithInventory(this Domain domain, IInventoryService service)
         {
-            game.Register(service, ServiceName.Inventory);
-            return game;
+            domain.Register(service, ServiceName.Inventory);
+            return domain;
         }
         
-        public static InventoryService GetInventory(this Game game) => game.GetService<InventoryService>(ServiceName.Inventory);
+        public static InventoryService GetInventory(this Domain domain) => domain.GetService<InventoryService>(ServiceName.Inventory);
     }
 }
 
