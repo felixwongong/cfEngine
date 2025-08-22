@@ -41,5 +41,16 @@ namespace cfEngine.Util
         {
             return assembly.GetTypes().Where(baseType.IsAssignableFrom);
         }
+
+        public static bool IsDefinedNested(this Type type, Type attributeType, bool inherit = true)
+        {
+            for (var t = type; t != null; t = t.BaseType)
+            {
+                if (t.IsDefined(attributeType, true))
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
