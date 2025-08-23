@@ -11,13 +11,13 @@ namespace cfEngine.Rx
     /// <typeparam name="TSourceValue">The type of values in the source dictionary.</typeparam>
     /// <typeparam name="TKey">The type of keys in the mutated dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the mutated dictionary.</typeparam>
-    public abstract class RtMutatedDictionaryBase<TSourceKey, TSourceValue, TKey, TValue> : RtReadOnlyDictionary<TKey, TValue>
+    public abstract class RxMutatedDictionaryBase<TSourceKey, TSourceValue, TKey, TValue> : RxReadOnlyDictionary<TKey, TValue>
     {
         protected readonly Dictionary<TKey, TValue> _mutated = new();
 
         Subscription _sourceChangeSubscription;
         
-        protected RtMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents): base()
+        protected RxMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents): base()
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
 

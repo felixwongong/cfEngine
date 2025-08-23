@@ -3,7 +3,7 @@
 using System;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public partial interface ICollectionEvents<out T>: IMarkedDebug
     {
@@ -36,7 +36,7 @@ namespace cfEngine.Rt
         public void Dispose();
     }
     
-    public abstract partial class RtCollection<TEventArgs>: ICollectionDebug
+    public abstract partial class RxCollection<TEventArgs>: ICollectionDebug
     {
         private Guid __sourceId = Guid.Empty;
             
@@ -70,7 +70,7 @@ namespace cfEngine.Rt
         public void __SetSourceCollectionId<TSource>(TSource source) where TSource: IMarkedDebug
         {
             __sourceId = source.__GetId();
-            _RtDebug.Instance.RecordMutatedReference(source.__GetId(), __id);
+            _RxDebug.Instance.RecordMutatedReference(source.__GetId(), __id);
         }
         
         public void __SetDebugName(string name)

@@ -4,12 +4,12 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public class RtObserverList<T>: RtReadOnlyList<T>
+    public class RxObserverList<T>: RxReadOnlyList<T>
     {
         private readonly List<T> _list;
 
         Subscription _sourceChangeSubscription;
-        public RtObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents)
+        public RxObserverList(IEnumerable<T> sourceItems, ICollectionEvents<T> sourceEvents)
         {
             _list = new List<T>(sourceItems);
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);

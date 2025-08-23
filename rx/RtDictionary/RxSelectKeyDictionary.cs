@@ -10,16 +10,16 @@ namespace cfEngine.Rx
     /// <typeparam name="TOrigKey">The type of the original keys in the source dictionary.</typeparam>
     /// <typeparam name="TSelectKey">The type of the selected keys in the mutated dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public class RtSelectKeyDictionary<TOrigKey, TSelectKey, TValue> : RtMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
+    public class RxSelectKeyDictionary<TOrigKey, TSelectKey, TValue> : RxMutatedDictionaryBase<TOrigKey, TValue, TSelectKey, TValue>
     {
         private readonly Func<TOrigKey, TSelectKey> _selectFn;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RtSelectKeyDictionary{TOrigKey, TSelectKey, TValue}"/> class.
+        /// Initializes a new instance of the <see cref="RxSelectKeyDictionary{TOrigKey,TSelectKey,TValue}"/> class.
         /// </summary>
         /// <param name="source">The source read-only dictionary.</param>
         /// <param name="selectFn">The function to select keys.</param>
-        public RtSelectKeyDictionary(RtReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn) : base(source.Events)
+        public RxSelectKeyDictionary(RxReadOnlyDictionary<TOrigKey, TValue> source, Func<TOrigKey, TSelectKey> selectFn) : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
             _mutated.EnsureCapacity(source.Count);

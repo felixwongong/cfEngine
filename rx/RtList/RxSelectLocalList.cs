@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace cfEngine.Rx
 {
     // Select suppose not for creating new objects, but for selecting from existing
-    public class RtSelectLocalList<T, TSelect>: RtMutatedLocalListBase<T, TSelect>
+    public class RxSelectLocalList<T, TSelect>: RxMutatedLocalListBase<T, TSelect>
     {
-        private readonly RtReadOnlyList<T> _source;
+        private readonly RxReadOnlyList<T> _source;
         private readonly Func<T, TSelect> _selectFn;
 
-        public RtSelectLocalList(RtReadOnlyList<T> source, Func<T, TSelect> selectFn): base(source.Events)
+        public RxSelectLocalList(RxReadOnlyList<T> source, Func<T, TSelect> selectFn): base(source.Events)
         {
             _source = source;
             _selectFn = selectFn;

@@ -5,7 +5,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public abstract class RtReadOnlyDictionary<TKey, TValue> : RtCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>
+    public abstract class RxReadOnlyDictionary<TKey, TValue> : RxCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>
     {
         public abstract int Count { get; }
 
@@ -19,55 +19,55 @@ namespace cfEngine.Rx
 
         public abstract IEnumerable<TValue> Values { get; }
 
-        private RtReadOnlyList<KeyValuePair<TKey, TValue>> _rtPairs;
+        private RxReadOnlyList<KeyValuePair<TKey, TValue>> _rxPairs;
         
-        public RtReadOnlyList<KeyValuePair<TKey, TValue>> RtPairs
+        public RxReadOnlyList<KeyValuePair<TKey, TValue>> rxPairs
         {
             get
             {
-                if (_rtPairs == null)
+                if (_rxPairs == null)
                 {
-                    _rtPairs = new RtObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
+                    _rxPairs = new RxObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
 #if CF_REACTIVE_DEBUG
                     _rtPairs.__SetDebugName(nameof(RtPairs));
 #endif
                 }
 
-                return _rtPairs;
+                return _rxPairs;
             }
         }
 
-        private RtReadOnlyList<TKey> _rtKeys;
-        public RtReadOnlyList<TKey> RtKeys
+        private RxReadOnlyList<TKey> _rxKeys;
+        public RxReadOnlyList<TKey> rxKeys
         {
             get
             {
-                if (_rtKeys == null)
+                if (_rxKeys == null)
                 {
-                    _rtKeys = RtPairs.select(kvp => kvp.Key);
+                    _rxKeys = rxPairs.select(kvp => kvp.Key);
 #if CF_REACTIVE_DEBUG
                     _rtKeys.__SetDebugName(nameof(RtKeys));
 #endif
                 }
 
-                return _rtKeys;
+                return _rxKeys;
             }
         }
 
-        private RtReadOnlyList<TValue> _rtValues;
-        public RtReadOnlyList<TValue> RtValues
+        private RxReadOnlyList<TValue> _rxValues;
+        public RxReadOnlyList<TValue> rxValues
         {
             get
             {
-                if (_rtValues == null)
+                if (_rxValues == null)
                 {
-                    _rtValues = RtPairs.select(kvp => kvp.Value);
+                    _rxValues = rxPairs.select(kvp => kvp.Value);
 #if CF_REACTIVE_DEBUG
                     _rtValues.__SetDebugName(nameof(RtValues));
 #endif
                 }
 
-                return _rtValues;
+                return _rxValues;
             }
         }
 

@@ -4,21 +4,21 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public class RtList<T>: RtReadOnlyList<T>
+    public class RxList<T>: RxReadOnlyList<T>
     {
         private readonly List<T> _list;
 
-        public RtList() : base()
+        public RxList() : base()
         {
             _list = new List<T>();
         }
 
-        public RtList(int capacity): base()
+        public RxList(int capacity): base()
         {
             _list = new List<T>(capacity);
         }
 
-        public RtList(IEnumerable<T> defaultItems): base()
+        public RxList(IEnumerable<T> defaultItems): base()
         {
             _list = new List<T>();
             _list.AddRange(defaultItems);

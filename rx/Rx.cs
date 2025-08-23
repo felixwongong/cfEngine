@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rx
 {
-    public class Rt<T>: RtReadOnlyList<T>
+    public class Rx<T>: RxReadOnlyList<T>
     {
         public T Value { get; private set; }
 
-        public Rt()
+        public Rx()
         {
         }
         
-        public Rt(T defaultValue)
+        public Rx(T defaultValue)
         {
             Value = defaultValue;
         }
@@ -38,7 +38,7 @@ namespace cfEngine.Rx
             Value = value;
         }
 
-        public static implicit operator T(Rt<T> rt) => rt.Value;
+        public static implicit operator T(Rx<T> rx) => rx.Value;
         public override IEnumerator<T> GetEnumerator()
         {
             yield return Value;

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rx
 {
-    public abstract class RtMutatedSingleBase<TOrig, TNew>: RtMutatedLocalListBase<TOrig, TNew>
+    public abstract class RxMutatedSingleBase<TOrig, TNew>: RxMutatedLocalListBase<TOrig, TNew>
     {
         public TNew Value { get; protected set; }
 
-        public RtMutatedSingleBase(ICollectionEvents<(int index, TOrig item)> sourceEvents) : base(sourceEvents)
+        public RxMutatedSingleBase(ICollectionEvents<(int index, TOrig item)> sourceEvents) : base(sourceEvents)
         {
         }
 

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public interface IMarkedDebug
     {
@@ -13,10 +13,10 @@ namespace cfEngine.Rt
         public string __GetDebugTitle();
     }
 
-    public class _RtDebug
+    public class _RxDebug
     {
-        private static _RtDebug _instance;
-        public static _RtDebug Instance => _instance ??= new _RtDebug();
+        private static _RxDebug _instance;
+        public static _RxDebug Instance => _instance ??= new _RxDebug();
         
         private Dictionary<Guid, WeakReference<ICollectionDebug>> _collections = new();      //Dictionary<CollectionId, IEnumerable<object>>
         public IReadOnlyDictionary<Guid, WeakReference<ICollectionDebug>> Collections => _collections;
@@ -26,7 +26,7 @@ namespace cfEngine.Rt
         private Dictionary<Guid, Dictionary<Guid, WeakReference<Subscription>>> _collectionSubs = new();      //Dictionary<CollectionId, Dictionary<SubscriptionId, Subscription>>
         public IReadOnlyDictionary<Guid, Dictionary<Guid, WeakReference<Subscription>>> CollectionSubs => _collectionSubs;
 
-        public void RecordCollection<TEventArgs>(RtCollection<TEventArgs> collection)
+        public void RecordCollection<TEventArgs>(RxCollection<TEventArgs> collection)
         {
             _collections.Add(collection.__GetId(), new WeakReference<ICollectionDebug>(collection));
         }
@@ -47,7 +47,7 @@ namespace cfEngine.Rt
             return _collectionMutatedReferenceMap.TryGetValue(sourceCollectionId, out mutatedCollectionIds);
         }
 
-        public void RemoveCollectionRecord<TEventArgs>(RtCollection<TEventArgs> collection)
+        public void RemoveCollectionRecord<TEventArgs>(RxCollection<TEventArgs> collection)
         {
             var id = collection.__GetId();
             _collections.Remove(id);

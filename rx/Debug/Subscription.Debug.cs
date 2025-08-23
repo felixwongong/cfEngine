@@ -4,7 +4,7 @@ using System;
 using System.Text;
 using cfEngine.Util;
 
-namespace cfEngine.Rt
+namespace cfEngine.Rx
 {
     public abstract partial class Subscription: IMarkedDebug
     {

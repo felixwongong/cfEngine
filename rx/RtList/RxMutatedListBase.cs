@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rx
 {
-    public abstract class RtMutatedLocalListBase<TOrig, TNew> : RtReadOnlyList<TNew>
+    public abstract class RxMutatedLocalListBase<TOrig, TNew> : RxReadOnlyList<TNew>
     {
         Subscription _sourceChangeSubscription;
 
-        protected RtMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
+        protected RxMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
             
@@ -29,12 +29,12 @@ namespace cfEngine.Rx
         protected abstract void _OnSourceAdd((int index, TOrig item) item);
     }
 
-    public abstract class RtMutatedListBase<TOrig, TNew>: RtReadOnlyList<TNew>
+    public abstract class RxMutatedListBase<TOrig, TNew>: RxReadOnlyList<TNew>
     {
         protected readonly List<TNew> _mutated = new();
 
         private Subscription _sourceChangeSubscription;
-        protected RtMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
+        protected RxMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
 

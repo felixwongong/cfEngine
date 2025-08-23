@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace cfEngine.Rx
 {
-    public abstract partial class RtReadOnlyList<T>: RtCollection<(int index, T item)>, IReadOnlyList<T>
+    public abstract partial class RxReadOnlyList<T>: RxCollection<(int index, T item)>, IReadOnlyList<T>
     {
         public abstract IEnumerator<T> GetEnumerator();
 
@@ -14,7 +14,7 @@ namespace cfEngine.Rx
 
         public abstract T this[int index] { get; }
 
-        public static implicit operator RtReadOnlyList<object> (RtReadOnlyList<T> list)
+        public static implicit operator RxReadOnlyList<object> (RxReadOnlyList<T> list)
         {
             return list.select(t => (object)t);
         }

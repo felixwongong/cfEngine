@@ -8,11 +8,11 @@ namespace cfEngine.Rx
     /// </summary>
     /// <typeparam name="TOrig">The type of elements in the source list.</typeparam>
     /// <typeparam name="TNew">The type of elements in the projected list.</typeparam>
-    public class RtSelectList<TOrig, TNew> : RtMutatedListBase<TOrig, TNew>
+    public class RxSelectList<TOrig, TNew> : RxMutatedListBase<TOrig, TNew>
     {
         private readonly Func<TOrig, TNew> _selectFn;
 
-        public RtSelectList(RtReadOnlyList<TOrig> source, Func<TOrig, TNew> selectFn) : base(source.Events)
+        public RxSelectList(RxReadOnlyList<TOrig> source, Func<TOrig, TNew> selectFn) : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
 

@@ -1,8 +1,8 @@
 namespace cfEngine.Rx
 {
-    public class RtCount<T>: RtMutatedSingleBase<T, int>
+    public class RxCount<T>: RxMutatedSingleBase<T, int>
     {
-        public RtCount(RtReadOnlyList<T> source) : base(source.Events)
+        public RxCount(RxReadOnlyList<T> source) : base(source.Events)
         {
             Value = source.Count;
         }

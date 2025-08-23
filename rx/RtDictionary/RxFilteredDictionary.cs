@@ -8,11 +8,11 @@ namespace cfEngine.Rx
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public class RtFilteredDictionary<TKey, TValue> : RtMutatedDictionaryBase<TKey, TValue, TKey, TValue>
+    public class RxFilteredDictionary<TKey, TValue> : RxMutatedDictionaryBase<TKey, TValue, TKey, TValue>
     {
         private readonly Func<KeyValuePair<TKey, TValue>, bool> _filterFn;
 
-        public RtFilteredDictionary(RtReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events)
+        public RxFilteredDictionary(RxReadOnlyDictionary<TKey, TValue> source, Func<KeyValuePair<TKey, TValue>, bool> filterFn) : base(source.Events)
         {
             _filterFn = filterFn ?? throw new ArgumentNullException(nameof(filterFn));
 

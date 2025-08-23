@@ -4,7 +4,7 @@ using cfEngine.Logging;
 
 namespace cfEngine.Rx
 {
-    public class RtDictionary<TKey, TValue> : RtReadOnlyDictionary<TKey, TValue>
+    public class RxDictionary<TKey, TValue> : RxReadOnlyDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new();
         

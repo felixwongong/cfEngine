@@ -10,16 +10,16 @@ namespace cfEngine.Rx
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TOrigValue">The type of the original values in the source dictionary.</typeparam>
     /// <typeparam name="TValue">The type of the selected values in the mutated dictionary.</typeparam>
-    public class RtSelectValueDictionary<TKey, TOrigValue, TValue> : RtMutatedDictionaryBase<TKey, TOrigValue, TKey, TValue>
+    public class RxSelectValueDictionary<TKey, TOrigValue, TValue> : RxMutatedDictionaryBase<TKey, TOrigValue, TKey, TValue>
     {
         private readonly Func<TOrigValue, TValue> _selectFn;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RtSelectValueDictionary{TKey, TOrigValue, TValue}"/> class.
+        /// Initializes a new instance of the <see cref="RxSelectValueDictionary{TKey,TOrigValue,TValue}"/> class.
         /// </summary>
         /// <param name="source">The source read-only dictionary.</param>
         /// <param name="selectFn">The function to select values.</param>
-        public RtSelectValueDictionary(RtReadOnlyDictionary<TKey, TOrigValue> source, Func<TOrigValue, TValue> selectFn) : base(source.Events)
+        public RxSelectValueDictionary(RxReadOnlyDictionary<TKey, TOrigValue> source, Func<TOrigValue, TValue> selectFn) : base(source.Events)
         {
             _selectFn = selectFn ?? throw new ArgumentNullException(nameof(selectFn));
             foreach (var (key, origValue) in source)

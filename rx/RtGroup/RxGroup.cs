@@ -5,14 +5,14 @@ using cfEngine.Util;
 
 namespace cfEngine.Rx
 {
-    public class RtGroup<TKey, TValue> : RtReadOnlyDictionary<TKey, RtReadOnlyList<TValue>>
+    public class RxGroup<TKey, TValue> : RxReadOnlyDictionary<TKey, RxReadOnlyList<TValue>>
     {
         private readonly Func<TValue, TKey> _keyFn;
-        private readonly Dictionary<TKey, RtList<TValue>> _groups = new();
+        private readonly Dictionary<TKey, RxList<TValue>> _groups = new();
         
         private Subscription _sourceChangeSubscription;
 
-        public RtGroup(RtReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
+        public RxGroup(RxReadOnlyList<TValue> source, Func<TValue, TKey> keyFn)
         {
             var sourceEvent = source.Events;
             _keyFn = keyFn ?? throw new ArgumentNullException(nameof(keyFn));
@@ -22,7 +22,7 @@ namespace cfEngine.Rx
                 var key = keyFn(item);
                 if (!_groups.TryGetValue(key, out var group))
                 {
-                    group = new RtList<TValue>(1);
+                    group = new RxList<TValue>(1);
                     _groups.Add(key, group);
                 }
                 group.Add(item);
@@ -74,7 +74,7 @@ namespace cfEngine.Rx
             if (group.Count <= 0)
             {
                 _groups.Remove(key);
-                CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TKey, RtReadOnlyList<TValue>>(key, group));
+                CollectionEvents.OnRemoveRelay.Dispatch(new KeyValuePair<TKey, RxReadOnlyList<TValue>>(key, group));
                 group.Dispose();
             }
         }
@@ -86,19 +86,19 @@ namespace cfEngine.Rx
 
             if (!_groups.TryGetValue(key, out var group))
             {
-                group = new RtList<TValue>(1);
+                group = new RxList<TValue>(1);
                 _groups.Add(key, group);
             }
 
             group.Add(item);
-            CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TKey, RtReadOnlyList<TValue>>(key, group));
+            CollectionEvents.OnAddRelay.Dispatch(new KeyValuePair<TKey, RxReadOnlyList<TValue>>(key, group));
         }
 
-        public override IEnumerator<KeyValuePair<TKey, RtReadOnlyList<TValue>>> GetEnumerator()
+        public override IEnumerator<KeyValuePair<TKey, RxReadOnlyList<TValue>>> GetEnumerator()
         {
             foreach (var (key, group) in _groups)
             {
-                yield return new KeyValuePair<TKey, RtReadOnlyList<TValue>>(key, group);
+                yield return new KeyValuePair<TKey, RxReadOnlyList<TValue>>(key, group);
             }
         }
 
@@ -106,7 +106,7 @@ namespace cfEngine.Rx
 
         public override bool ContainsKey(TKey key) => _groups.ContainsKey(key);
 
-        public override bool TryGetValue(TKey key, out RtReadOnlyList<TValue> value)
+        public override bool TryGetValue(TKey key, out RxReadOnlyList<TValue> value)
         {
             if (_groups.TryGetValue(key, out var group))
             {
@@ -118,10 +118,10 @@ namespace cfEngine.Rx
             return false;
         }
 
-        public override RtReadOnlyList<TValue> this[TKey key] => _groups[key];
+        public override RxReadOnlyList<TValue> this[TKey key] => _groups[key];
 
         public override IEnumerable<TKey> Keys => _groups.Keys;
 
-        public override IEnumerable<RtReadOnlyList<TValue>> Values => _groups.Values;
+        public override IEnumerable<RxReadOnlyList<TValue>> Values => _groups.Values;
     }
 }
