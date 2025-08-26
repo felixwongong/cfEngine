@@ -21,4 +21,24 @@ namespace cfEngine.Pooling
             list?.Clear();
         }
     }
+    
+    public class DictionaryPool<TKey, TValue>: ObjectPool<Dictionary<TKey, TValue>> where TKey : notnull
+    {
+        private static DictionaryPool<TKey, TValue> _default;
+        public static DictionaryPool<TKey, TValue> Default => _default ??= new DictionaryPool<TKey, TValue>();
+
+        public DictionaryPool() : base(CreateDictionary, null, ReleaseDictionary)
+        {
+        }
+
+        private static Dictionary<TKey, TValue> CreateDictionary()
+        {
+            return new Dictionary<TKey, TValue>();
+        }
+
+        private static void ReleaseDictionary(Dictionary<TKey, TValue> dictionary)
+        {
+            dictionary?.Clear();
+        }
+    }
 }
