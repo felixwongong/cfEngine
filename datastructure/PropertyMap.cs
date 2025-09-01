@@ -3,23 +3,25 @@ using cfEngine.Pooling;
 
 namespace cfEngine.DataStructure;
 
-public delegate void PropertyChangedCallback(string propertyName, object propertyValue);
+public delegate void PropertyChangedCallback(string propertyName, object? propertyValue);
     
 public interface IPropertyMap
 {
+    public void Get<T>(string key, out T? value);
+    public void Restore(PropertyMap other);
     public void RegisterPropertyChange(PropertyChangedCallback callback);
     public void UnregisterPropertyChange(PropertyChangedCallback callback);
 }
 
 public class PropertyMap: IPropertyMap
 {
-    private Dictionary<string, object> properties;
+    private readonly Dictionary<string, object?> properties;
     
     private WeakReferenceList<PropertyChangedCallback> propertyChangedCallbacks;
 
     public PropertyMap()
     {
-        properties = DictionaryPool<string, object>.Default.Get();
+        properties = DictionaryPool<string, object?>.Default.Get();
         propertyChangedCallbacks = new WeakReferenceList<PropertyChangedCallback>();
     }
 
