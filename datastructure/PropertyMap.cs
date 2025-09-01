@@ -35,7 +35,27 @@ public class PropertyMap: IPropertyMap
         propertyChangedCallbacks.Remove(callback);
     }
     
-    public void Set<T>(string key, T value)
+    public void Restore(PropertyMap other)
+    {
+        properties.Clear();
+        foreach (var kv in other.properties)
+        {
+            properties[kv.Key] = kv.Value;
+        }
+    }
+    
+    public void Get<T>(string key, out T? value)
+    {
+        if (properties.TryGetValue(key, out var obj) && obj is T t)
+        {
+            value = t;
+            return;
+        }
+
+        value = default;
+    }
+    
+    public void Set<T>(string key, T? value)
     {
         properties[key] = value;
         foreach (var cb in propertyChangedCallbacks)
