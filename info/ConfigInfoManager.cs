@@ -24,6 +24,12 @@ namespace cfEngine.Info
         
         public override void LoadInfo()
         {
+            if (keyFn == null)
+            {
+                Log.LogError($"keyFn is null on {GetType().Name}, load fail");
+                return;
+            }
+            
             using var handle = _loader.Load(out var values);
             _valueMap.EnsureCapacity(values.Count);
             Log.LogInfo($"{typeof(TInfo).Name} infoCount: {values.Count}");
