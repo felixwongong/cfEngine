@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace cfEngine.Pooling
 {
@@ -27,22 +28,22 @@ namespace cfEngine.Pooling
             }
         }
         
-        private readonly Func<T> _createMethod;
-        private readonly Action<T> _releaseAction;
-        private readonly Action<T> _getAction;
+        private readonly Func<T> _create;
+        private readonly Action<T> _init;
+        private readonly Action<T> _release;
 
         protected readonly Queue<T> Queue = new();
 
-        public ObjectPool(Func<T> createMethod, Action<T> getAction, Action<T> releaseAction, int warmupSize = 0)
+        public ObjectPool(Func<T> create, Action<T> init, Action<T> release, int warmupSize = 0)
         {
-            this._createMethod = createMethod;
-            this._releaseAction = releaseAction;
-            this._getAction = getAction;
+            _create = create;
+            _init = init;
+            _release = release;
 
             for (int i = 0; i < warmupSize; i++)
             {
-                var instance = _createMethod();
-                releaseAction(instance);
+                var instance = Create();
+                release(instance);
             }
         }
 
@@ -50,28 +51,35 @@ namespace cfEngine.Pooling
         {
             if (!Queue.TryDequeue(out var result))
             {
-                return _createMethod();
+                return Create();
             }
 
-            _getAction?.Invoke(result);
+            _init?.Invoke(result);
             return result;
         }
 
         public virtual Handle Get(out T value)
         {
             value = Get();
-            return new Handle(_releaseAction, value);
+            return new Handle(_release, value);
         }
 
         public virtual void Release(T obj)
         {
-            _releaseAction(obj);
+            _release(obj);
             Queue.Enqueue(obj);
         }
 
         public virtual void Dispose()
         {
             Queue.Clear();
+        }
+
+        private T Create()
+        {
+            var inst = _create();
+            _init?.Invoke(inst);
+            return inst;
         }
     }
 }
