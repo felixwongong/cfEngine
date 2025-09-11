@@ -5,7 +5,7 @@ namespace cfEngine.DataStructure
 {
     public class WeakReferenceList<T>: IEnumerable<T> where T : class
     {
-        private static readonly ObjectPool<WeakReference<T>> _pool = new(Create, Get, Release);
+        private static readonly ObjectPool<WeakReference<T>> _pool = new(Create, Get, Release, static _ => {});
         private static WeakReference<T> Create() => new WeakReference<T>(null!);
         private static void Get(WeakReference<T> @ref) => @ref.SetTarget(null!);
         private static void Release(WeakReference<T> @ref) => @ref.SetTarget(null!);

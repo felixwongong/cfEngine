@@ -31,14 +31,16 @@ namespace cfEngine.Pooling
         private readonly Func<T> _create;
         private readonly Action<T> _init;
         private readonly Action<T> _release;
+        private readonly Action<T> _destroy;
 
         protected readonly Queue<T> Queue = new();
 
-        public ObjectPool(Func<T> create, Action<T> init, Action<T> release, int warmupSize = 0)
+        public ObjectPool(Func<T> create, Action<T> init, Action<T> release, Action<T> destroy, int warmupSize = 0)
         {
             _create = create;
             _init = init;
             _release = release;
+            _destroy = destroy;
 
             for (int i = 0; i < warmupSize; i++)
             {
@@ -69,10 +71,19 @@ namespace cfEngine.Pooling
             _release(obj);
             Queue.Enqueue(obj);
         }
+        
+        public virtual void FlushToRemain(int remain)
+        {
+            while (Queue.Count > remain)
+            {
+                var obj = Queue.Dequeue();
+                _destroy?.Invoke(obj);
+            }
+        }
 
         public virtual void Dispose()
         {
-            Queue.Clear();
+            FlushToRemain(0);
         }
 
         private T Create()

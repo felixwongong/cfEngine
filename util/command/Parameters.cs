@@ -22,7 +22,7 @@ public class Parameters: IDisposable
         {
             map.Clear();
             map._isDisposed = true;
-        });
+        }, static _ => {});
     
     public static Parameters Get()
     {

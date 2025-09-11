@@ -7,7 +7,7 @@ namespace cfEngine.Pooling
         private static ListPool<T> _default;
         public static ListPool<T> Default => _default ??= new ListPool<T>();
 
-        public ListPool() : base(CreateList, null, ReleaseList)
+        public ListPool() : base(CreateList, static _ => {}, ReleaseList, static _ => {})
         {
         }
 
@@ -27,7 +27,7 @@ namespace cfEngine.Pooling
         private static DictionaryPool<TKey, TValue> _default;
         public static DictionaryPool<TKey, TValue> Default => _default ??= new DictionaryPool<TKey, TValue>();
 
-        public DictionaryPool() : base(CreateDictionary, null, ReleaseDictionary)
+        public DictionaryPool() : base(CreateDictionary, static _ => {}, ReleaseDictionary, static _ => {})
         {
         }
 
