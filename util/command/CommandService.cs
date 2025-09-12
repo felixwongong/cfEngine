@@ -129,7 +129,7 @@ namespace cfEngine.Command
 
     public class CommandParseException : ArgumentException
     {
-        public CommandParseException(string message) : base($"Failed to parse command: {message}")
+        public CommandParseException(string command) : base($"Failed to parse command: {command}")
         {
         }
     }

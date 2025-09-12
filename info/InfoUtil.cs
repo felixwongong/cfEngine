@@ -15,7 +15,7 @@ public static class InfoUtil
     
     public static string ParseCommand(ReadOnlySpan<char> command, out IReadOnlyList<string> args, char separator = ',', char open = '(', char close = ')')
     {
-        string type = string.Empty;
+        string? type = null;
         List<string> readArgs = null;
         
         int start = 0;
@@ -24,7 +24,7 @@ public static class InfoUtil
             var c = command[current];
             if (c.Equals(open))
             {
-                if (string.IsNullOrEmpty(type))
+                if (type == null)
                 {
                     type = command[new Range(start, current)].Trim(' ').ToString();
                     start = current + 1;
