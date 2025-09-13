@@ -64,6 +64,7 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         return worldPosition.X < 0 || worldPosition.Y < 0 || worldPosition.Z < 0 ||
                worldPosition.X >= _dimensions.X || worldPosition.Y >= _dimensions.Y || worldPosition.Z >= _dimensions.Z;
     }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetIndexUnsafe(Vector3 worldPosition)
     {
@@ -108,5 +109,16 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     public void Clear()
     {
         _list.Clear();
+    }
+
+    public GridMap<T> Clone()
+    {
+        var map = new GridMap<T>(dimensions, _createFn, startPosition);
+        foreach (var (pos, item) in this)
+        {
+            map[pos] = item;
+        }
+
+        return map;
     }
 }
