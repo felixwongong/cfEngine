@@ -15,5 +15,10 @@ namespace cfEngine.Core
             _current?.Dispose();
             _current = domain;
         }
+
+        public virtual void HandleException(Exception ex)
+        {
+            Log.LogException(ex);
+        }
     }
 }
