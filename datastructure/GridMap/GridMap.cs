@@ -75,8 +75,7 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     public int GetIndex(Vector3 worldPosition)
     {
         if (IsOutOfBounds(worldPosition)) {
-            throw new ArgumentOutOfRangeException(nameof(worldPosition),
-                $"Position ({worldPosition.ToString()}) is out of bounds of the grid map dimension ({_dimensions.ToString()}).");
+            throw new ArgumentOutOfRangeException(nameof(worldPosition), $"Position ({worldPosition.ToString()}) is out of bounds of the grid map dimension ({_dimensions.ToString()}).");
         }
 
         return GetIndexUnsafe(worldPosition);
@@ -111,14 +110,21 @@ public class GridMap<T> : IReadOnlyGridMap<T>
         _list.Clear();
     }
 
+    public void CopyTo(GridMap<T> target)
+    {
+        if(target.dimensions != dimensions || target.startPosition != startPosition)
+            throw new ArgumentException("Target grid map must have the same dimensions and start position.");
+
+        for (int i = 0; i < _list.Count; i++)
+        {
+            target._list[i] = _list[i];
+        }
+    }
+    
     public GridMap<T> Clone()
     {
         var map = new GridMap<T>(dimensions, _createFn, startPosition);
-        foreach (var (pos, item) in this)
-        {
-            map[pos] = item;
-        }
-
+        CopyTo(map);
         return map;
     }
 }
