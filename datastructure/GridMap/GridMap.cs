@@ -7,8 +7,10 @@ namespace cfEngine.DataStructure;
 public interface IReadOnlyGridMap<T>: IEnumerable<(Vector3 position, T item)>
 {
     Vector3 dimensions { get; }
+    int count { get; }
     Vector3 startPosition { get; }
     T this[Vector3 worldPosition] { get; }
+    T this[int index] { get; }
     bool IsOutOfBounds(Vector3 worldPosition);
     int GetIndexUnsafe(Vector3 worldPosition);
     int GetIndex(Vector3 worldPosition);
@@ -22,6 +24,7 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     private readonly Func<T> _createFn;
     
     public Vector3 dimensions => _dimensions;
+    public int count => _list.Count;
     public Vector3 startPosition => _startPosition;
 
     public GridMap(Vector3 dimensions, Func<T> createFn, Vector3 startPosition = default)
@@ -43,6 +46,12 @@ public class GridMap<T> : IReadOnlyGridMap<T>
     {
         get => _list[GetIndex(worldPosition)];
         set => _list[GetIndex(worldPosition)] = value;
+    }
+
+    public T this[int index]
+    {
+        get => _list[index];
+        set => _list[index] = value;
     }
 
     public bool Remove(Vector3 position)
