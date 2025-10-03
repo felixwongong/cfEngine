@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using cfEngine.Logging;
-using cfEngine.Service.Statistic;
 
 namespace cfEngine.Service.Statistic
 {

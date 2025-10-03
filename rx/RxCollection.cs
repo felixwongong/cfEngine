@@ -1,3 +1,5 @@
+using System;
+
 namespace cfEngine.Rx
 {
     public abstract partial class RxCollection<TEventArgs>: IDisposable

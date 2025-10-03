@@ -1,3 +1,4 @@
+using System;
 using cfEngine.DataStructure;
 using cfEngine.Logging;
 
@@ -101,7 +102,14 @@ namespace cfEngine.Command
 
         private static ReadOnlyMemory<char> TakeToken(ref ReadOnlyMemory<char> memory, char separator = ' ')
         {
-            memory = memory.TrimStart();
+            int trimStart = 0;
+            for (trimStart = 0; trimStart < memory.Span.Length; trimStart++)
+            {
+                if(char.IsWhiteSpace(memory.Span[trimStart]))
+                    continue;
+            }
+            memory = memory[trimStart..];
+            
             if (memory.IsEmpty)
                 return string.Empty.AsMemory();
             

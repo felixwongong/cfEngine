@@ -1,14 +1,15 @@
 using cfEngine.Command;
 
-namespace cfEngine.Core;
-
-public partial class UserDataManager
+namespace cfEngine.Core
 {
-    public class DeleteSaveCommand : ICommandHandler
+    public partial class UserDataManager
     {
-        public void Execute(Parameters @param)
+        public class DeleteSaveCommand : ICommandHandler
         {
-            Domain.Current.GetUserData().DeleteSave();
+            public void Execute(Parameters @param)
+            {
+                Domain.Current.GetUserData().DeleteSave();
+            }
         }
     }
 }

@@ -17,13 +17,13 @@ namespace cfEngine.Core
     
     public static partial class GameExtension
     {
-        public static Game WithStatistic(this Game game, IStatisticService service)
+        public static Domain WithStatistic(this Domain domain, IStatisticService service)
         {
-            game.Register(service, ServiceName.Statistic);
-            return game;
+            domain.Register(service, ServiceName.Statistic);
+            return domain;
         }
         
-        public static IStatisticService GetStatistic(this Game game) => game.GetService<IStatisticService>(ServiceName.Statistic);
+        public static IStatisticService GetStatistic(this Domain game) => game.GetService<IStatisticService>(ServiceName.Statistic);
     }
 }
 

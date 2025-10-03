@@ -1,4 +1,7 @@
-﻿namespace cfEngine.Serialize
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace cfEngine.Serialize
 {
     public interface ISerializer
     {

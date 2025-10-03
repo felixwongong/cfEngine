@@ -1,4 +1,6 @@
-﻿#if CF_STATISTIC
+﻿using cfEngine.Core;
+
+#if CF_STATISTIC
 
 namespace cfEngine.Service.Statistic
 {
