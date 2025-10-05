@@ -1,11 +1,11 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=1b91149a_002D1960_002D4587_002D96ca_002Ddb6863553d91/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WeakReferenceListTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::7F3B6B18-B856-430C-9D6D-71ABADCA3BAB::net6.0::cfEngine.Test.WeakReferenceListTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=1b91149a_002D1960_002D4587_002D96ca_002Ddb6863553d91/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WeakReferenceListTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::7F3B6B18-B856-430C-9D6D-71ABADCA3BAB::net6.0::cfEngine.Test.WeakReferenceListTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ecbe3173_002D202e_002D4a48_002D9728_002D97e213812736/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WeakReferenceListTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::0B3A7D82-79FC-4EEF-B9EC-9C9A78E17400::net6.0::cfEngine.Test.WeakReferenceListTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ecbe3173_002D202e_002D4a48_002D9728_002D97e213812736/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WeakReferenceListTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::0B3A7D82-79FC-4EEF-B9EC-9C9A78E17400::net6.0::cfEngine.Test.WeakReferenceListTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
