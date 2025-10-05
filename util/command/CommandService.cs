@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using cfEngine.DataStructure;
 using cfEngine.Logging;
 
@@ -10,6 +11,11 @@ namespace cfEngine.Command
 
         private readonly MemoryDictionary<char, CommandService> serviceScopeMap = new();
         private readonly MemoryDictionary<char, ICommandHandler> handlerMap = new();
+
+#if UNITY_EDITOR
+        public IReadOnlyDictionary<ReadOnlyMemory<char>, CommandService> ServiceScopeMap => serviceScopeMap;
+        public IReadOnlyDictionary<ReadOnlyMemory<char>, ICommandHandler> HandlerMap => handlerMap;
+#endif
 
         public void RegisterScope(string scopeName, CommandService service)
         {
@@ -31,6 +37,21 @@ namespace cfEngine.Command
             }
             if (!handlerMap.TryAdd(commandName.AsMemory(), handler))
                 Log.LogWarning($"CommandService: Command '{commandName}' is already registered. Ignored.");
+        }
+        
+        public void UnregisterScope(string scopeName)
+        {
+            serviceScopeMap.Remove(scopeName.AsMemory());
+        }
+
+        public void UnregisterHandler(string commandName)
+        {
+            handlerMap.Remove(commandName.AsMemory());
+        }
+
+        public bool TryGetScope(string scopeName, out CommandService scope)
+        {
+            return serviceScopeMap.TryGetValue(scopeName.AsMemory(), out scope);
         }
 
         public void Execute(string cmdString)
@@ -132,6 +153,17 @@ namespace cfEngine.Command
 
     public interface ICommandHandler
     {
+        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+        public class HintAttribute : Attribute
+        {
+            public readonly string description;
+
+            public HintAttribute(string description)
+            {
+                this.description = description;
+            }
+        }
+        
         public void Execute(Parameters param);
     }
 

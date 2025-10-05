@@ -13,7 +13,7 @@ namespace cfEngine.Core
         public const string Info = "Info";
     }
     
-    public static partial class GameExtension
+    public static partial class DomainExtension
     {
         public static Domain WithInfo(this Domain domain, InfoLayer service)
         {

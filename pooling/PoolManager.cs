@@ -12,7 +12,7 @@ namespace cfEngine.Core
         public const string Pool = "Pool";
     }
     
-    public static partial class GameExtension
+    public static partial class DomainExtension
     {
         public static Domain WithPoolManager(this Domain domain, PoolManager service)
         {

@@ -22,7 +22,7 @@ namespace cfEngine.Core
 		public const string UserDataManager = "UserDataManager";
 	}
 	
-	public static partial class GameExtension
+	public static partial class DomainExtension
 	{
 		public static Domain WithUserData(this Domain domain, UserDataManager service)
 		{

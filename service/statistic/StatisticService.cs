@@ -15,7 +15,7 @@ namespace cfEngine.Core
         public const string Statistic = "Statistic";
     }
     
-    public static partial class GameExtension
+    public static partial class DomainExtension
     {
         public static Domain WithStatistic(this Domain domain, IStatisticService service)
         {
@@ -23,7 +23,7 @@ namespace cfEngine.Core
             return domain;
         }
         
-        public static IStatisticService GetStatistic(this Domain game) => game.GetService<IStatisticService>(ServiceName.Statistic);
+        public static IStatisticService GetStatistic(this Domain domain) => domain.GetService<IStatisticService>(ServiceName.Statistic);
     }
 }
 

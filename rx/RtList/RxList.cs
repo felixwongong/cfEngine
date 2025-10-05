@@ -74,7 +74,7 @@ namespace cfEngine.Rx
             var index = _list.IndexOf(item);
             if (index == -1)
             {
-                Log.LogException(new ArgumentException($"RtList item not found: {item?.ToString()}"));
+                Log.LogException(new ArgumentException($"RxList item not found: {item?.ToString()}"));
                 return false;
             }
             

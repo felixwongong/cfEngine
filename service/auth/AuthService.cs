@@ -11,7 +11,7 @@ namespace cfEngine.Core
         public const string Auth = "Auth";
     }
     
-    public static partial class GameExtension
+    public static partial class DomainExtension
     {
         public static Domain WithAuthService(this Domain domain, IAuthService service)
         {
