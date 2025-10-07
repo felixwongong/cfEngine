@@ -1,32 +1,5 @@
 #if CF_STATISTIC
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using cfEngine.Core;
-
-namespace cfEngine.Core
-{
-    using Service.Statistic;
-    
-    public static partial class ServiceName
-    {
-        public const string Statistic = "Statistic";
-    }
-    
-    public static partial class DomainExtension
-    {
-        public static Domain WithStatistic(this Domain domain, IStatisticService service)
-        {
-            domain.Register(service, ServiceName.Statistic);
-            return domain;
-        }
-        
-        public static IStatisticService GetStatistic(this Domain domain) => domain.GetService<IStatisticService>(ServiceName.Statistic);
-    }
-}
-
 namespace cfEngine.Service.Statistic
 {
     public class StatisticService: IStatisticService

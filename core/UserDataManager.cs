@@ -16,22 +16,6 @@ namespace cfEngine.Core
 	{
 		public const string SaveVersion = "SaveVersion";
 	}
-	
-	public static partial class ServiceName
-	{
-		public const string UserDataManager = "UserDataManager";
-	}
-	
-	public static partial class DomainExtension
-	{
-		public static Domain WithUserData(this Domain domain, UserDataManager service)
-		{
-			domain.Register(service, ServiceName.UserDataManager);
-			return domain;
-		}
-		
-		public static UserDataManager GetUserData(this Domain domain) => domain.GetService<UserDataManager>(ServiceName.UserDataManager);
-	}
 }
 
 namespace cfEngine.Core

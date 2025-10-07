@@ -5,26 +5,6 @@ using System.Threading.Tasks;
 using cfEngine.Core;
 using cfEngine.Service;
 
-namespace cfEngine.Core
-{
-    using Info;
-    public static partial class ServiceName
-    {
-        public const string Info = "Info";
-    }
-    
-    public static partial class DomainExtension
-    {
-        public static Domain WithInfo(this Domain domain, InfoLayer service)
-        {
-            domain.Register(service, ServiceName.Info);
-            return domain;
-        }
-        
-        public static InfoLayer GetInfo(this Domain domain) => domain.GetService<InfoLayer>(ServiceName.Info);
-    }
-}
-
 namespace cfEngine.Info
 {
     public class InfoLayer: IService

@@ -8,7 +8,7 @@ namespace cfEngine.Core
         {
             public void Execute(Parameters @param)
             {
-                Domain.Current.GetUserData().DeleteSave();
+                Domain.Current.Get<UserDataManager>().DeleteSave();
             }
         }
     }

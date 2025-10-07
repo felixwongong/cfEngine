@@ -7,24 +7,11 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
-    public static partial class ServiceName
-    {
-        public const string Pool = "Pool";
-    }
-    
     public static partial class DomainExtension
     {
-        public static Domain WithPoolManager(this Domain domain, PoolManager service)
-        {
-            domain.Register(service, ServiceName.Pool);
-            return domain;
-        }
-        
-        public static PoolManager GetPoolManager(this Domain domain) => domain.GetService<PoolManager>(ServiceName.Pool);
-
         public static Res<T, Exception> GetPool<T>(this Domain domain, string poolKey) where T: IObjectPool
         {
-            var poolManager = domain.GetPoolManager();
+            var poolManager = domain.Get<PoolManager>();
             if (poolManager == null)
                 return Res.Err<T>(new Exception("PoolManager is not registered in the game. Please call WithPoolManager() to register it."));
             

@@ -24,7 +24,7 @@ namespace cfEngine.Service
         void Register<T>(T service, string serviceName) where T: IService;
         void Unregister<T>(T service) where T: IService;
         void Unregister(string serviceName);
-        T GetService<T>(string serviceName) where T: IService;
+        Res<T, Exception> GetService<T>(string serviceName) where T: IService;
     }
 
     public class ServiceLocator : IServiceLocator
@@ -74,14 +74,33 @@ namespace cfEngine.Service
             return _serviceMap.ContainsKey(serviceName);
         }
 
-        public T GetService<T>(string serviceName) where T : IService
+        public Res<T, Exception> GetService<T>(string serviceName) where T : IService
         {
             if(!_serviceMap.TryGetValue(serviceName, out var service))
             {
-                throw new KeyNotFoundException($"Service not found, serviceName: {serviceName}");
+                return Res.Err<T>(new KeyNotFoundException($"Service not found, serviceName: {serviceName}"));
             }
 
-            return (T)service;
+            if (service is not T t)
+            {
+                return Res.Err<T>(new ArgumentException($"Service with name is not of type {typeof(T).Name}"));
+            }
+
+            return Res.Ok(t);
+        }
+
+        public Res<T, Exception> FindService<T>() where T : IService
+        {
+            var type = typeof(T);
+            foreach (var service in _serviceMap.Values)
+            {
+                if (type.IsAssignableFrom(service.GetType()) && service is T t)
+                {
+                    return Res.Ok(t);
+                }
+            }
+            
+            return Res.Err<T>(new KeyNotFoundException($"Service of type {type.FullName} not found"));
         }
 
         public void Dispose()

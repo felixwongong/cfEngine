@@ -3,25 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace cfEngine.Core
-{
-    using Service.Auth;
-    public static partial class ServiceName
-    {
-        public const string Auth = "Auth";
-    }
-    
-    public static partial class DomainExtension
-    {
-        public static Domain WithAuthService(this Domain domain, IAuthService service)
-        {
-            domain.Register(service, ServiceName.Auth);
-            return domain;
-        }
-        public static IAuthService GetAuth(this Domain domain) => domain.GetService<IAuthService>(ServiceName.Auth);
-    }
-}
-
 namespace cfEngine.Service.Auth
 {
     public enum LoginPlatform : byte

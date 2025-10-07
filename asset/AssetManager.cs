@@ -15,6 +15,7 @@ namespace cfEngine.Asset
             ReleaseAction = releaseAction;
         } 
     }
+    
     public class AssetHandle<T>: AssetHandle where T : class
     {
         public readonly WeakReference<T> Asset;
@@ -25,12 +26,12 @@ namespace cfEngine.Asset
         }
     }
     
-    public abstract class AssetManager<TBaseObject>: IService where TBaseObject: class
+    public abstract class AssetManager<TAssetBase>: IService where TAssetBase: class
     {
         private Dictionary<string, Task> _assetLoadingTasks = new();
         private Dictionary<string, AssetHandle> _assetMap = new();
 
-        public T Load<T>(string path) where T: class, TBaseObject 
+        public T Load<T>(string path) where T: class, TAssetBase 
         {
             if (TryGetAsset<T>(path, out var t))
             {
@@ -43,9 +44,9 @@ namespace cfEngine.Asset
             return t;
         }
 
-        protected abstract AssetHandle<T> _Load<T>(string path) where T : class, TBaseObject;
+        protected abstract AssetHandle<T> _Load<T>(string path) where T : class, TAssetBase;
 
-        public async Task<T> LoadAsync<T>(string path, CancellationToken token = default) where T: class, TBaseObject
+        public async Task<T> LoadAsync<T>(string path, CancellationToken token = default) where T: class, TAssetBase
         {
             if (_assetLoadingTasks.TryGetValue(path, out var t))
             {
@@ -71,9 +72,9 @@ namespace cfEngine.Asset
             return asset;
         }
 
-        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token = default) where T : class, TBaseObject;
+        protected abstract Task<AssetHandle<T>> _LoadAsync<T>(string path, CancellationToken token = default) where T : class, TAssetBase;
         
-        public bool TryGetAsset<T>(string path, out T asset) where T: class, TBaseObject
+        public bool TryGetAsset<T>(string path, out T asset) where T: class, TAssetBase
         {
             asset = null;
             return _assetMap.TryGetValue(path, out var handle) && 
