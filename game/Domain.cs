@@ -41,8 +41,18 @@ namespace cfEngine.Core
         
         public static void SetCurrent(Domain domain)
         {
-            _current?.Dispose();
-            _current = domain;
+            if (_current != null)
+            {
+                Log.LogInfo($"Domain disposed: {_current}");
+                _current?.Dispose();
+                _current = domain;
+                Log.LogInfo($"Domain switched from domain ({_current}) to ({domain})");
+            }
+            else
+            {
+                _current = domain;
+                Log.LogInfo($"Domain set to: {domain}");
+            }
         }
 
         public virtual void HandleException(Exception ex)
