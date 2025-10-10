@@ -40,8 +40,8 @@ namespace cfEngine.Util
     {
         private TState _lastState;
         private TState _currentState;
-        public TStateId lastStateId => _lastState.Id;
-        public TStateId currentStateId => _currentState.Id;
+        public TStateId lastStateId => _lastState.id;
+        public TStateId currentStateId => _currentState.id;
         
         private readonly Dictionary<TStateId, TState> _stateDictionary = new();
 
@@ -68,15 +68,15 @@ namespace cfEngine.Util
         {
         }
 
-        public void RegisterState([NotNull] TState state)
+        public virtual void RegisterState([NotNull] TState state)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
-            if (!_stateDictionary.TryAdd(state.Id, state))
+            if (!_stateDictionary.TryAdd(state.id, state))
             {
                 throw new Exception($"State {state.GetType()} already registered");
             }
 
-            state.StateMachine = (TStateMachine)this;
+            state.stateMachine = (TStateMachine)this;
         }
         
         public bool CanGoToState(TStateId id, StateParam param)
@@ -94,16 +94,16 @@ namespace cfEngine.Util
                     return false;
                 }
 
-                if (!CanGoToState(nextState.Id, param))
+                if (!CanGoToState(nextState.id, param))
                 {
-                    Log.LogException(new ArgumentException($"Cannot go to state {nextState.Id}"));
+                    Log.LogException(new ArgumentException($"Cannot go to state {nextState.id}"));
                     return false;
                 }
 
                 if (_currentState != null)
                 {
                     _beforeStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
-                        { LastState = _currentState.Id, NewState = nextState.Id });
+                        { LastState = _currentState.id, NewState = nextState.id });
                 
                     _currentState.OnEndContext();
                     _lastState = _currentState;
@@ -113,7 +113,7 @@ namespace cfEngine.Util
                 if (_lastState != null)
                 {
                     _afterStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
-                        { LastState = _lastState.Id, NewState = _currentState.Id });
+                        { LastState = _lastState.id, NewState = _currentState.id });
                 }
                 _currentState.StartContext(param);
 
@@ -139,7 +139,7 @@ namespace cfEngine.Util
                 if (_currentState != null)
                 {
                     _beforeStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
-                        { LastState = _currentState.Id, NewState = nextState.Id });
+                        { LastState = _currentState.id, NewState = nextState.id });
                 
                     _currentState.OnEndContext();
                     _lastState = _currentState;
@@ -149,7 +149,7 @@ namespace cfEngine.Util
                 if (_lastState != null)
                 {
                     _afterStateChangeRelay?.Dispatch(new StateChangeRecord<TStateId>
-                        { LastState = _lastState.Id, NewState = _currentState.Id });
+                        { LastState = _lastState.id, NewState = _currentState.id });
                 }
                 _currentState.StartContext(param);
             }

@@ -6,9 +6,9 @@ namespace cfEngine.Util
         where TStateMachine: StateMachine<TStateId, TState, TStateMachine> 
         where TState : State<TStateId, TState, TStateMachine>
     {
-        public abstract TStateId Id { get; }
+        public abstract TStateId id { get; }
 
-        public TStateMachine StateMachine { get; internal set; }
+        public TStateMachine stateMachine { get; internal set; }
 
         public virtual bool IsReady()
         {
