@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using cfEngine.Logging;
 
 namespace cfEngine.Util
 {
@@ -18,6 +19,17 @@ namespace cfEngine.Util
         {
             base.RegisterState(state);
             _sortedStateId.Add(state.order, state.id);
+        }
+
+        public virtual void Start()
+        {
+            if (_sortedStateId.Count == 0)
+            {
+                Log.LogError("No state availabled yet, cannot start");
+                return;
+            }
+            
+            ForceGoToState(_sortedStateId[0]);
         }
 
         public Res<TStateId, Exception> GetNextState()
