@@ -45,18 +45,21 @@ namespace cfEngine
             }
         }
 
-        public bool TryGetValue(out TOk value)
+        public bool HasResult(out TOk value)
         {
             value = _value;
             return _isOk;
         }
 
-        public bool TryGetError(out TErr error)
+        public bool HasError(out TErr error)
         {
             error = _error;
             return !_isOk;
         }
 
         public override string ToString() => _isOk ? $"Ok({_value})" : $"Err({_error})";
+        
+        public static implicit operator Res<TOk, TErr>(TOk value) => Ok(value);
+        public static implicit operator Res<TOk, TErr>(TErr error) => Err(error);
     }
 }

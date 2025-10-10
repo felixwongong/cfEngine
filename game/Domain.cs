@@ -19,11 +19,11 @@ namespace cfEngine.Core
         {
             var serviceName = typeof(TService).FullName;
             var res = domain.GetService<TService>(serviceName);
-            if (res.TryGetError(out var err))
+            if (res.HasError(out var err))
             {
                 Log.LogException(err);
                 var findRes = domain.FindService<TService>();
-                if (findRes.TryGetError(out err))
+                if (findRes.HasError(out err))
                     throw err;
                 else
                     return findRes.value;
