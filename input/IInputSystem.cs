@@ -9,9 +9,15 @@ namespace cfEngine.Input
     /// </summary>
     public interface IInputActionContext
     {
+        public enum Phase: byte
+        {
+            Performed,
+            Canceled
+        }
+        
         string actionName { get; }
-        object value { get; }
-        Type valueType { get; }
+        Phase phase { get; }
+        Res<T, Exception> GetValue<T>();
     }
     
     /// <summary>
