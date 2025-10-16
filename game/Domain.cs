@@ -36,7 +36,20 @@ namespace cfEngine.Core
     public class Domain: ServiceLocator
     {
         private static Domain _current;
-        public static Domain Current => _current;
+        public static Domain Current
+        {
+            get
+            {
+                if (_current == null)
+                {
+                    SetCurrent(new Domain());
+                    Log.LogInfo($"[{nameof(Domain)}] Current not set, using default.");
+                }
+
+                return _current;
+            }
+        }
+
         public static CancellationToken TaskToken { get; private set; } = CancellationToken.None;
         
         public static void SetCurrent(Domain domain)
