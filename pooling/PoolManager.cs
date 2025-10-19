@@ -1,30 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using cfEngine.Logging;
-using cfEngine.Pooling;
 using cfEngine.Service;
-
-namespace cfEngine.Core
-{
-    public static partial class DomainExtension
-    {
-        public static Res<T, Exception> GetPool<T>(this Domain domain, string poolKey) where T: IObjectPool
-        {
-            var poolManager = domain.Get<PoolManager>();
-            if (poolManager == null)
-                return Res.Err<T>(new Exception("PoolManager is not registered in the game. Please call WithPoolManager() to register it."));
-            
-            if(!poolManager.TryGetPool(poolKey, out var pool))
-                return Res.Err<T>(new KeyNotFoundException($"Pool with key '{poolKey}' not found."));
-
-            if (pool is not T t)
-                return Res.Err<T>(new InvalidCastException($"Pool with key '{poolKey}' is not of type {typeof(T)}. Found: {pool.GetType()}"));
-            
-            return Res.Ok(t);
-        }
-    }
-}
 
 namespace cfEngine.Pooling
 {

@@ -1,11 +1,9 @@
-using System;
-using System.Threading;
 using cfEngine.Logging;
 using cfEngine.Service;
 
 namespace cfEngine.Core
 {
-    public partial class DomainExtension
+    public static partial class DomainExtension
     {
         public static Domain With<TService>(this Domain domain, TService service)
             where TService : IService
@@ -15,10 +13,13 @@ namespace cfEngine.Core
             return domain;
         }
 
-        public static TService Get<TService>(this Domain domain) where TService : IService
+        public static Res<TService, Exception> Get<TService>(this Domain domain) where TService : IService
         {
             var serviceName = typeof(TService).FullName;
-            var res = domain.GetService<TService>(serviceName);
+            if (string.IsNullOrEmpty(serviceName))
+                return new InvalidOperationException("Service name is empty");
+            
+            var res = domain.Get<TService>(serviceName);
             if (res.HasError(out var err))
             {
                 Log.LogException(err);
@@ -28,8 +29,8 @@ namespace cfEngine.Core
                 else
                     return findRes.value;
             }
-            else
-                return res.value;
+
+            return res.value;
         }
     }
     

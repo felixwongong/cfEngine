@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using cfEngine.Core;
 using cfEngine.Logging;
 
@@ -24,7 +25,7 @@ namespace cfEngine.Service
         void Register<T>(T service, string serviceName) where T: IService;
         void Unregister<T>(T service) where T: IService;
         void Unregister(string serviceName);
-        Res<T, Exception> GetService<T>(string serviceName) where T: IService;
+        Res<T, Exception> Get<T>(string serviceName) where T: IService;
     }
 
     public class ServiceLocator : IServiceLocator
@@ -74,19 +75,15 @@ namespace cfEngine.Service
             return _serviceMap.ContainsKey(serviceName);
         }
 
-        public Res<T, Exception> GetService<T>(string serviceName) where T : IService
+        public Res<T, Exception> Get<T>(string serviceName) where T : IService
         {
             if(!_serviceMap.TryGetValue(serviceName, out var service))
-            {
-                return Res.Err<T>(new KeyNotFoundException($"Service not found, serviceName: {serviceName}"));
-            }
+                return new KeyNotFoundException($"Service not found, serviceName: {serviceName}");
 
             if (service is not T t)
-            {
-                return Res.Err<T>(new ArgumentException($"Service with name is not of type {typeof(T).Name}"));
-            }
+                return new ArgumentException($"Service with name is not of type {typeof(T).Name}");
 
-            return Res.Ok(t);
+            return t;
         }
 
         public Res<T, Exception> FindService<T>() where T : IService

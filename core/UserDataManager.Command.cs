@@ -1,4 +1,5 @@
 using cfEngine.Command;
+using cfEngine.Logging;
 
 namespace cfEngine.Core
 {
@@ -8,7 +9,15 @@ namespace cfEngine.Core
         {
             public void Execute(Parameters @param)
             {
-                Domain.Current.Get<UserDataManager>().DeleteSave();
+                var getUserData = Domain.Current.Get<UserDataManager>();
+
+                if (getUserData.HasError(out var error))
+                {
+                    Log.LogException(error);
+                    return;
+                }
+                
+                getUserData.value.DeleteSave();
             }
         }
     }
