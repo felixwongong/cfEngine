@@ -1,4 +1,6 @@
-using cfEngine.Logging;
+using System;
+using System.Threading;
+using cfEngine;
 using cfEngine.Service;
 
 namespace cfEngine.Core

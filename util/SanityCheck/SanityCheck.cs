@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Util
 {

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using cfEngine.Logging;
+using cfEngine;
+using cfEngine.Pooling;
 using cfEngine.Service;
 
 namespace cfEngine.Pooling

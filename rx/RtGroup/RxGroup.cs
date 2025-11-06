@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using cfEngine.Logging;
+using cfEngine;
 using cfEngine.Util;
 
 namespace cfEngine.Rx

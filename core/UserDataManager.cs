@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using cfEngine.IO;
-using cfEngine.Logging;
+using cfEngine;
 using cfEngine.Serialize;
 using System.Text.Json.Nodes;
 using cfEngine.Service;

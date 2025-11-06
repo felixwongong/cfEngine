@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Extension
 {

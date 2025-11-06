@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using cfEngine.DataStructure;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Command
 {

@@ -1,7 +1,7 @@
 using System;
 using cfEngine.Extension;
 
-namespace cfEngine.Logging
+namespace cfEngine
 {
     public static class Log
     {

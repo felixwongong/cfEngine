@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Core
 {

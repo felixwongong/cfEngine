@@ -1,6 +1,6 @@
 using System;
 
-namespace cfEngine.Logging
+namespace cfEngine
 {
     [Flags]
     public enum LogType

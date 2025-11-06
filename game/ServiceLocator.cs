@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using cfEngine.Core;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Service
 {
