@@ -1,5 +1,4 @@
 using cfEngine.Command;
-using cfEngine.Logging;
 
 namespace cfEngine.Core
 {
