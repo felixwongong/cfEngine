@@ -23,22 +23,37 @@ namespace cfEngine.DataStructure
         private readonly Vector3 _dimensions;
         private readonly Vector3 _startPosition;
         private readonly List<T> _list;
+        private readonly T _defaultValue;
         private readonly Func<T> _createFn;
     
         public Vector3 dimensions => _dimensions;
         public int count => _list.Count;
         public Vector3 startPosition => _startPosition;
 
-        public GridMap(Vector3 dimensions, Func<T> createFn, Vector3 startPosition = default)
+        private GridMap(Vector3 dimensions, Vector3 startPosition = default)
         {
-            _createFn = createFn;
             _startPosition = startPosition;
             _dimensions = new Vector3(
                 Math.Max(0, dimensions.X),
                 Math.Max(0, dimensions.Y),
                 Math.Max(0, dimensions.Z));
+        }
+
+        public GridMap(Vector3 dimensions, T defaultValue, Vector3 startPosition = default): this(dimensions, startPosition)
+        {
+            _defaultValue = defaultValue;
             var dimension = (int)(dimensions.X * dimensions.Y * dimensions.Z);
             _list = new List<T>(dimension);
+            for (int i = 0; i < dimension; i++) {
+                _list.Add(defaultValue);
+            }
+        }
+
+        public GridMap(Vector3 dimensions, Func<T> createFn, Vector3 startPosition = default): this(dimensions, startPosition)
+        {
+            var dimension = (int)(dimensions.X * dimensions.Y * dimensions.Z);
+            _list = new List<T>(dimension);
+            _createFn = createFn;
             for (int i = 0; i < dimension; i++) {
                 _list.Add(createFn());
             }
@@ -118,7 +133,12 @@ namespace cfEngine.DataStructure
 
         public void Clear()
         {
-            _list.Clear();
+            for (int i = 0; i < _list.Count; i++) {
+                if(_createFn != null)
+                    _list.Add(_createFn());
+                else
+                    _list.Add(_defaultValue);
+            }
         }
 
         public void CopyTo(GridMap<T> target)
@@ -130,6 +150,13 @@ namespace cfEngine.DataStructure
             {
                 target._list[i] = _list[i];
             }
+        }
+        
+        public Vector3 GetRandomPosition()
+        {
+            var rand = new Random();
+            int index = rand.Next(0, _list.Count);
+            return GetPositionUnsafe(index);
         }
     
         public GridMap<T> Clone()
