@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using cfEngine.Logging;
+using cfEngine;
 
 namespace cfEngine.Service.Statistic
 {
