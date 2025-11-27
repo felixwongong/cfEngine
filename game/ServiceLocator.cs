@@ -100,7 +100,7 @@ namespace cfEngine.Service
             return Res.Err<T>(new KeyNotFoundException($"Service of type {type.FullName} not found"));
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             foreach (var service in _serviceMap.Values)
             {
