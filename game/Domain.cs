@@ -38,7 +38,7 @@ namespace cfEngine.Core
     
     public class Domain: ServiceLocator
     {
-        private static Domain _current;
+        private static Domain? _current;
         public static Domain Current
         {
             get
@@ -49,7 +49,7 @@ namespace cfEngine.Core
                     Log.LogInfo($"[{nameof(Domain)}] Current not set, using default.");
                 }
 
-                return _current;
+                return _current!;
             }
         }
 
@@ -74,6 +74,12 @@ namespace cfEngine.Core
         public virtual void HandleException(Exception ex)
         {
             Log.LogException(ex);
+        }
+
+        public static void CLear()
+        {
+            _current?.Dispose();
+            _current = null;
         }
     }
 }
