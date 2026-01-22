@@ -32,8 +32,8 @@ namespace cfEngine.Rx
     public partial class SubscriptionBinding<TDelegate>: Subscription where TDelegate: class
     {
         public readonly TDelegate Listener;
-        private readonly RelayBase<TDelegate> _relay;
-        public SubscriptionBinding(TDelegate listener, RelayBase<TDelegate> relay)
+        private readonly DelegateDispatcher<TDelegate> _relay;
+        public SubscriptionBinding(TDelegate listener, DelegateDispatcher<TDelegate> relay)
         {
             Listener = listener;
             _relay = relay;
@@ -58,7 +58,7 @@ namespace cfEngine.Rx
         }
     }
     
-    public interface IRelay<TDelegate> where TDelegate : class
+    public interface IDelegateDispatcher<TDelegate> where TDelegate : class
     {
         Subscription AddListener(TDelegate listener);
         bool RemoveListener(TDelegate listener);
@@ -66,7 +66,7 @@ namespace cfEngine.Rx
         bool Contains(TDelegate d);
     }
     
-    public abstract class RelayBase<TDelegate>: IRelay<TDelegate> where TDelegate : class
+    public abstract class DelegateDispatcher<TDelegate>: IDelegateDispatcher<TDelegate> where TDelegate : class
     {
         protected WeakReference<SubscriptionBinding<TDelegate>>[] _subscriptionRefList;
         protected int _cap;
@@ -78,7 +78,7 @@ namespace cfEngine.Rx
         private readonly object _o;
 #pragma warning restore 0414
 
-        public RelayBase(object owner, int defaultSize = 1)
+        public DelegateDispatcher(object owner, int defaultSize = 1)
         {
             _o = owner;
             _cap = defaultSize;
@@ -89,7 +89,7 @@ namespace cfEngine.Rx
         {
             if (Contains(listener))
             {
-                Log.LogError("SmartRelayBase.AddListener: Listener already exists");
+                Log.LogError("DelegateDispatcher.AddListener: Listener already exists");
                 return null;
             }
 
@@ -137,7 +137,7 @@ namespace cfEngine.Rx
         {
             if (_cap > _subscriptionRefList.Length)
             {
-                Log.LogException(new IndexOutOfRangeException("SmartRelayBase.Contains: Bound exceeded the length of the subscription array"));
+                Log.LogException(new IndexOutOfRangeException("DelegateDispatcher.Contains: Bound exceeded the length of the subscription array"));
                 return false;
             }
 
@@ -176,8 +176,12 @@ namespace cfEngine.Rx
             return newCount;
         }
     }
+
+    public interface IRelay: IDelegateDispatcher<Action> { }
+    public interface IRelay<T>: IDelegateDispatcher<Action<T>> { }
+    public interface IRelay<T1, T2>: IDelegateDispatcher<Action<T1, T2>> { }
     
-    public class Relay: RelayBase<Action>
+    public class Relay: DelegateDispatcher<Action>, IRelay
     {
         public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
         {
@@ -208,8 +212,8 @@ namespace cfEngine.Rx
             _count = newCount;
         }
     }
-    
-    public class Relay<T>: RelayBase<Action<T>>
+
+    public class Relay<T>: DelegateDispatcher<Action<T>>, IRelay<T>
     {
         public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
         {
@@ -241,7 +245,7 @@ namespace cfEngine.Rx
         }
     }
 
-    public class Relay<T1, T2> : RelayBase<Action<T1, T2>>
+    public class Relay<T1, T2> : DelegateDispatcher<Action<T1, T2>>, IRelay<T1, T2>
     {
         public Relay(object owner, int defaultSize = 1) : base(owner, defaultSize)
         {

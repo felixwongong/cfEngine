@@ -29,22 +29,22 @@ namespace cfEngine.Input
         /// <summary>
         /// Relay triggered when any input action is triggered
         /// </summary>
-        IRelay<Action<IInputActionContext>> onActionTriggered { get; }
+        IRelay<IInputActionContext> onActionTriggered { get; }
         
         /// <summary>
         /// Relay triggered when an input device is lost
         /// </summary>
-        IRelay<Action> onDeviceLost { get; }
+        IRelay onDeviceLost { get; }
         
         /// <summary>
         /// Relay triggered when an input device is regained
         /// </summary>
-        IRelay<Action> onDeviceRegained { get; }
+        IRelay onDeviceRegained { get; }
         
         /// <summary>
         /// Relay triggered when the control scheme changes
         /// </summary>
-        IRelay<Action<string>> onControlsChanged { get; }
+        IRelay<string> onControlsChanged { get; }
         
         /// <summary>
         /// Register a callback for a specific action by name
