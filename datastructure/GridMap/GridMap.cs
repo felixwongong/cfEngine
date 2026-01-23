@@ -207,8 +207,16 @@ namespace cfEngine.DataStructure
             public void Dispose() { }
         }
 
+        /// <summary>
+        /// Returns a struct enumerator for zero-allocation iteration.
+        /// Using foreach directly on GridMap will use this method without boxing.
+        /// </summary>
         public Enumerator GetEnumerator() => new Enumerator(this);
 
+        /// <summary>
+        /// Explicit interface implementation. Note: This will box the struct enumerator.
+        /// For zero-allocation enumeration, use foreach directly on GridMap instead of casting to IEnumerable.
+        /// </summary>
         IEnumerator<(GridPosition position, T item)> IEnumerable<(GridPosition position, T item)>.GetEnumerator()
         {
             return GetEnumerator();
@@ -246,8 +254,7 @@ namespace cfEngine.DataStructure
         
         public GridPosition GetRandomPosition()
         {
-            var rand = new Random();
-            int index = rand.Next(0, _totalSize);
+            int index = Random.Shared.Next(0, _totalSize);
             return GetPositionUnsafe(index);
         }
     
