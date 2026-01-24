@@ -38,5 +38,16 @@ namespace cfEngine
             if (!_isOk) action(_error);
             return this;
         }
+
+        public Res<TOk, TErr> UnwrapOr(Action onErr)
+        {
+            if (!_isOk) onErr();
+            return this;
+        }
+
+        public Res<TOk, TErr> UnwrapOr(TOk defaultValue)
+        {
+            return _isOk ? this : Res<TOk, TErr>.Ok(defaultValue);
+        }
     }
 }

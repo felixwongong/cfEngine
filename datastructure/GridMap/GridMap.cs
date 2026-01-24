@@ -134,6 +134,15 @@ namespace cfEngine.DataStructure
                    (uint)local.Y >= (uint)_dimensions.Y ||
                    (uint)local.Z >= (uint)_dimensions.Z;
         }
+
+        public Res<bool, Exception> EnsureInBound(GridPosition worldPosition)
+        {
+            if (IsOutOfBounds(worldPosition))
+            {
+                return Res< bool, Exception>.Err(new ArgumentOutOfRangeException(nameof(worldPosition), $"Position ({worldPosition.ToString()}) is out of bounds of the grid map dimension ({_dimensions.ToString()})."));
+            }
+            return Res< bool, Exception>.Ok(true);
+        }
     
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetIndexUnsafe(GridPosition worldPosition)
