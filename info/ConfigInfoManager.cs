@@ -110,6 +110,10 @@ namespace cfEngine.Info
         {
             base.Dispose();
             _valueMap.Clear();
+            if (_loader is IDisposable disposableLoader)
+            {
+                disposableLoader.Dispose();
+            }
         }
     }
 }
