@@ -32,7 +32,7 @@ namespace cfEngine.Command
         }
 
         private readonly Dictionary<string, string> _map;
-        private bool _isDisposed;
+        private bool _isDisposed = true;
     
         public int Count => _map.Count;
     

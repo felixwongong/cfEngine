@@ -113,12 +113,15 @@ namespace cfEngine.Command
 
                 if (i <= start)
                     return ReadOnlySpan<char>.Empty;
-                
+
+                var nextToken = span[start..i];
                 span = span[(i + 1)..];
-                return span[start..i];
+                return nextToken;
             }
 
-            return string.Empty;
+            var finalToken = span;
+            span = ReadOnlySpan<char>.Empty;
+            return finalToken;
         }
 
         private static ReadOnlyMemory<char> TakeToken(ref ReadOnlyMemory<char> memory, char separator = ' ')
@@ -128,6 +131,8 @@ namespace cfEngine.Command
             {
                 if(char.IsWhiteSpace(memory.Span[trimStart]))
                     continue;
+
+                break;
             }
             memory = memory[trimStart..];
             
@@ -142,12 +147,15 @@ namespace cfEngine.Command
 
                 if (i <= start)
                     return string.Empty.AsMemory();
-                
+
+                var nextToken = memory[start..i];
                 memory = memory[(i + 1)..];
-                return memory[start..i];
+                return nextToken;
             }
             
-            return ReadOnlyMemory<char>.Empty;
+            var finalToken = memory;
+            memory = ReadOnlyMemory<char>.Empty;
+            return finalToken;
         }
     }
 

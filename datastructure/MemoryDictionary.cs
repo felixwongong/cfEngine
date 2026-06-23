@@ -8,9 +8,18 @@ namespace cfEngine.DataStructure
         private static ReadOnlyMemoryComparer<T> _instance;
         public static ReadOnlyMemoryComparer<T> Instance => _instance ??= new ReadOnlyMemoryComparer<T>();
 
-        public bool Equals(ReadOnlyMemory<T> x, ReadOnlyMemory<T> y) => x.Span == y.Span;
+        public bool Equals(ReadOnlyMemory<T> x, ReadOnlyMemory<T> y) => x.Span.SequenceEqual(y.Span);
 
-        public int GetHashCode(ReadOnlyMemory<T> obj) => obj.GetHashCode();
+        public int GetHashCode(ReadOnlyMemory<T> obj)
+        {
+            var hashCode = new HashCode();
+            foreach (var item in obj.Span)
+            {
+                hashCode.Add(item);
+            }
+
+            return hashCode.ToHashCode();
+        }
     }
 
     
