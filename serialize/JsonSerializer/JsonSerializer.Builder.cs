@@ -9,6 +9,7 @@ namespace cfEngine.Serialize
         {
             public bool IncludeFields;
             public bool IncludeReadOnlyProperties;
+            public bool AllowReadingFromString;
         }
 
         public partial class Builder
@@ -22,6 +23,9 @@ namespace cfEngine.Serialize
                 {
                     IncludeFields = options.IncludeFields,
                     IgnoreReadOnlyFields = !options.IncludeReadOnlyProperties,
+                    NumberHandling = options.AllowReadingFromString
+                        ? JsonNumberHandling.AllowReadingFromString
+                        : JsonNumberHandling.Strict,
                 };
                 return this;
             }
