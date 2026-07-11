@@ -8,6 +8,7 @@ namespace cfEngine
         private static ILogger _logger;
         private static LogLevel _logLevel = LogLevel.Info;
         public static bool hasLogger => _logger != null;
+        public static ILogger Logger => _logger;
 
         public static void SetLogger(ILogger logger)
         {
