@@ -5,12 +5,27 @@ using cfEngine.Service;
 
 namespace cfEngine.Core
 {
-    public static partial class DomainExtension
+    public static class DomainExtension
     {
-        public static Domain With<TService>(this Domain domain, TService service)
+        public static TDomain With<TDomain, TService>(this TDomain domain, TService service)
+            where TDomain: Domain 
             where TService : IService
         {
-            var serviceName = typeof(TService).FullName;
+            return With<TDomain>(domain, service, typeof(TService));
+        }
+
+        public static TDomain With<TDomain>(this TDomain domain, IService service, Type serviceType)
+            where TDomain: Domain
+        {
+            if (!serviceType.IsInstanceOfType(service))
+            {
+                throw new Exception($"Service type {serviceType} is not assignable to {typeof(TDomain)}");
+            }
+            
+            var serviceName = serviceType.FullName;
+            if (serviceName == null)
+                throw new Exception("Service name is empty");
+            
             domain.Register(service, serviceName);
             return domain;
         }
