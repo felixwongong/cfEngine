@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using cfEngine;
 
 namespace cfEngine.Util
@@ -31,6 +33,93 @@ namespace cfEngine.Util
             }
 
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Assign<T>(ref T field, T value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(value, default(T)!))
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            field = value;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Assign<T>(ref T field, T? value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null) where T : struct
+        {
+            if (value is null)
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            field = value.Value;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AssignNonEmpty(ref string? field, string? value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            field = value;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RequireNotNull<T>(T? value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null) where T : class
+        {
+            if (value is null)
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RequireNotDefault<T>(T value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null) where T : struct
+        {
+            if (value.Equals(default(T)))
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RequireNonEmpty(string? value,
+            string? message = null,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Log.LogException(new ArgumentNullException(paramName, message));
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using cfEngine.DataStructure;
 using cfEngine;
+using cfEngine.Util;
 
 namespace cfEngine.Command
 {
@@ -19,22 +20,14 @@ namespace cfEngine.Command
 
         public void RegisterScope(string scopeName, CommandService service)
         {
-            if(string.IsNullOrEmpty(scopeName))
-            {
-                Log.LogException(new ArgumentNullException(nameof(scopeName)));
-                return;
-            }
+            if (!SanityCheck.RequireNonEmpty(scopeName)) return;
             if (!serviceScopeMap.TryAdd(scopeName.AsMemory(), service))
                 Log.LogWarning($"CommandService: Scope '{scopeName}' is already registered. Ignored.");
         }
         
         public void RegisterHandler(string commandName, ICommandHandler handler)
         {
-            if (string.IsNullOrEmpty(commandName))
-            {
-                Log.LogException(new ArgumentNullException(nameof(commandName)));
-                return;
-            }
+            if (!SanityCheck.RequireNonEmpty(commandName)) return;
             if (!handlerMap.TryAdd(commandName.AsMemory(), handler))
                 Log.LogWarning($"CommandService: Command '{commandName}' is already registered. Ignored.");
         }
