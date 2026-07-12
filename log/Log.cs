@@ -22,7 +22,7 @@ namespace cfEngine
 
         public static void LogDebug(string message, object? context = null)
         {
-            if (_logLevel.hasFlag(LogType.Debug))
+            if (_logger != null && _logLevel.hasFlag(LogType.Debug))
             {
                 _logger.LogDebug(message, context);
             }
@@ -30,7 +30,7 @@ namespace cfEngine
 
         public static void LogInfo(string message, object? context = null)
         {
-            if (_logLevel.hasFlag(LogType.Info))
+            if (_logger != null && _logLevel.hasFlag(LogType.Info))
             {
                 _logger.LogInfo(message, context);
             }
@@ -38,7 +38,7 @@ namespace cfEngine
 
         public static void Asset(bool condition, object? context = null)
         {
-            if (_logLevel.hasFlag(LogType.Assert))
+            if (_logger != null && _logLevel.hasFlag(LogType.Assert))
             {
                 _logger.Asset(condition, context);
             }
@@ -46,7 +46,7 @@ namespace cfEngine
 
         public static void LogWarning(string message, object? context = null)
         {
-            if (_logLevel.hasFlag(LogType.Warning))
+            if (_logger != null && _logLevel.hasFlag(LogType.Warning))
             {
                 _logger.LogWarning(message, context);
             }
@@ -54,7 +54,7 @@ namespace cfEngine
 
         public static void LogException(Exception ex, string? message = null)
         {
-            if (_logLevel.hasFlag(LogType.Exception))
+            if (_logger != null && _logLevel.hasFlag(LogType.Exception))
             {
                 _logger.LogException(ex, message);
             }
@@ -62,7 +62,7 @@ namespace cfEngine
 
         public static void LogError(string message, object? context = null)
         {
-            if (_logLevel.hasFlag(LogType.Error))
+            if (_logger != null && _logLevel.hasFlag(LogType.Error))
             {
                 _logger.LogError(message, context);
             }
