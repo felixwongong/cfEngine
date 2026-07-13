@@ -35,36 +35,24 @@ namespace cfEngine.Rx
         public Subscription SubscribeOnAdd(Action<T> onAdd)
         {
             var sub = OnAddRelay.AddListener(onAdd);
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
-#endif
             return sub;
         }
         
         public Subscription SubscribeOnRemove(Action<T> onRemove)
         {
             var sub = OnRemoveRelay.AddListener(onRemove);
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
-#endif
             return sub;
         }
         
         public Subscription SubscribeOnUpdate(Action<T, T> onUpdate)
         {
             var sub = OnUpdateRelay.AddListener(onUpdate);
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
-#endif
             return sub;
         }
 
         public Subscription SubscribeOnDispose(Action onDispose)
         {
             var sub = OnDisposeRelay.AddListener(onDispose);
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
-#endif
             return sub;
         }
         

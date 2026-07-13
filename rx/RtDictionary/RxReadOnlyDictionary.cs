@@ -28,9 +28,6 @@ namespace cfEngine.Rx
                 if (_rxPairs == null)
                 {
                     _rxPairs = new RxObserverList<KeyValuePair<TKey, TValue>>(this, CollectionEvents);
-#if CF_REACTIVE_DEBUG
-                    _rxPairs.__SetDebugName(nameof(rxPairs));
-#endif
                 }
 
                 return _rxPairs;
@@ -45,9 +42,6 @@ namespace cfEngine.Rx
                 if (_rxKeys == null)
                 {
                     _rxKeys = rxPairs.select(kvp => kvp.Key);
-#if CF_REACTIVE_DEBUG
-                    _rxKeys.__SetDebugName(nameof(rxKeys));
-#endif
                 }
 
                 return _rxKeys;
@@ -62,9 +56,6 @@ namespace cfEngine.Rx
                 if (_rxValues == null)
                 {
                     _rxValues = rxPairs.select(kvp => kvp.Value);
-#if CF_REACTIVE_DEBUG
-                    _rxValues.__SetDebugName(nameof(rxValues));
-#endif
                 }
 
                 return _rxValues;

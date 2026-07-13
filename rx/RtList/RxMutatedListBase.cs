@@ -10,10 +10,6 @@ namespace cfEngine.Rx
         protected RxMutatedLocalListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(_OnSourceAdd, _OnSourceRemove, _OnSourceUpdate, Dispose);
-            
-#if CF_REACTIVE_DEBUG
-            __SetSourceCollectionId(sourceEvents);
-#endif
         }
 
         public override void Dispose()
@@ -37,10 +33,6 @@ namespace cfEngine.Rx
         protected RxMutatedListBase(ICollectionEvents<(int index, TOrig item)> sourceEvents)
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-
-#if CF_REACTIVE_DEBUG
-            __SetSourceCollectionId(sourceEvents);
-#endif
         }
         
         public override void Dispose()

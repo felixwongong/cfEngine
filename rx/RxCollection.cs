@@ -10,9 +10,6 @@ namespace cfEngine.Rx
 
         protected RxCollection()
         {
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RecordCollection(this);
-#endif
         }
 
         public virtual void Dispose()
@@ -23,10 +20,6 @@ namespace cfEngine.Rx
                 _collectionEvents.Dispose();
                 _collectionEvents = null;
             }
-
-#if CF_REACTIVE_DEBUG
-            _RxDebug.Instance.RemoveCollectionRecord(this);
-#endif
         }
     }
 }

@@ -20,10 +20,6 @@ namespace cfEngine.Rx
         protected RxMutatedDictionaryBase(ICollectionEvents<KeyValuePair<TSourceKey, TSourceValue>> sourceEvents): base()
         {
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-
-#if CF_REACTIVE_DEBUG
-            __SetSourceCollectionId(sourceEvents);
-#endif
         }
         
         public override void Dispose()

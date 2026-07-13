@@ -13,10 +13,6 @@ namespace cfEngine.Rx
         {
             _list = new List<T>(sourceItems);
             _sourceChangeSubscription = sourceEvents.Subscribe(OnSourceAdd, OnSourceRemove, OnSourceUpdate, Dispose);
-
-#if CF_REACTIVE_DEBUG
-            __SetSourceCollectionId(sourceEvents);
-#endif
         }
 
         public override void Dispose()
