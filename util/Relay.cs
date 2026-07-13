@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using cfEngine;
 
 namespace cfEngine.Rx
@@ -75,7 +76,7 @@ namespace cfEngine.Rx
         public int listenerCount => _count;
         
 #pragma warning disable 0414
-        private readonly object _o;
+        protected readonly object _o;
 #pragma warning restore 0414
 
         public DelegateDispatcher(object owner, int defaultSize = 1)
@@ -102,6 +103,10 @@ namespace cfEngine.Rx
             var subscriptionRef = new WeakReference<SubscriptionBinding<TDelegate>>(subscription);
             _subscriptionRefList[_count++] = subscriptionRef;
 
+#if CF_RX_INSTRUMENTED
+            RxInstrumentation.OnListenerSubscribed?.Invoke(_o, listener as Delegate);
+#endif
+
             return subscription;
         }
 
@@ -117,6 +122,10 @@ namespace cfEngine.Rx
                     _subscriptionRefList[i] = null;
                     _count--;
                     result = true;
+
+#if CF_RX_INSTRUMENTED
+                    RxInstrumentation.OnListenerRemoved?.Invoke(_o, listener as Delegate);
+#endif
                 }
             }
 
@@ -202,7 +211,29 @@ namespace cfEngine.Rx
                 }
                 else
                 {
+#if CF_RX_INSTRUMENTED
+                    var listenerDelegate = subscription.Listener as Delegate;
+                    var sw = Stopwatch.StartNew();
+                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, null);
+                    Exception? ex = null;
+                    try
+                    {
+                        subscription.Listener?.Invoke();
+                    }
+                    catch (Exception caught)
+                    {
+                        ex = caught;
+                    }
+                    sw.Stop();
+                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                    if (ex != null && RxInstrumentation.StrictMode)
+                    {
+                        throw ex;
+                    }
+#else
                     subscription.Listener?.Invoke();
+#endif
                     newCount++;
                 }
 
@@ -234,7 +265,29 @@ namespace cfEngine.Rx
                 }
                 else
                 {
+#if CF_RX_INSTRUMENTED
+                    var listenerDelegate = subscription.Listener as Delegate;
+                    var sw = Stopwatch.StartNew();
+                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1 });
+                    Exception? ex = null;
+                    try
+                    {
+                        subscription.Listener?.Invoke(value1);
+                    }
+                    catch (Exception caught)
+                    {
+                        ex = caught;
+                    }
+                    sw.Stop();
+                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                    if (ex != null && RxInstrumentation.StrictMode)
+                    {
+                        throw ex;
+                    }
+#else
                     subscription.Listener?.Invoke(value1);
+#endif
                     newCount++;
                 }
 
@@ -266,7 +319,29 @@ namespace cfEngine.Rx
                 }
                 else
                 {
+#if CF_RX_INSTRUMENTED
+                    var listenerDelegate = subscription.Listener as Delegate;
+                    var sw = Stopwatch.StartNew();
+                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1, value2 });
+                    Exception? ex = null;
+                    try
+                    {
+                        subscription.Listener?.Invoke(value1, value2);
+                    }
+                    catch (Exception caught)
+                    {
+                        ex = caught;
+                    }
+                    sw.Stop();
+                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                    if (ex != null && RxInstrumentation.StrictMode)
+                    {
+                        throw ex;
+                    }
+#else
                     subscription.Listener?.Invoke(value1, value2);
+#endif
                     newCount++;
                 }
 
