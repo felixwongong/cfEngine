@@ -171,8 +171,8 @@ namespace cfEngine.Rx
 
         public int Expand(ref WeakReference<SubscriptionBinding<TDelegate>>[] bindings)
         {
-            _cap *= 2;
-            
+            _cap = Math.Max(_cap * 2, 2);
+
             var newBindings = new WeakReference<SubscriptionBinding<TDelegate>>[_cap];
             var newCount = 0;
             for (var i = 0; i < bindings.Length; i++)
@@ -226,12 +226,11 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        _subscriptionRefList[i] = null;
-                        if (i + 1 < _cap)
-                        {
-                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                            continue;
-                        }
+                        for (var j = i; j < _cap - 1; j++)
+                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
+                        _subscriptionRefList[_cap - 1] = null;
+                        _cap--;
+                        continue;
                     }
                     else
                     {
@@ -323,12 +322,11 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        _subscriptionRefList[i] = null;
-                        if (i + 1 < _cap)
-                        {
-                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                            continue;
-                        }
+                        for (var j = i; j < _cap - 1; j++)
+                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
+                        _subscriptionRefList[_cap - 1] = null;
+                        _cap--;
+                        continue;
                     }
                     else
                     {
@@ -420,12 +418,11 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        _subscriptionRefList[i] = null;
-                        if (i + 1 < _cap)
-                        {
-                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                            continue;
-                        }
+                        for (var j = i; j < _cap - 1; j++)
+                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
+                        _subscriptionRefList[_cap - 1] = null;
+                        _cap--;
+                        continue;
                     }
                     else
                     {
