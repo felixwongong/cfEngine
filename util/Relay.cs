@@ -75,8 +75,6 @@ namespace cfEngine.Rx
 
         public int listenerCount => _count;
 
-        // Strategy 1: per-relay re-entrancy counter. Incremented on each Dispatch entry.
-        // If > 1 after increment, this is a re-entrant call and is skipped + logged.
         protected int _dispatchingCount;
 
 #pragma warning disable 0414
@@ -238,28 +236,37 @@ namespace cfEngine.Rx
                     else
                     {
 #if CF_RX_INSTRUMENTED
-                        var listenerDelegate = subscription.Listener as Delegate;
-                        var sw = Stopwatch.StartNew();
-                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, null);
-                        Exception? ex = null;
-                        try
+                        var onDispatching = RxInstrumentation.OnDispatching;
+                        var onDispatched = RxInstrumentation.OnDispatched;
+                        if (onDispatching != null || onDispatched != null)
+                        {
+                            var listenerDelegate = subscription.Listener as Delegate;
+                            var sw = Stopwatch.StartNew();
+                            onDispatching.Invoke(_o, listenerDelegate, null);
+                            Exception? ex = null;
+                            try
+                            {
+                                subscription.Listener?.Invoke();
+                            }
+                            catch (RelayCycleException)
+                            {
+                                throw;
+                            }
+                            catch (Exception caught)
+                            {
+                                ex = caught;
+                            }
+                            sw.Stop();
+                            long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                            onDispatched.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                            if (ex != null && RxInstrumentation.StrictMode)
+                            {
+                                throw ex;
+                            }
+                        }
+                        else
                         {
                             subscription.Listener?.Invoke();
-                        }
-                        catch (RelayCycleException)
-                        {
-                            throw; // cycle exception must escape Phase 1 per-listener containment
-                        }
-                        catch (Exception caught)
-                        {
-                            ex = caught;
-                        }
-                        sw.Stop();
-                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                        if (ex != null && RxInstrumentation.StrictMode)
-                        {
-                            throw ex;
                         }
 #else
                         subscription.Listener?.Invoke();
@@ -326,28 +333,37 @@ namespace cfEngine.Rx
                     else
                     {
 #if CF_RX_INSTRUMENTED
-                        var listenerDelegate = subscription.Listener as Delegate;
-                        var sw = Stopwatch.StartNew();
-                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1 });
-                        Exception? ex = null;
-                        try
+                        var onDispatching = RxInstrumentation.OnDispatching;
+                        var onDispatched = RxInstrumentation.OnDispatched;
+                        if (onDispatching != null || onDispatched != null)
+                        {
+                            var listenerDelegate = subscription.Listener as Delegate;
+                            var sw = Stopwatch.StartNew();
+                            onDispatching.Invoke(_o, listenerDelegate, new object[] { value1 });
+                            Exception? ex = null;
+                            try
+                            {
+                                subscription.Listener?.Invoke(value1);
+                            }
+                            catch (RelayCycleException)
+                            {
+                                throw;
+                            }
+                            catch (Exception caught)
+                            {
+                                ex = caught;
+                            }
+                            sw.Stop();
+                            long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                            onDispatched.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                            if (ex != null && RxInstrumentation.StrictMode)
+                            {
+                                throw ex;
+                            }
+                        }
+                        else
                         {
                             subscription.Listener?.Invoke(value1);
-                        }
-                        catch (RelayCycleException)
-                        {
-                            throw; // cycle exception must escape Phase 1 per-listener containment
-                        }
-                        catch (Exception caught)
-                        {
-                            ex = caught;
-                        }
-                        sw.Stop();
-                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                        if (ex != null && RxInstrumentation.StrictMode)
-                        {
-                            throw ex;
                         }
 #else
                         subscription.Listener?.Invoke(value1);
@@ -414,28 +430,37 @@ namespace cfEngine.Rx
                     else
                     {
 #if CF_RX_INSTRUMENTED
-                        var listenerDelegate = subscription.Listener as Delegate;
-                        var sw = Stopwatch.StartNew();
-                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1, value2 });
-                        Exception? ex = null;
-                        try
+                        var onDispatching = RxInstrumentation.OnDispatching;
+                        var onDispatched = RxInstrumentation.OnDispatched;
+                        if (onDispatching != null || onDispatched != null)
+                        {
+                            var listenerDelegate = subscription.Listener as Delegate;
+                            var sw = Stopwatch.StartNew();
+                            onDispatching.Invoke(_o, listenerDelegate, new object[] { value1, value2 });
+                            Exception? ex = null;
+                            try
+                            {
+                                subscription.Listener?.Invoke(value1, value2);
+                            }
+                            catch (RelayCycleException)
+                            {
+                                throw;
+                            }
+                            catch (Exception caught)
+                            {
+                                ex = caught;
+                            }
+                            sw.Stop();
+                            long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                            onDispatched.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                            if (ex != null && RxInstrumentation.StrictMode)
+                            {
+                                throw ex;
+                            }
+                        }
+                        else
                         {
                             subscription.Listener?.Invoke(value1, value2);
-                        }
-                        catch (RelayCycleException)
-                        {
-                            throw; // cycle exception must escape Phase 1 per-listener containment
-                        }
-                        catch (Exception caught)
-                        {
-                            ex = caught;
-                        }
-                        sw.Stop();
-                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                        if (ex != null && RxInstrumentation.StrictMode)
-                        {
-                            throw ex;
                         }
 #else
                         subscription.Listener?.Invoke(value1, value2);
