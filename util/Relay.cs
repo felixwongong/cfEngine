@@ -74,7 +74,11 @@ namespace cfEngine.Rx
         protected int _count;
 
         public int listenerCount => _count;
-        
+
+        // Strategy 1: per-relay re-entrancy counter. Incremented on each Dispatch entry.
+        // If > 1 after increment, this is a re-entrant call and is skipped + logged.
+        protected int _dispatchingCount;
+
 #pragma warning disable 0414
         protected readonly object _o;
 #pragma warning restore 0414
@@ -199,49 +203,83 @@ namespace cfEngine.Rx
         public void Dispatch()
         {
             int newCount = 0;
-            for (int i = 0; i < _cap;)
+            DispatchCycleGuard.DispatchDepth++;
+            if (DispatchCycleGuard.DispatchDepth > DispatchCycleGuard.MaxDepth)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
-                {
-                    _subscriptionRefList[i] = null;
-                    if (i + 1 < _cap)
-                    {
-                        _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                        continue;
-                    }
-                }
-                else
-                {
-#if CF_RX_INSTRUMENTED
-                    var listenerDelegate = subscription.Listener as Delegate;
-                    var sw = Stopwatch.StartNew();
-                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, null);
-                    Exception? ex = null;
-                    try
-                    {
-                        subscription.Listener?.Invoke();
-                    }
-                    catch (Exception caught)
-                    {
-                        ex = caught;
-                    }
-                    sw.Stop();
-                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                    if (ex != null && RxInstrumentation.StrictMode)
-                    {
-                        throw ex;
-                    }
-#else
-                    subscription.Listener?.Invoke();
-#endif
-                    newCount++;
-                }
-
-                i++;
+                Log.LogError($"Relay dispatch depth exceeded {DispatchCycleGuard.MaxDepth}. Owner: {_o?.GetType().Name ?? "null"}. Probable infinite cycle — dispatch skipped.");
+                DispatchCycleGuard.DispatchDepth--;
+                return;
             }
 
-            _count = newCount;
+            _dispatchingCount++;
+
+            try
+            {
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchBegin?.Invoke(_o);
+#endif
+                if (_dispatchingCount > 1)
+                {
+                    Log.LogError($"Relay re-entrancy skipped. Owner: {_o?.GetType().Name ?? "null"}. A listener wrote back into the dispatching relay synchronously — this is a bug.");
+                    return;
+                }
+
+                for (int i = 0; i < _cap;)
+                {
+                    if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
+                    {
+                        _subscriptionRefList[i] = null;
+                        if (i + 1 < _cap)
+                        {
+                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
+                            continue;
+                        }
+                    }
+                    else
+                    {
+#if CF_RX_INSTRUMENTED
+                        var listenerDelegate = subscription.Listener as Delegate;
+                        var sw = Stopwatch.StartNew();
+                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, null);
+                        Exception? ex = null;
+                        try
+                        {
+                            subscription.Listener?.Invoke();
+                        }
+                        catch (RelayCycleException)
+                        {
+                            throw; // cycle exception must escape Phase 1 per-listener containment
+                        }
+                        catch (Exception caught)
+                        {
+                            ex = caught;
+                        }
+                        sw.Stop();
+                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                        if (ex != null && RxInstrumentation.StrictMode)
+                        {
+                            throw ex;
+                        }
+#else
+                        subscription.Listener?.Invoke();
+#endif
+                        newCount++;
+                    }
+
+                    i++;
+                }
+
+                _count = newCount;
+            }
+            finally
+            {
+                _dispatchingCount--;
+                DispatchCycleGuard.DispatchDepth--;
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchEnd?.Invoke(_o, newCount);
+#endif
+            }
         }
     }
 
@@ -253,49 +291,83 @@ namespace cfEngine.Rx
         public void Dispatch(T value1)
         {
             int newCount = 0;
-            for (int i = 0; i < _cap;)
+            DispatchCycleGuard.DispatchDepth++;
+            if (DispatchCycleGuard.DispatchDepth > DispatchCycleGuard.MaxDepth)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
-                {
-                    _subscriptionRefList[i] = null;
-                    if (i + 1 < _cap)
-                    {
-                        _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                        continue;
-                    }
-                }
-                else
-                {
-#if CF_RX_INSTRUMENTED
-                    var listenerDelegate = subscription.Listener as Delegate;
-                    var sw = Stopwatch.StartNew();
-                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1 });
-                    Exception? ex = null;
-                    try
-                    {
-                        subscription.Listener?.Invoke(value1);
-                    }
-                    catch (Exception caught)
-                    {
-                        ex = caught;
-                    }
-                    sw.Stop();
-                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                    if (ex != null && RxInstrumentation.StrictMode)
-                    {
-                        throw ex;
-                    }
-#else
-                    subscription.Listener?.Invoke(value1);
-#endif
-                    newCount++;
-                }
-
-                i++;
+                Log.LogError($"Relay dispatch depth exceeded {DispatchCycleGuard.MaxDepth}. Owner: {_o?.GetType().Name ?? "null"}. Probable infinite cycle — dispatch skipped.");
+                DispatchCycleGuard.DispatchDepth--;
+                return;
             }
 
-            _count = newCount;
+            _dispatchingCount++;
+
+            try
+            {
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchBegin?.Invoke(_o);
+#endif
+                if (_dispatchingCount > 1)
+                {
+                    Log.LogError($"Relay re-entrancy skipped. Owner: {_o?.GetType().Name ?? "null"}. A listener wrote back into the dispatching relay synchronously — this is a bug.");
+                    return;
+                }
+
+                for (int i = 0; i < _cap;)
+                {
+                    if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
+                    {
+                        _subscriptionRefList[i] = null;
+                        if (i + 1 < _cap)
+                        {
+                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
+                            continue;
+                        }
+                    }
+                    else
+                    {
+#if CF_RX_INSTRUMENTED
+                        var listenerDelegate = subscription.Listener as Delegate;
+                        var sw = Stopwatch.StartNew();
+                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1 });
+                        Exception? ex = null;
+                        try
+                        {
+                            subscription.Listener?.Invoke(value1);
+                        }
+                        catch (RelayCycleException)
+                        {
+                            throw; // cycle exception must escape Phase 1 per-listener containment
+                        }
+                        catch (Exception caught)
+                        {
+                            ex = caught;
+                        }
+                        sw.Stop();
+                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                        if (ex != null && RxInstrumentation.StrictMode)
+                        {
+                            throw ex;
+                        }
+#else
+                        subscription.Listener?.Invoke(value1);
+#endif
+                        newCount++;
+                    }
+
+                    i++;
+                }
+
+                _count = newCount;
+            }
+            finally
+            {
+                _dispatchingCount--;
+                DispatchCycleGuard.DispatchDepth--;
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchEnd?.Invoke(_o, newCount);
+#endif
+            }
         }
     }
 
@@ -305,51 +377,85 @@ namespace cfEngine.Rx
         {
         }
         public void Dispatch(T1 value1, T2 value2)
-        { 
+        {
             int newCount = 0;
-            for (int i = 0; i < _cap;)
+            DispatchCycleGuard.DispatchDepth++;
+            if (DispatchCycleGuard.DispatchDepth > DispatchCycleGuard.MaxDepth)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
-                {
-                    _subscriptionRefList[i] = null;
-                    if (i + 1 < _cap)
-                    {
-                        _subscriptionRefList[i] = _subscriptionRefList[i + 1];
-                        continue;
-                    }
-                }
-                else
-                {
-#if CF_RX_INSTRUMENTED
-                    var listenerDelegate = subscription.Listener as Delegate;
-                    var sw = Stopwatch.StartNew();
-                    RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1, value2 });
-                    Exception? ex = null;
-                    try
-                    {
-                        subscription.Listener?.Invoke(value1, value2);
-                    }
-                    catch (Exception caught)
-                    {
-                        ex = caught;
-                    }
-                    sw.Stop();
-                    long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
-                    RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
-                    if (ex != null && RxInstrumentation.StrictMode)
-                    {
-                        throw ex;
-                    }
-#else
-                    subscription.Listener?.Invoke(value1, value2);
-#endif
-                    newCount++;
-                }
-
-                i++;
+                Log.LogError($"Relay dispatch depth exceeded {DispatchCycleGuard.MaxDepth}. Owner: {_o?.GetType().Name ?? "null"}. Probable infinite cycle — dispatch skipped.");
+                DispatchCycleGuard.DispatchDepth--;
+                return;
             }
 
-            _count = newCount;
+            _dispatchingCount++;
+
+            try
+            {
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchBegin?.Invoke(_o);
+#endif
+                if (_dispatchingCount > 1)
+                {
+                    Log.LogError($"Relay re-entrancy skipped. Owner: {_o?.GetType().Name ?? "null"}. A listener wrote back into the dispatching relay synchronously — this is a bug.");
+                    return;
+                }
+
+                for (int i = 0; i < _cap;)
+                {
+                    if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
+                    {
+                        _subscriptionRefList[i] = null;
+                        if (i + 1 < _cap)
+                        {
+                            _subscriptionRefList[i] = _subscriptionRefList[i + 1];
+                            continue;
+                        }
+                    }
+                    else
+                    {
+#if CF_RX_INSTRUMENTED
+                        var listenerDelegate = subscription.Listener as Delegate;
+                        var sw = Stopwatch.StartNew();
+                        RxInstrumentation.OnDispatching?.Invoke(_o, listenerDelegate, new object[] { value1, value2 });
+                        Exception? ex = null;
+                        try
+                        {
+                            subscription.Listener?.Invoke(value1, value2);
+                        }
+                        catch (RelayCycleException)
+                        {
+                            throw; // cycle exception must escape Phase 1 per-listener containment
+                        }
+                        catch (Exception caught)
+                        {
+                            ex = caught;
+                        }
+                        sw.Stop();
+                        long elapsedMicros = sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency;
+                        RxInstrumentation.OnDispatched?.Invoke(_o, listenerDelegate, elapsedMicros, ex);
+                        if (ex != null && RxInstrumentation.StrictMode)
+                        {
+                            throw ex;
+                        }
+#else
+                        subscription.Listener?.Invoke(value1, value2);
+#endif
+                        newCount++;
+                    }
+
+                    i++;
+                }
+
+                _count = newCount;
+            }
+            finally
+            {
+                _dispatchingCount--;
+                DispatchCycleGuard.DispatchDepth--;
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDispatchBatchEnd?.Invoke(_o, newCount);
+#endif
+            }
         }
     }
 }
