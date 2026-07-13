@@ -36,7 +36,7 @@ namespace cfEngine.Rx
         {
             var sub = OnAddRelay.AddListener(onAdd);
 #if CF_REACTIVE_DEBUG
-            _RtDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
+            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -45,7 +45,7 @@ namespace cfEngine.Rx
         {
             var sub = OnRemoveRelay.AddListener(onRemove);
 #if CF_REACTIVE_DEBUG
-            _RtDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
+            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -54,7 +54,7 @@ namespace cfEngine.Rx
         {
             var sub = OnUpdateRelay.AddListener(onUpdate);
 #if CF_REACTIVE_DEBUG
-            _RtDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
+            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
@@ -63,7 +63,7 @@ namespace cfEngine.Rx
         {
             var sub = OnDisposeRelay.AddListener(onDispose);
 #if CF_REACTIVE_DEBUG
-            _RtDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
+            _RxDebug.Instance.RecordSubscription<CollectionEvents<T>, T>(this, new WeakReference<Subscription>(sub));
 #endif
             return sub;
         }
