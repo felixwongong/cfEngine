@@ -33,6 +33,18 @@ namespace cfEngine.Rx
         public static Action<object?, Delegate?, object[]?>? OnDispatching;
 
         /// <summary>
+        /// Fired when a dispatch batch begins (before any listener is invoked).
+        /// (owner)
+        /// </summary>
+        public static Action<object?>? OnDispatchBatchBegin;
+
+        /// <summary>
+        /// Fired when a dispatch batch ends (after all listeners have been invoked,
+        /// or after a re-entrant dispatch was skipped). (owner, listenerCount)
+        /// </summary>
+        public static Action<object?, int>? OnDispatchBatchEnd;
+
+        /// <summary>
         /// Fired immediately after a listener invocation completes (success or exception).
         /// (owner, listener, elapsedMicroseconds, exceptionOrNull)
         /// </summary>
