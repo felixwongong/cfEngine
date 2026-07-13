@@ -23,20 +23,20 @@ namespace cfEngine.Rx
         /// </summary>
         public static bool StrictMode;
 
-        /// <summary> Fired after a listener is added to a dispatcher. (owner, listener) </summary>
-        public static Action<object, Delegate>? OnListenerSubscribed;
+        /// <summary> Fired after a listener is added to a dispatcher. (owner, listener, subscriptionWeakRef) </summary>
+        public static Action<object?, Delegate?, WeakReference<Subscription>?>? OnListenerSubscribed;
 
         /// <summary> Fired after a listener is removed from a dispatcher. (owner, listener) </summary>
-        public static Action<object, Delegate>? OnListenerRemoved;
+        public static Action<object?, Delegate?>? OnListenerRemoved;
 
         /// <summary> Fired immediately before a listener is invoked. (owner, listener, args) </summary>
-        public static Action<object, Delegate, object[]>? OnDispatching;
+        public static Action<object?, Delegate?, object[]?>? OnDispatching;
 
         /// <summary>
         /// Fired immediately after a listener invocation completes (success or exception).
         /// (owner, listener, elapsedMicroseconds, exceptionOrNull)
         /// </summary>
-        public static Action<object, Delegate, long, Exception?>? OnDispatched;
+        public static Action<object?, Delegate?, long, Exception?>? OnDispatched;
     }
 }
 

@@ -104,7 +104,8 @@ namespace cfEngine.Rx
             _subscriptionRefList[_count++] = subscriptionRef;
 
 #if CF_RX_INSTRUMENTED
-            RxInstrumentation.OnListenerSubscribed?.Invoke(_o, listener as Delegate);
+            var weakSub = new WeakReference<Subscription>(subscription);
+            RxInstrumentation.OnListenerSubscribed?.Invoke(_o, listener as Delegate, weakSub);
 #endif
 
             return subscription;
