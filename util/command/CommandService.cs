@@ -13,10 +13,24 @@ namespace cfEngine.Command
         private readonly MemoryDictionary<char, CommandService> serviceScopeMap = new();
         private readonly MemoryDictionary<char, ICommandHandler> handlerMap = new();
 
-#if UNITY_EDITOR
-        public IReadOnlyDictionary<ReadOnlyMemory<char>, CommandService> ServiceScopeMap => serviceScopeMap;
-        public IReadOnlyDictionary<ReadOnlyMemory<char>, ICommandHandler> HandlerMap => handlerMap;
-#endif
+        public event Action<CommandExecutionEvent>? CommandExecuted;
+
+        public IEnumerable<string> GetScopeNames()
+        {
+            foreach (var key in serviceScopeMap.Keys)
+                yield return key.ToString();
+        }
+
+        public IEnumerable<string> GetHandlerNames()
+        {
+            foreach (var key in handlerMap.Keys)
+                yield return key.ToString();
+        }
+
+        public bool TryGetHandler(string commandName, out ICommandHandler? handler)
+        {
+            return handlerMap.TryGetValue(commandName.AsMemory(), out handler!);
+        }
 
         public void RegisterScope(string scopeName, CommandService service)
         {
@@ -42,12 +56,26 @@ namespace cfEngine.Command
             handlerMap.Remove(commandName.AsMemory());
         }
 
-        public bool TryGetScope(string scopeName, out CommandService scope)
+        public bool TryGetScope(string scopeName, out CommandService? scope)
         {
-            return serviceScopeMap.TryGetValue(scopeName.AsMemory(), out scope);
+            return serviceScopeMap.TryGetValue(scopeName.AsMemory(), out scope!);
         }
 
         public void Execute(string cmdString)
+        {
+            try
+            {
+                var success = ExecuteInternal(cmdString);
+                CommandExecuted?.Invoke(new CommandExecutionEvent(cmdString, success));
+            }
+            catch (Exception ex)
+            {
+                CommandExecuted?.Invoke(new CommandExecutionEvent(cmdString, false, ex.Message, ex));
+                throw;
+            }
+        }
+
+        private bool ExecuteInternal(string cmdString)
         {
             using var paramters = Parameters.Get();
 
@@ -57,39 +85,40 @@ namespace cfEngine.Command
             do
             {
                 token = TakeToken(ref memory);
-                
+
                 if (token.Span.StartsWith("-"))
                 {
                     var parameterValue = TakeToken(ref memory);
                     if (parameterValue.IsEmpty)
                     {
                         Log.LogException(new CommandParseException($"Parameter ({token.ToString()}) value is missing."));
-                        return;
+                        return false;
                     }
-                    
+
                     paramters.Add(token.ToString(), parameterValue.ToString());
                 }
 
                 if (paramters.Count > 0 && !token.IsEmpty)
                 {
                     Log.LogException(new CommandParseException("Parameter must be at the end of the command."));
-                    return;
+                    return false;
                 }
-                
+
                 if (serviceScopeMap.TryGetValue(token, out var subService))
                 {
-                    subService.Execute(memory.ToString());
-                    return;
+                    return subService.ExecuteInternal(memory.ToString());
                 }
 
                 if (handlerMap.TryGetValue(token, out var handler))
                 {
                     handler.Execute(paramters);
-                    return;
+                    return true;
                 }
-                
+
                 Log.LogException(new CommandParseException($"Unknown command or scope: {token.ToString()}"));
             } while (!token.IsEmpty);
+
+            return false;
         }
         
         private static ReadOnlySpan<char> TakeToken(ref ReadOnlySpan<char> span, char separator = ' ')
