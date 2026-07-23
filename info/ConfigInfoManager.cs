@@ -95,15 +95,19 @@ namespace cfEngine.Info
             }
         }
         
-        public bool TryGetValue(TKey key, out TInfo value)
+        public bool TryGetValue(TKey key, out TInfo? value)
         {
-            value = null;
-            if (key == null)
-            {
-                Log.LogError($"Key is null in {GetType().Name} for {typeof(TInfo).Name}");
-                return false;
-            }
             return _valueMap.TryGetValue(key, out value);
+        }
+
+        public Res<TInfo, Exception> GetValue(TKey key)
+        {
+            if (!_valueMap.TryGetValue(key, out var value))
+            {
+                return Res.Err<TInfo>(new KeyNotFoundException($"Info [{typeof(TInfo).Name}]  not found: {key}"));
+            }
+
+            return value;
         }
 
         public override void Dispose()
