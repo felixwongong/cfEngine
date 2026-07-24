@@ -103,11 +103,16 @@ namespace cfEngine.Rx
         public void Insert(int index, T item)
         {
             _list.Insert(index, item);
+
+            CollectionEvents.OnAddRelay.Dispatch((index, item));
         }
 
         public void RemoveAt(int index)
         {
+            var item = _list[index];
             _list.RemoveAt(index);
+
+            CollectionEvents.OnRemoveRelay.Dispatch((index, item));
         }
 
         public void Update(int index, T item)
