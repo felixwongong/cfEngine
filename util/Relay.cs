@@ -96,14 +96,29 @@ namespace cfEngine.Rx
                 return null;
             }
 
-            if (_count == _cap)
+            int insertIndex = -1;
+            for (var i = 0; i < _cap; i++)
             {
-                _count = Expand(ref _subscriptionRefList);
+                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out _))
+                {
+                    insertIndex = i;
+                    break;
+                }
+            }
+
+            if (insertIndex == -1)
+            {
+                if (_count == _cap)
+                {
+                    _count = Expand(ref _subscriptionRefList);
+                }
+                insertIndex = _count;
             }
 
             var subscription = new SubscriptionBinding<TDelegate>(listener, this);
             var subscriptionRef = new WeakReference<SubscriptionBinding<TDelegate>>(subscription);
-            _subscriptionRefList[_count++] = subscriptionRef;
+            _subscriptionRefList[insertIndex] = subscriptionRef;
+            _count++;
 
 #if CF_RX_INSTRUMENTED
             var weakSub = new WeakReference<Subscription>(subscription);
