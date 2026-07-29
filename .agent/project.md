@@ -37,6 +37,7 @@ The library provides engine-agnostic primitives that higher-level frameworks bui
 - Checked out inside CatSweeper as a Git subtree at `Modules/cfEngine/`. Only the programmer/owner pushes changes back to `https://github.com/felixwongong/cfEngine.git` via `Tools/subtree.ps1`.
 - Any breaking change must be coordinated with `dotnet build CatSweeper.sln`.
 - Godot-specific code does not belong here; it belongs in `cfGodotEngine`.
+- **`Relay`/`DelegateDispatcher` listeners are weak-referenced** (`WeakReference<SubscriptionBinding>`). Every subscriber must retain the returned `Subscription` for as long as it wants callbacks; a discarded handle is GC-collected and dispatch silently skips that listener. This is a deliberate leak-avoidance design, not a bug — but it makes "discarded handle" the first suspect whenever Rx updates stop.
 
 ## CatSweeper usage
 
