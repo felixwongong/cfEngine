@@ -111,6 +111,32 @@ namespace cfEngine.Command
 
                 if (handlerMap.TryGetValue(token, out var handler))
                 {
+                    // Parse any trailing "-name value" pairs into the parameter map
+                    // before invoking the handler. The scope/handler walk consumes
+                    // one token per iteration, so parameters following the handler
+                    // name are collected here rather than in the main loop.
+                    while (true)
+                    {
+                        var paramName = TakeToken(ref memory);
+                        if (paramName.IsEmpty)
+                            break;
+
+                        if (!paramName.Span.StartsWith("-"))
+                        {
+                            Log.LogException(new CommandParseException($"Parameter name must start with '-': {paramName.ToString()}"));
+                            return false;
+                        }
+
+                        var paramValue = TakeToken(ref memory);
+                        if (paramValue.IsEmpty)
+                        {
+                            Log.LogException(new CommandParseException($"Parameter ({paramName.ToString()}) value is missing."));
+                            return false;
+                        }
+
+                        paramters.Add(paramName.ToString(), paramValue.ToString());
+                    }
+
                     handler.Execute(paramters);
                     return true;
                 }
