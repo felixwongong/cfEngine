@@ -130,8 +130,11 @@ namespace cfEngine.Command
                         var paramValue = TakeToken(ref memory);
                         if (paramValue.IsEmpty)
                         {
-                            Log.LogException(new CommandParseException($"Parameter ({paramName.ToString()}) value is missing."));
-                            return false;
+                            // Presence-only flag (e.g. "info sync --strict"): register with
+                            // an empty value instead of failing. A trailing token with no
+                            // successor is a flag. Mid-command bare flags remain unsupported.
+                            paramters.Add(paramName.ToString(), string.Empty);
+                            break;
                         }
 
                         paramters.Add(paramName.ToString(), paramValue.ToString());

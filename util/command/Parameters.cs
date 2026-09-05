@@ -48,6 +48,12 @@ namespace cfEngine.Command
 
         #region Get
 
+        /// <summary>True when the parameter was supplied, even with no value (presence-only flag).</summary>
+        public bool Has(string name)
+        {
+            return _map.ContainsKey(name);
+        }
+
         public string GetString(string name)
         {
             if (!_map.TryGetValue(name, out var value))
