@@ -70,6 +70,9 @@ namespace cfEngine.Rx
     public abstract class DelegateDispatcher<TDelegate>: IDelegateDispatcher<TDelegate> where TDelegate : class
     {
         protected WeakReference<SubscriptionBinding<TDelegate>>[] _subscriptionRefList;
+#if DEBUG
+        protected string[] _debugNames;
+#endif
         protected int _cap;
         protected int _count;
 
@@ -86,6 +89,53 @@ namespace cfEngine.Rx
             _o = owner;
             _cap = defaultSize;
             _subscriptionRefList = new WeakReference<SubscriptionBinding<TDelegate>>[_cap];
+#if DEBUG
+            _debugNames = new string[_cap];
+#endif
+        }
+
+#if DEBUG
+        private static string DebugNameOf(TDelegate listener)
+            => listener is Delegate d
+                ? $"{d.Method.DeclaringType?.Name}.{d.Method.Name}"
+                : listener?.ToString() ?? "null";
+#endif
+
+        // Warns iff slot i is a non-null weak ref whose target died without Unsubscribe.
+        // RemoveListener/RemoveAll null slots explicitly, so a live ref with a dead
+        // target is proof of a discarded Subscription handle.
+        protected void WarnIfDiscardedHandle(int i, string context)
+        {
+#if DEBUG
+            var slot = _subscriptionRefList[i];
+            if (slot != null && !slot.TryGetTarget(out _))
+            {
+                var name = _debugNames[i] ?? "<unknown>";
+                Log.LogWarning($"Rx discarded subscription handle: listener '{name}' on relay owner '{_o?.GetType().Name ?? "null"}' was GC-collected without Unsubscribe — retain the returned Subscription handle. (detected during {context})");
+#if CF_RX_INSTRUMENTED
+                RxInstrumentation.OnDiscardedHandleDetected?.Invoke(_o, name);
+#endif
+            }
+#endif
+        }
+
+        // Compacts slot i (null slot or dead target) out of both arrays in lockstep,
+        // decrementing _cap. Warns first when the slot is a discarded-handle corpse.
+        protected void SweepSlot(int i)
+        {
+            WarnIfDiscardedHandle(i, "Dispatch");
+            for (var j = i; j < _cap - 1; j++)
+            {
+                _subscriptionRefList[j] = _subscriptionRefList[j + 1];
+#if DEBUG
+                _debugNames[j] = _debugNames[j + 1];
+#endif
+            }
+            _subscriptionRefList[_cap - 1] = null;
+#if DEBUG
+            _debugNames[_cap - 1] = null;
+#endif
+            _cap--;
         }
 
         public Subscription AddListener(TDelegate listener)
@@ -99,8 +149,16 @@ namespace cfEngine.Rx
             int insertIndex = -1;
             for (var i = 0; i < _cap; i++)
             {
-                if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out _))
+                var existingRef = _subscriptionRefList[i];
+                if (existingRef == null)
                 {
+                    insertIndex = i;
+                    break;
+                }
+
+                if (!existingRef.TryGetTarget(out _))
+                {
+                    WarnIfDiscardedHandle(i, "AddListener");
                     insertIndex = i;
                     break;
                 }
@@ -118,6 +176,9 @@ namespace cfEngine.Rx
             var subscription = new SubscriptionBinding<TDelegate>(listener, this);
             var subscriptionRef = new WeakReference<SubscriptionBinding<TDelegate>>(subscription);
             _subscriptionRefList[insertIndex] = subscriptionRef;
+#if DEBUG
+            _debugNames[insertIndex] = DebugNameOf(listener);
+#endif
             _count++;
 
 #if CF_RX_INSTRUMENTED
@@ -138,6 +199,9 @@ namespace cfEngine.Rx
                     subscription.IsListener(listener))
                 {
                     _subscriptionRefList[i] = null;
+#if DEBUG
+                    _debugNames[i] = null;
+#endif
                     _count--;
                     result = true;
 
@@ -155,6 +219,9 @@ namespace cfEngine.Rx
             for (var i = 0; i < _subscriptionRefList.Length; i++)
             {
                 _subscriptionRefList[i] = null;
+#if DEBUG
+                _debugNames[i] = null;
+#endif
             }
 
             _cap = _subscriptionRefList.Length;
@@ -189,16 +256,26 @@ namespace cfEngine.Rx
             _cap = Math.Max(_cap * 2, 2);
 
             var newBindings = new WeakReference<SubscriptionBinding<TDelegate>>[_cap];
+#if DEBUG
+            var newDebugNames = new string[_cap];
+#endif
             var newCount = 0;
             for (var i = 0; i < bindings.Length; i++)
             {
                 if (bindings[i] != null && bindings[i].TryGetTarget(out _))
                 {
-                   newBindings[newCount++] = bindings[i]; 
+                    newBindings[newCount] = bindings[i];
+#if DEBUG
+                    newDebugNames[newCount] = _debugNames[i];
+#endif
+                    newCount++;
                 }
             }
             
             bindings = newBindings;
+#if DEBUG
+            _debugNames = newDebugNames;
+#endif
 
             return newCount;
         }
@@ -241,10 +318,7 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        for (var j = i; j < _cap - 1; j++)
-                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
-                        _subscriptionRefList[_cap - 1] = null;
-                        _cap--;
+                        SweepSlot(i);
                         continue;
                     }
                     else
@@ -337,10 +411,7 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        for (var j = i; j < _cap - 1; j++)
-                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
-                        _subscriptionRefList[_cap - 1] = null;
-                        _cap--;
+                        SweepSlot(i);
                         continue;
                     }
                     else
@@ -433,10 +504,7 @@ namespace cfEngine.Rx
                 {
                     if (_subscriptionRefList[i] == null || !_subscriptionRefList[i].TryGetTarget(out var subscription))
                     {
-                        for (var j = i; j < _cap - 1; j++)
-                            _subscriptionRefList[j] = _subscriptionRefList[j + 1];
-                        _subscriptionRefList[_cap - 1] = null;
-                        _cap--;
+                        SweepSlot(i);
                         continue;
                     }
                     else

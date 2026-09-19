@@ -29,6 +29,9 @@ namespace cfEngine.Rx
         /// <summary> Fired after a listener is removed from a dispatcher. (owner, listener) </summary>
         public static Action<object?, Delegate?>? OnListenerRemoved;
 
+        /// <summary> Fired when sweep detects a GC-collected binding whose handle was discarded. (owner, listenerDebugName) </summary>
+        public static Action<object?, string?>? OnDiscardedHandleDetected;
+
         /// <summary> Fired immediately before a listener is invoked. (owner, listener, args) </summary>
         public static Action<object?, Delegate?, object[]?>? OnDispatching;
 
