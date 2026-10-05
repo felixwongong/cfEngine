@@ -6,17 +6,18 @@ namespace cfEngine.Core
     {
         public class DeleteSaveCommand : ICommandHandler
         {
-            public void Execute(Parameters @param)
+            public bool Execute(Parameters @param)
             {
                 var getUserData = Domain.Current.Get<UserDataManager>();
 
                 if (getUserData.HasError(out var error))
                 {
                     Log.LogException(error);
-                    return;
+                    return false;
                 }
                 
                 getUserData.value.DeleteSave();
+                return true;
             }
         }
     }

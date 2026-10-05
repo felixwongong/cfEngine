@@ -140,8 +140,7 @@ namespace cfEngine.Command
                         paramters.Add(paramName.ToString(), paramValue.ToString());
                     }
 
-                    handler.Execute(paramters);
-                    return true;
+                    return handler.Execute(paramters);
                 }
 
                 Log.LogException(new CommandParseException($"Unknown command or scope: {token.ToString()}"));
@@ -223,7 +222,7 @@ namespace cfEngine.Command
             }
         }
         
-        public void Execute(Parameters param);
+        public bool Execute(Parameters param);
     }
 
     public class CommandParseException : ArgumentException
