@@ -1,0 +1,87 @@
+// Copy into your test project as `LayeringRuleTests.cs`; the compiled copy in CatSweeper.Tests is authoritative.
+
+namespace CatSweeper.Tests.Architecture;
+
+/// <summary>
+/// Reusable, config-driven mechanical gate for the in-game architecture standard's
+/// rules R1 (domain layers are Godot-free) and R5 (no loose scripts / no unregistered
+/// top-level folders). If a test fails, the diff violated the layering standard —
+/// fix placement, not the test.
+///
+/// This abstract base holds the test bodies; a game repo subclasses it and supplies
+/// its own configuration (see <see cref="LayeringRuleTests"/> for CatSweeper's instance).
+/// No <c>[TestFixture]</c> here — NUnit discovers the inherited <c>[Test]</c> methods on
+/// the concrete subclass.
+/// </summary>
+public abstract class LayeringRuleTestsBase
+{
+    /// <summary>Absolute path to the repo root (the folder containing <c>Scripts/</c>).</summary>
+    protected abstract string RepoRoot { get; }
+
+    /// <summary>Absolute path to the game's <c>Scripts/</c> root.</summary>
+    protected abstract string ScriptsDir { get; }
+
+    /// <summary>Tokens that MUST NOT appear in any domain-layer file (R1).</summary>
+    protected abstract IReadOnlyList<string> ForbiddenInDomainLayers { get; }
+
+    /// <summary>Registered top-level <c>Scripts/</c> folders (R5).</summary>
+    protected abstract IReadOnlySet<string> AllowedTopLevelFolders { get; }
+
+    /// <summary>Framework roots exempt from the "no loose scripts" rule (R5).</summary>
+    protected abstract IReadOnlySet<string> FrameworkFolders { get; }
+
+    private IEnumerable<string> DomainLayerFiles()
+    {
+        foreach (var file in Directory.EnumerateFiles(ScriptsDir, "*.cs", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(ScriptsDir, file);
+            if (rel.Contains($"{Path.DirectorySeparatorChar}Service{Path.DirectorySeparatorChar}") ||
+                rel.Contains($"{Path.DirectorySeparatorChar}Session{Path.DirectorySeparatorChar}") ||
+                rel.StartsWith($"Info{Path.DirectorySeparatorChar}"))
+                yield return file;
+        }
+    }
+
+    [Test]
+    public void R1_DomainLayers_ContainNoGodotSceneApis()
+    {
+        var violations = new List<string>();
+        foreach (var file in DomainLayerFiles())
+        {
+            var text = File.ReadAllText(file);
+            foreach (var token in ForbiddenInDomainLayers)
+            {
+                if (text.Contains(token))
+                    violations.Add($"{Path.GetRelativePath(RepoRoot, file)} references '{token}'");
+            }
+        }
+
+        Assert.That(violations, Is.Empty,
+            "R1 violation — domain layers must stay Godot-free:\n" + string.Join("\n", violations));
+    }
+
+    [Test]
+    public void R5_NoUnregisteredTopLevelScriptFolders()
+    {
+        var actual = Directory.EnumerateDirectories(ScriptsDir)
+            .Select(Path.GetFileName)
+            .ToList();
+
+        Assert.That(actual, Is.SubsetOf(AllowedTopLevelFolders),
+            "R5 violation — new top-level Scripts/ folder must be registered in .agent/architecture.md " +
+            "and added to AllowedTopLevelFolders in LayeringRuleTests.");
+    }
+
+    [Test]
+    public void R5_NoLooseScriptsAtDomainRoot()
+    {
+        var violations = Directory.EnumerateDirectories(ScriptsDir)
+            .Where(dir => !FrameworkFolders.Contains(Path.GetFileName(dir)))
+            .SelectMany(dir => Directory.EnumerateFiles(dir, "*.cs", SearchOption.TopDirectoryOnly))
+            .Select(f => Path.GetRelativePath(RepoRoot, f))
+            .ToList();
+
+        Assert.That(violations, Is.Empty,
+            "R5 violation — scripts must live in a layer/subsystem subfolder:\n" + string.Join("\n", violations));
+    }
+}
