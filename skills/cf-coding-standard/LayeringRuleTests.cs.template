@@ -1,4 +1,13 @@
-// Copy into your test project as `LayeringRuleTests.cs`; the compiled copy in CatSweeper.Tests is authoritative.
+// cf-coding-standard — reusable layering gate (copy-in template).
+//
+// HOW TO USE (two files in your test project):
+//   1. Copy the abstract class below into `LayeringRuleTestsBase.cs` (adjust the namespace
+//      to your test project's). It defines the R1/R5 test bodies only — it is abstract and
+//      has no `[TestFixture]`, so on its own it produces no discoverable tests.
+//   2. Add a concrete `[TestFixture]` subclass in a separate file (e.g. `LayeringRuleTests.cs`)
+//      that supplies YOUR repo's configuration (RepoRoot, ScriptsDir, the forbidden tokens and
+//      folder sets). Adapt the worked example in the trailing comment block below.
+//   The compiled copy in CatSweeper.Tests (Tests/CatSweeper.Tests/Architecture/) is authoritative.
 
 namespace CatSweeper.Tests.Architecture;
 
@@ -85,3 +94,39 @@ public abstract class LayeringRuleTestsBase
             "R5 violation — scripts must live in a layer/subsystem subfolder:\n" + string.Join("\n", violations));
     }
 }
+
+/* ------------------------------------------------------------------------------------------
+ * WORKED EXAMPLE — the concrete fixture you must add (steps 1–2 above). Copy the block below
+ * into a separate file, drop the leading " * ", and replace the placeholder values with YOUR
+ * repo's. CatSweeper's compiled instance (Tests/CatSweeper.Tests/Architecture/LayeringRuleTests.cs)
+ * is the authoritative reference.
+ *
+ *   namespace <YourProject>.Tests.Architecture;
+ *
+ *   [TestFixture]
+ *   public class LayeringRuleTests : LayeringRuleTestsBase
+ *   {
+ *       // Adjust the ".." count to your test project's output depth (bin/<Config>/<Tfm>).
+ *       protected override string RepoRoot =>
+ *           Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", ".."));
+ *
+ *       protected override string ScriptsDir => Path.Combine(RepoRoot, "Scripts");
+ *
+ *       protected override IReadOnlyList<string> ForbiddenInDomainLayers { get; } = new[]
+ *       {
+ *           "UIRoot", "UIPanel", "SceneTree", "GetNode(", "AddChild(", "Godot.Node", "Godot.Control"
+ *       };
+ *
+ *       protected override IReadOnlySet<string> AllowedTopLevelFolders { get; } =
+ *           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+ *           {
+ *               "Core", "Debug", "Gameplay", "Info", "Stage", "UI", "Util"
+ *           };
+ *
+ *       protected override IReadOnlySet<string> FrameworkFolders { get; } =
+ *           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+ *           {
+ *               "Core", "UI", "Util", "Debug"
+ *           };
+ *   }
+ * ------------------------------------------------------------------------------------------ */
