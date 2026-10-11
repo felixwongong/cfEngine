@@ -32,6 +32,21 @@ namespace cfEngine.Command
             return handlerMap.TryGetValue(commandName.AsMemory(), out handler!);
         }
 
+        /// <summary>
+        /// Reads a handler's declared argument metadata. The lookup goes through the
+        /// <see cref="ICommandHandler"/> interface (instance dispatch honours explicit
+        /// implementations and the default member, unlike reflecting a concrete type). The
+        /// result is per-instance and may legitimately be empty; a null implementation result
+        /// is defensively coalesced to an empty list.
+        /// </summary>
+        public static IReadOnlyList<CommandArg> ReadArguments(ICommandHandler handler)
+        {
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+
+            return handler.Arguments ?? Array.Empty<CommandArg>();
+        }
+
         public void RegisterScope(string scopeName, CommandService service)
         {
             if (!SanityCheck.RequireNonEmpty(scopeName)) return;
@@ -209,6 +224,51 @@ namespace cfEngine.Command
         }
     }
 
+    /// <summary>
+    /// Advisory descriptor for a command argument's wire value. These are documentation/UI
+    /// hints only: neither the token walker nor the executor converts or enforces them.
+    /// </summary>
+    public enum ArgType
+    {
+        String,
+        Int,
+        Float,
+        Bool,
+        Choice,
+    }
+
+    /// <summary>
+    /// Immutable, descriptive metadata for a single command argument. This is metadata only:
+    /// nothing here binds, parses or converts the string wire value, and no field gates
+    /// execution. <see cref="Name"/> preserves the supplied name exactly, including any leading
+    /// hyphen(s) (e.g. <c>-id</c>, <c>--strict</c>) — metadata authors supply the leading
+    /// hyphen. <see cref="Required"/> is likewise descriptive.
+    /// </summary>
+    public sealed class CommandArg
+    {
+        private static readonly IReadOnlyList<string> NoChoices = Array.Empty<string>();
+
+        public string Name { get; }
+        public ArgType Type { get; }
+        public string Description { get; }
+        public bool Required { get; }
+        public IReadOnlyList<string> Choices { get; }
+
+        public CommandArg(string name, ArgType type, string description = "", bool required = false,
+            IReadOnlyList<string>? choices = null)
+        {
+            Name = name;
+            Type = type;
+            Description = description;
+            Required = required;
+            // Snapshot supplied choices into a read-only managed collection so later mutations
+            // of the caller's array/list cannot change this spec.
+            Choices = choices == null || choices.Count == 0
+                ? NoChoices
+                : new List<string>(choices).AsReadOnly();
+        }
+    }
+
     public interface ICommandHandler
     {
         [AttributeUsage(AttributeTargets.Class, Inherited = false)]
@@ -223,6 +283,14 @@ namespace cfEngine.Command
         }
         
         public bool Execute(Parameters param);
+
+        /// <summary>
+        /// Descriptive argument metadata for this handler instance. This is a default interface
+        /// implementation, so existing Execute-only handlers compile and behave unchanged (an
+        /// empty, non-null list). Metadata is per-instance rather than per-type: shared handler
+        /// types (including delegate wrappers) can override this property on each instance.
+        /// </summary>
+        public IReadOnlyList<CommandArg> Arguments => Array.Empty<CommandArg>();
     }
 
     public class CommandParseException : ArgumentException
