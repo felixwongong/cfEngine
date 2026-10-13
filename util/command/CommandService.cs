@@ -47,6 +47,20 @@ namespace cfEngine.Command
             return handler.Arguments ?? Array.Empty<CommandArg>();
         }
 
+        /// <summary>
+        /// Reads a handler's declared environment availability. Like <see cref="ReadArguments"/>,
+        /// the lookup goes through the <see cref="ICommandHandler"/> interface (instance dispatch
+        /// honours explicit implementations and the default member). The result is per-instance
+        /// metadata only: the executor never consults it, so execution stays permissive.
+        /// </summary>
+        public static CommandAvailability ReadAvailability(ICommandHandler handler)
+        {
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+
+            return handler.Availability;
+        }
+
         public void RegisterScope(string scopeName, CommandService service)
         {
             if (!SanityCheck.RequireNonEmpty(scopeName)) return;
@@ -238,6 +252,19 @@ namespace cfEngine.Command
     }
 
     /// <summary>
+    /// Context(s) a command is runnable in. Flags; metadata only — <see cref="ICommandHandler.Execute"/>
+    /// stays permissive and is never gated by this value. UI surfaces filter/tag with it (the command
+    /// explorer hides non-matching leaves; the console `help`/`console_list` payloads tag commands).
+    /// </summary>
+    [Flags]
+    public enum CommandAvailability
+    {
+        Editor = 1,
+        Runtime = 2,
+        Both = Editor | Runtime, // == 3
+    }
+
+    /// <summary>
     /// Immutable, descriptive metadata for a single command argument. This is metadata only:
     /// nothing here binds, parses or converts the string wire value, and no field gates
     /// execution. <see cref="Name"/> preserves the supplied name exactly, including any leading
@@ -291,6 +318,15 @@ namespace cfEngine.Command
         /// types (including delegate wrappers) can override this property on each instance.
         /// </summary>
         public IReadOnlyList<CommandArg> Arguments => Array.Empty<CommandArg>();
+
+        /// <summary>
+        /// Context(s) this handler is runnable in. A default interface implementation, so existing
+        /// Execute-only handlers compile and behave unchanged (the default is
+        /// <see cref="CommandAvailability.Both"/>). Metadata is per-instance rather than per-type.
+        /// This never gates execution — the executor is deliberately permissive; UI surfaces filter
+        /// or tag with it.
+        /// </summary>
+        public CommandAvailability Availability => CommandAvailability.Both;
     }
 
     public class CommandParseException : ArgumentException
